@@ -16,6 +16,15 @@ fmpz_vector::~fmpz_vector()
     len_ = 0;
 }
 
+fmpz_vector::fmpz_vector(const fmpz_vector& other)
+{
+    int len = other.len_;
+    assert(len > 0);
+    fmpz *vec = _fmpz_vec_init(len);
+    this->data_ = vec;
+    this->len_ = len;
+    _fmpz_vec_set(vec, other.data_, len);
+}
 
 fmpz_vector::fmpz_vector(fmpz_vector&& other)
 {

@@ -27,6 +27,8 @@ public:
 
     ~fmpz_vector();
 
+    fmpz_vector(const fmpz_vector&); // 拷贝构造
+
     fmpz_vector(fmpz_vector&&); // 移动构造
 
     void print() const;
