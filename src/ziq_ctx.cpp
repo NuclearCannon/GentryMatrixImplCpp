@@ -6,6 +6,7 @@ ZiqArrayContext::ZiqArrayContext(int n, int p, int g, fmpz_t q, fmpz_t zeta, fmp
     ntter_p(nullptr),
     ntter_n(nullptr),
     ntter_w(nullptr),
+    mm_ctx(new MatmulContext(n, q)),
     buf_p(new fmpz_vector(p-1)),
     buf_n(new fmpz_vector(n)),
     buf_half(new fmpz_vector(pnn_)),
@@ -52,7 +53,7 @@ ZiqArrayContext::~ZiqArrayContext()
     fmpz_clear(I_);
     fmpz_clear(I_inv_);
     fmpz_mod_ctx_clear(q_ctx_);
-    delete buf_p, buf_n, buf_half, buf_size;
+    delete buf_p, buf_n, buf_half, buf_size, mm_ctx;
 }
 
 
