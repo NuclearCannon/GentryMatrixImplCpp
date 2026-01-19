@@ -50,3 +50,14 @@ std::vector<std::string> fmpz_vector::export_to_vec_str() const
     }
     return result;
 }
+
+void fmpz_vector::print() const
+{
+    auto vs = export_to_vec_str();
+    printf("[");
+    for(auto& s : vs)
+    {
+        printf("%s, ", s.c_str());
+    }
+    printf("]\n");
+}

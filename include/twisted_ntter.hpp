@@ -29,4 +29,33 @@ public:
 
 
 
+class TwistedNtterW
+{
+private:
+    int p_;      // 小质数长度
+    int g_;      // p的生成元
+    fmpz_t q_;   // 模数
+    fmpz_t p_inv_;   // 模数
+    fmpz_mod_ctx_t q_ctx_;   // 模上下文，用于加速模计算
+    std::vector<int> gpp_;   // g的正指数序列
+    std::vector<int> gnp_;   // g的负指数序列
+    fmpz_t eta_;   // p-本原单位根
+    fmpz_mod_poly_t a_poly_;   // 序列a（用作缓冲区）
+    fmpz_mod_poly_t b_poly_;   // 序列b的多项式形式
+    fmpz_mod_poly_t b2_poly_;   // 序列b的多项式形式
+    fmpz_mod_poly_t c_poly_;   // 序列c=a*b（用作缓冲区）
+    fmpz_mod_poly_t xn1_;   // 常多项式X^{p-1}-1
 
+    fmpz_vector buf1, buf2;
+
+public:
+    TwistedNtterW(int p,int g,fmpz_t q,fmpz_t eta);
+    ~TwistedNtterW();
+
+    // 不是const，因为会修改buffer
+    void ntt(const fmpz_vector& src, fmpz_vector& dst);
+    void intt(const fmpz_vector& src, fmpz_vector& dst);
+
+private:
+    
+};

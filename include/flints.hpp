@@ -5,6 +5,7 @@
 #include <flint/fmpz_mod_mat.h>
 #include <flint/fmpz_mod_vec.h>
 #include <flint/fmpz_vec.h>
+#include <flint/fmpz_mod_poly.h>
 #include <string>
 #include <vector>
 #include <cassert>
@@ -27,6 +28,8 @@ public:
     ~fmpz_vector();
 
     fmpz_vector(fmpz_vector&&); // 移动构造
+
+    void print() const;
 
     inline fmpz* raw(){
         return data_;
