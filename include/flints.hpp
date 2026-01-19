@@ -40,6 +40,8 @@ public:
         return data_;
     }
 
+    inline int len() const { return len_; }
+
     inline fmpz* at(int idx) {
         assert(idx < len_);
         assert(idx >= 0);
