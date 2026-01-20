@@ -234,3 +234,44 @@ fmpz_vector ZiqArrayContext::xy_intt(const fmpz_vector& src) const
 
     return result;
 }
+
+
+// 逐位加法
+void ZiqArrayContext::add(fmpz_vector& dst, const fmpz_vector src1, const fmpz_vector& src2) const
+{
+    int L = dst.len();
+    assert(src1.len() == L);
+    assert(src2.len() == L);
+    _fmpz_mod_vec_add(dst.raw(), src1.raw(), src2.raw(), L, q_ctx_);
+
+}
+// 逐位减法
+void ZiqArrayContext::sub(fmpz_vector& dst, const fmpz_vector src1, const fmpz_vector& src2) const
+{
+    int L = dst.len();
+    assert(src1.len() == L);
+    assert(src2.len() == L);
+    _fmpz_mod_vec_sub(dst.raw(), src1.raw(), src2.raw(), L, q_ctx_);
+}
+// 逐位乘法
+void ZiqArrayContext::mul(fmpz_vector& dst, const fmpz_vector src1, const fmpz_vector& src2) const
+{
+    int L = dst.len();
+    assert(src1.len() == L);
+    assert(src2.len() == L);
+    _fmpz_mod_vec_mul(dst.raw(), src1.raw(), src2.raw(), L, q_ctx_);
+}
+// 逐位负
+void ZiqArrayContext::neg(fmpz_vector& dst, const fmpz_vector src1) const
+{
+    int L = dst.len();
+    assert(src1.len() == L);
+    _fmpz_mod_vec_neg(dst.raw(), src1.raw(), L, q_ctx_);
+}
+// 标量乘
+void ZiqArrayContext::mul_scalar(fmpz_vector& dst, const fmpz_vector src_vec, const fmpz_t src_scalar) const
+{
+    int L = dst.len();
+    assert(src_vec.len() == L);
+    _fmpz_mod_vec_scalar_div_fmpz_mod(dst.raw(), src_vec.raw(), L, src_scalar, q_ctx_);
+}
