@@ -54,6 +54,46 @@ public:
     void neg(fmpz_vector& dst, const fmpz_vector src1) const;
     // 标量乘
     void mul_scalar(fmpz_vector& dst, const fmpz_vector src_vec, const fmpz_t src_scalar) const;
+    // 比较
+    bool eq(const fmpz_vector src1, const fmpz_vector& src2) const;
 
 };
 
+class ZiqArray {
+private:
+    const ZiqArrayContext* ctx_;
+    int size_;
+    fmpz_vector data_;
+
+public:
+    // 构造函数: 全零数组
+    ZiqArray(int n, int p, const ZiqArrayContext* ctx);
+
+    // 构造函数: 从 vector 构造（需正确大小）
+    ZiqArray(fmpz_vector data, const ZiqArrayContext* ctx);
+
+    ~ZiqArray();
+
+    // 禁用赋值（保持 immutable）
+    ZiqArray& operator=(const ZiqArray&) = delete;
+    ZiqArray& operator=(ZiqArray&&) = delete;
+
+    ZiqArray(const ZiqArray&) = delete; // 原则上不应该允许复制
+    ZiqArray(ZiqArray&&);   // 可以移动
+
+    // 运算符重载：逐元素操作
+    ZiqArray add(const ZiqArray& other) const;
+    ZiqArray neg() const;
+    ZiqArray sub(const ZiqArray& other) const;
+    ZiqArray mul(const ZiqArray& other) const;
+    ZiqArray mul_scalar(const fmpz_t other) const;
+
+    bool eq(const ZiqArray& other) const;
+
+    ZiqArray iw_ntt() const;
+    ZiqArray iw_intt() const;
+    ZiqArray xy_ntt () const;
+    ZiqArray xy_intt() const;
+    ZiqArray circledast(const ZiqArray& other) const;
+
+};

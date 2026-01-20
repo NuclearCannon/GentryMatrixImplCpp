@@ -275,3 +275,14 @@ void ZiqArrayContext::mul_scalar(fmpz_vector& dst, const fmpz_vector src_vec, co
     assert(src_vec.len() == L);
     _fmpz_mod_vec_scalar_div_fmpz_mod(dst.raw(), src_vec.raw(), L, src_scalar, q_ctx_);
 }
+
+bool ZiqArrayContext::eq(const fmpz_vector src1, const fmpz_vector& src2) const
+{
+    int L = src1.len();
+    assert(src2.len() == L);
+    for(int i=0;i<L;i++)
+    {
+        if(fmpz_cmp(src1[i], src2[i]) != 0)return false;
+    }
+    return true;
+}
