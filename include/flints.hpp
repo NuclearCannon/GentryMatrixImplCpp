@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <cassert>
+#include <stdexcept>
 
 // 各类转化函数
 

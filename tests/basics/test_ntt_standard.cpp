@@ -15,15 +15,18 @@ int test_ntt_standard()
     };
     fmpz_vector a(arr_str);
     fmpz_t q, root;
+    fmpz_mod_ctx_t ctx;
+
     fmpz_init(q);
     fmpz_init(root);
 
     string_to_fmpz("1601", q);
+    fmpz_mod_ctx_init(ctx, q);
     string_to_fmpz("408", root);
 
     fmpz_vector b(8);
 
-    ntt_standard_flint(a, b, root, 8, q);
+    ntt_standard_flint(a, b, root, 8, ctx);
 
     std::vector<std::string> result = b.export_to_vec_str();
 

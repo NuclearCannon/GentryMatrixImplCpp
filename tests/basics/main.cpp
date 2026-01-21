@@ -6,7 +6,6 @@
 
 
 int test_ntt_standard();
-int test_ntt_standard_with_ctx();
 int test_ntt_xy();
 int test_ntt_w();
 int test_ziq_ctx();
@@ -18,7 +17,6 @@ int main()
 {
     int sum = 0;
     sum += test_ntt_standard();
-    sum += test_ntt_standard_with_ctx();
     sum += test_ntt_xy();
     sum += test_ntt_w();
     sum += test_ziq_ctx();
