@@ -17,12 +17,15 @@ find_library(GMP_LIB gmp REQUIRED)  # 新增：查找 GMP
 add_library(poly_impl_flint STATIC ${SRC_FILES})
 target_link_libraries(poly_impl_flint PRIVATE ${FLINT_LIB} ${GMP_LIB})
 
-# 测试文件
-file(GLOB TEST_FILES "${CMAKE_SOURCE_DIR}/tests/*.cpp")
-
-foreach(test_src ${TEST_FILES})
-    get_filename_component(test_name ${test_src} NAME_WE)
-    add_executable(${test_name} ${test_src})
-    target_include_directories(${test_name} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-    target_link_libraries(${test_name} PRIVATE poly_impl_flint ${FLINT_LIB} ${GMP_LIB})
+# 编译tests下每个次级文件夹为一个可执行文件
+file(GLOB TEST_SUBDIRS RELATIVE "${CMAKE_SOURCE_DIR}/tests" "${CMAKE_SOURCE_DIR}/tests/*")
+foreach(subdir ${TEST_SUBDIRS})
+    if(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/tests/${subdir}")
+        file(GLOB TEST_SRC_FILES "${CMAKE_SOURCE_DIR}/tests/${subdir}/*.cpp")
+        if(TEST_SRC_FILES) # 仅当有cpp文件时才生成可执行文件
+            add_executable(${subdir} ${TEST_SRC_FILES})
+            target_include_directories(${subdir} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+            target_link_libraries(${subdir} PRIVATE poly_impl_flint ${FLINT_LIB} ${GMP_LIB})
+        endif()
+    endif()
 endforeach()
