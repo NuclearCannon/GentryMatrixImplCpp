@@ -12,15 +12,10 @@ int test_circledast()
     // zeta: 356  eta: 442
     int n=8, p=5, g=2;
     int size_ = 2*(p-1)*n*n;
-    fmpz_t q, zeta, eta;
-    fmpz_init(q);
-    fmpz_init(zeta);
-    fmpz_init(eta);
+    fmpz_scalar q("1601");
+    fmpz_scalar root_q("3");
 
-    string_to_fmpz("1601", q);
-    string_to_fmpz("356", zeta);
-    string_to_fmpz("442", eta);
-    ZiqArrayContext ctx(n, p, g, q, zeta, eta);
+    ZiqArrayContext ctx(n, p, g, q.raw(), root_q.raw());
     fmpz_vector data(size_);
     for(int i=0;i<size_;i++)fmpz_set_ui(data[i], i);
 
@@ -92,9 +87,6 @@ int test_circledast()
         }
     }
 
-    fmpz_clear(q);
-    fmpz_clear(zeta);
-    fmpz_clear(eta);
 
     if (error == -1)
     {

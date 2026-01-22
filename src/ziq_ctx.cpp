@@ -1,6 +1,6 @@
 #include "ziq_array.hpp"
 
-ZiqArrayContext::ZiqArrayContext(int n, int p, int g, fmpz_t q, fmpz_t zeta, fmpz_t eta):
+ZiqArrayContext::ZiqArrayContext(int n, int p, int g, const fmpz_t q, const fmpz_t root_q):
     n_(n), p_(p),
     nn_(n*n), pnn_((p-1)*n*n), size_(2*pnn_),
     ntter_p(nullptr),
@@ -11,41 +11,44 @@ ZiqArrayContext::ZiqArrayContext(int n, int p, int g, fmpz_t q, fmpz_t zeta, fmp
     buf_n(new fmpz_vector(n)),
     buf_half(new fmpz_vector(pnn_)),
     buf_size(new fmpz_vector(size_))
-
 {
+    // zeta = root_q^((q-1)/4*n)
+    // eta  = root_q^((q-1)/p)
+    fmpz_scalar zeta, eta, q_sub_1, q_div_4n, q_div_p;
+    fmpz_scalar n4(4*n), p_mpz(p);
+    fmpz_scalar remainder, quotient, tmp;
+
+    // 赋值q_sub_1 = q-1
+    fmpz_sub_si(q_sub_1.raw(), q, 1);
+    // 检查q-1是不是能被4n整除
+    fmpz_fdiv_qr(quotient.raw(), remainder.raw(), q_sub_1.raw(), n4.raw());
+    assert(fmpz_is_zero(remainder.raw()));
+    // 此时，商=(q-1)/4n, zeta=root_q^商
+    fmpz_powm(zeta.raw(), root_q, quotient.raw(), q);
+
+    // 检查q-1是不是能被p整除
+    fmpz_fdiv_qr(quotient.raw(), remainder.raw(), q_sub_1.raw(), p_mpz.raw());
+    assert(fmpz_is_zero(remainder.raw()));
+    // 此时，商=(q-1)/p, eta=root_q^商
+    fmpz_powm(eta.raw(), root_q, quotient.raw(), q);
+
+
     fmpz_init_set(q_, q);
     fmpz_init(I_);
     fmpz_init(I_inv_);
     fmpz_mod_ctx_init(q_ctx_, q);
-    ntter_p = new TwistedNtterXY(
-        n, q, zeta
-    );
+    ntter_p = new TwistedNtterXY(n, q, zeta.raw());
 
-    fmpz_t tmp;
-    fmpz_init(tmp);
     // let tmp = zeta^{-1}
-    fmpz_invmod(tmp, zeta, q_);
-    ntter_n = new TwistedNtterXY(
-        n, q, tmp
-    );
-    
-
-    ntter_w = new TwistedNtterW(
-        p, g, q, eta
-    );
+    fmpz_invmod(tmp.raw(), zeta.raw(), q_);
+    ntter_n = new TwistedNtterXY(n, q, tmp.raw());
+    ntter_w = new TwistedNtterW(p, g, q, eta.raw());
     // let I = zeta^n
-    fmpz_mod_pow_ui(I_, zeta, n, q_ctx_);
+    fmpz_mod_pow_ui(I_, zeta.raw(), n, q_ctx_);
     // let I_inv = I^{-1}
     fmpz_invmod(I_inv_, I_, q_);
 
-
-
-    fmpz_clear(tmp);
-
-    
-
 }
-
 
 ZiqArrayContext::~ZiqArrayContext()
 {

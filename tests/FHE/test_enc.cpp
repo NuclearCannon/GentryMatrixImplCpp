@@ -3,9 +3,7 @@
 
 // 质数: 33532481
 // 原根: 3
-// 的k : 104789
-// zeta: 26242510
-// eta: 8938557
+
 
 
 int test_enc()
@@ -14,10 +12,8 @@ int test_enc()
     int n = 16;
     int p = 5;
     int g = 3;
-    fmpz_scalar q("33532481"), zeta("26242510"), eta("8938557");
-    ZiqArrayContext ctx(
-        n, p, g, q.raw(), zeta.raw(), eta.raw()
-    );
+    fmpz_scalar q("33532481"), root_q("3");
+    ZiqArrayContext ctx(n, p, g, q.raw(), root_q.raw());
 
     // 生成明文
     fmpz_vector msg_v(2*(p-1)*n*n);

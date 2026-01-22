@@ -6,6 +6,7 @@
 #include <flint/fmpz_mod_vec.h>
 #include <flint/fmpz_vec.h>
 #include <flint/fmpz_mod_poly.h>
+#include <flint/ulong_extras.h>
 #include <string>
 #include <vector>
 #include <cassert>

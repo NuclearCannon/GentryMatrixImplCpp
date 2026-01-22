@@ -55,7 +55,7 @@ void rader(
 }
 
 
-TwistedNtterW::TwistedNtterW(int p,int g,fmpz_t q,fmpz_t eta):
+TwistedNtterW::TwistedNtterW(int p,int g,const fmpz_t q,const fmpz_t eta):
     p_(p),g_(g),gpp_(p),gnp_(p),buf1(p), buf2(p)
 {
     fmpz_init_set(q_, q);

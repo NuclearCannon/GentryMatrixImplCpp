@@ -8,15 +8,10 @@ int test_ks()
     int n = 16;
     int p = 5;
     int g = 3;
-    fmpz_scalar q("2000000641"), zeta("1790144836"), eta("857855242");
-    ZiqArrayContext ctx(
-        n, p, g, q.raw(), zeta.raw(), eta.raw()
-    );
-
-    fmpz_scalar q2("1024000339841"), zeta2("347652151588"), eta2("510629191234");
-    ZiqArrayContext ctx2(
-        n, p, g, q2.raw(), zeta2.raw(), eta2.raw()
-    );
+    fmpz_scalar q("2000000641"), root_q("19");
+    ZiqArrayContext ctx(n, p, g, q.raw(), root_q.raw());
+    fmpz_scalar q2("1024000339841"), root_q2("3");
+    ZiqArrayContext ctx2(n, p, g, q2.raw(), root_q2.raw());
 
     // 生成明文
     fmpz_vector msg_v(2*(p-1)*n*n);

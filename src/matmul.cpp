@@ -6,7 +6,7 @@
 
 
 
-MatmulContext::MatmulContext(int n, fmpz_t q):
+MatmulContext::MatmulContext(int n, const fmpz_t q):
     n_(n)
 {
     fmpz_init_set(q_, q);

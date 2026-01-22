@@ -10,7 +10,7 @@ class MatmulContext {
     fmpz_t q_;
     fmpz_mod_mat_t A_mat, B_mat, C_mat; // 矩阵乘法时使用的缓冲区
 public:
-    MatmulContext(int n, fmpz_t q);
+    MatmulContext(int n, const fmpz_t q);
     ~MatmulContext();
 
     // C = A @ B.T  (mod q)
@@ -32,7 +32,7 @@ private:
     fmpz_vector *buf_p, *buf_n, *buf_half, *buf_size;
 public:
 
-    ZiqArrayContext(int n, int p, int g, fmpz_t q, fmpz_t zeta, fmpz_t eta);
+    ZiqArrayContext(int n, int p, int g, const fmpz_t q, const fmpz_t root_q);
 
     ~ZiqArrayContext();
 

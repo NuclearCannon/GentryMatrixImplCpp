@@ -2,7 +2,7 @@
 #include "ntt.hpp"
 
 
-TwistedNtterXY::TwistedNtterXY(int n, fmpz_t q, fmpz_t zeta):
+TwistedNtterXY::TwistedNtterXY(int n, const fmpz_t q, const fmpz_t zeta):
     n_(n),
     zeta_pos_pows_(n), 
     zeta_neg_pows_ninv_(n),

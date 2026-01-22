@@ -17,7 +17,7 @@ private:
     fmpz_vector buffer_;    // 私有缓冲区
 
 public:
-    TwistedNtterXY(int n, fmpz_t q, fmpz_t zeta);
+    TwistedNtterXY(int n, const fmpz_t q, const fmpz_t zeta);
     ~TwistedNtterXY();
 
     // 不是const，因为会修改buffer
@@ -49,7 +49,7 @@ private:
     fmpz_vector buf1, buf2;
 
 public:
-    TwistedNtterW(int p,int g,fmpz_t q,fmpz_t eta);
+    TwistedNtterW(int p,int g,const fmpz_t q,const fmpz_t eta);
     ~TwistedNtterW();
 
     // 不是const，因为会修改buffer
