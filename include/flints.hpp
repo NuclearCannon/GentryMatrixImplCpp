@@ -140,4 +140,8 @@ public:
 
     std::vector<std::string> export_to_vec_str() const;
 
+    static fmpz_vector zeros(int len);
+    static fmpz_vector uniform(int len, const fmpz_t q);
+    static fmpz_vector dg(int len);
+
 };

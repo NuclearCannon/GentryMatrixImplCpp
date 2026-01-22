@@ -5,7 +5,7 @@
 ZiqArray::ZiqArray(int n, int p, const ZiqArrayContext* ctx):
     ctx_(ctx), 
     size_(2*n*n*(p-1)),
-    data_(size_)
+    data_(fmpz_vector::zeros(n))
 {
 
 }

@@ -1,4 +1,6 @@
 #include "flints.hpp"
+#include "random.hpp"
+
 
 fmpz_vector::fmpz_vector(int len)
 {
@@ -69,4 +71,30 @@ void fmpz_vector::print() const
         printf("%s, ", s.c_str());
     }
     printf("]\n");
+}
+
+fmpz_vector fmpz_vector::zeros(int len)
+{
+    fmpz_vector result(len);
+    for(int i=0;i<len;i++)fmpz_zero(result[i]);
+    return result;
+}
+fmpz_vector fmpz_vector::uniform(int len, const fmpz_t q)
+{
+    // TODO: 可能不够安全！
+    fmpz_vector result(len);
+    flint_rand_t state;
+    flint_randinit(state);  // 初始化随机数生成器
+    for (slong i = 0; i < len; i++) {
+        fmpz_randm(result[i], state, q);  // vec[i] = random in [0, q)
+    }
+    flint_randclear(state);  // 清理随机状态
+    return result;
+}
+fmpz_vector fmpz_vector::dg(int len)
+{
+    // TODO: 这里使用的DG可能不够安全
+    fmpz_vector result(len);
+    for(int i=0;i<len;i++)fmpz_set_si(result[i], ramdom_generators::dg(10));
+    return result;
 }
