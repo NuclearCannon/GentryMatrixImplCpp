@@ -1,3 +1,4 @@
+
 #include "flints.hpp"
 #include "random.hpp"
 
@@ -124,4 +125,25 @@ fmpz_vector fmpz_vector::mod_centered(const fmpz_t q) const
     fmpz_clear(q_half);
     fmpz_clear(tmp);
     return result;
+}
+
+
+// 返回逐位绝对值的最大值，若超出int范围返回-1
+long fmpz_vector::max_abs() const
+{
+    fmpz_t tmp;
+    fmpz_init(tmp);
+    long max_val = 0;
+    for (int i = 0; i < len_; ++i) {
+        fmpz_abs(tmp, data_ + i);
+        if (fmpz_cmp_si(tmp, max_val) > 0) {
+            if (!fmpz_fits_si(tmp)) {
+                fmpz_clear(tmp);
+                return -1;
+            }
+            max_val = fmpz_get_si(tmp);
+        }
+    }
+    fmpz_clear(tmp);
+    return max_val;
 }

@@ -146,4 +146,8 @@ public:
 
     // 返回按q模到[-q/2, q/2]的新向量
     fmpz_vector mod_centered(const fmpz_t q) const;
+
+    // 绝对值的最大值
+    long max_abs() const;
+
 };

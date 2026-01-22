@@ -64,6 +64,10 @@ public:
 
     inline const fmpz* q() const { return q_; }
 
+    inline int get_n() const {return n_; }
+    inline int get_p() const {return p_; }
+    inline int get_size() const {return size_; }
+
 };
 
 class ZiqArray {
