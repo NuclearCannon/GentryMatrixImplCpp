@@ -17,6 +17,7 @@ public:
     void matmul_transpose(fmpz* C, const fmpz* A, const fmpz* B);
 };
 
+class ZiqArray;
 
 class ZiqArrayContext {
 private:
@@ -57,6 +58,12 @@ public:
     // 比较
     bool eq(const fmpz_vector src1, const fmpz_vector& src2) const;
 
+    ZiqArray zeros() const;
+    ZiqArray uniform() const;
+    ZiqArray dg() const;
+
+    inline const fmpz* q() const { return q_; }
+
 };
 
 class ZiqArray {
@@ -66,6 +73,7 @@ private:
     fmpz_vector data_;
 
 public:
+    
     // 构造函数: 全零数组
     ZiqArray(int n, int p, const ZiqArrayContext* ctx);
 
@@ -95,5 +103,8 @@ public:
     ZiqArray xy_ntt () const;
     ZiqArray xy_intt() const;
     ZiqArray circledast(const ZiqArray& other) const;
+
+    inline const fmpz_vector& data() const { return data_; };
+    inline const ZiqArrayContext* ctx() const { return ctx_; };
 
 };

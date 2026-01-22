@@ -96,5 +96,32 @@ fmpz_vector fmpz_vector::dg(int len)
     // TODO: 这里使用的DG可能不够安全
     fmpz_vector result(len);
     for(int i=0;i<len;i++)fmpz_set_si(result[i], ramdom_generators::dg(10));
+    // 
+    return result;
+}
+
+fmpz_vector fmpz_vector::mod_centered(const fmpz_t q) const
+{
+    fmpz_vector result(len_);
+    fmpz_t q_half, tmp;
+    fmpz_init(q_half);
+    fmpz_init(tmp);
+
+    // q_half = q / 2
+    fmpz_fdiv_q_2exp(q_half, q, 1);
+
+    for (int i = 0; i < len_; ++i) {
+        // tmp = data_[i] mod q
+        fmpz_mod(tmp, data_ + i, q);
+
+        // if tmp > q/2, tmp -= q
+        if (fmpz_cmp(tmp, q_half) > 0) {
+            fmpz_sub(tmp, tmp, q);
+        }
+        fmpz_set(result[i], tmp);
+    }
+
+    fmpz_clear(q_half);
+    fmpz_clear(tmp);
     return result;
 }

@@ -16,7 +16,7 @@ ZiqArray::ZiqArray(fmpz_vector data, const ZiqArrayContext* ctx):
     size_(data.len()),
     data_(std::move(data))
 {
-
+    _fmpz_vec_scalar_mod_fmpz(data_.raw(), data_.raw(), size_, ctx->q());
 }
 
 ZiqArray::~ZiqArray() = default;

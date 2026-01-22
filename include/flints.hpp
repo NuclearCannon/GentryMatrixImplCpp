@@ -144,4 +144,6 @@ public:
     static fmpz_vector uniform(int len, const fmpz_t q);
     static fmpz_vector dg(int len);
 
+    // 返回按q模到[-q/2, q/2]的新向量
+    fmpz_vector mod_centered(const fmpz_t q) const;
 };

@@ -286,3 +286,21 @@ bool ZiqArrayContext::eq(const fmpz_vector src1, const fmpz_vector& src2) const
     }
     return true;
 }
+
+
+ZiqArray ZiqArrayContext::zeros() const
+{
+    return ZiqArray(fmpz_vector::zeros(size_), this);
+}
+ZiqArray ZiqArrayContext::uniform() const
+{
+    fmpz_vector r = fmpz_vector::uniform(size_, q_);
+    return ZiqArray(r, this);
+}
+ZiqArray ZiqArrayContext::dg() const
+{
+    fmpz_vector r = fmpz_vector::dg(size_);
+    // 取个模再说
+    // _fmpz_vec_scalar_mod_fmpz(r.raw(), r.raw(), size_, q_);
+    return ZiqArray(r, this);
+}
