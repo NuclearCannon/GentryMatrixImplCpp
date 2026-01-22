@@ -87,3 +87,9 @@ ZiqArray ZiqArray::circledast(const ZiqArray& other) const
 {
     return ZiqArray(ctx_->circledast(data_, other.data_), ctx_);
 }
+
+ZiqArray ZiqArray::ctx_switch(const ZiqArrayContext* new_ctx) const
+{
+    fmpz_vector data = data_.mod_centered(ctx_->q());
+    return ZiqArray(data, new_ctx);
+}

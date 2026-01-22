@@ -107,4 +107,6 @@ public:
     inline const fmpz_vector& data() const { return data_; };
     inline const ZiqArrayContext* ctx() const { return ctx_; };
 
+    ZiqArray ctx_switch(const ZiqArrayContext* new_ctx) const;
+
 };
