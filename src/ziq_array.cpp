@@ -27,6 +27,7 @@ ZiqArray::ZiqArray(ZiqArray&&) = default;
 // 运算符重载：逐元素操作
 ZiqArray ZiqArray::add(const ZiqArray& other) const
 {
+    assert(ctx_ == other.ctx_);
     fmpz_vector result(size_);
     ctx_->add(result, data_, other.data_);
     return ZiqArray(result, ctx_);
@@ -41,6 +42,7 @@ ZiqArray ZiqArray::neg() const
 
 ZiqArray ZiqArray::sub(const ZiqArray& other) const
 {
+    assert(ctx_ == other.ctx_);
     fmpz_vector result(size_);
     ctx_->sub(result, data_, other.data_);
     return ZiqArray(result, ctx_);
@@ -48,6 +50,7 @@ ZiqArray ZiqArray::sub(const ZiqArray& other) const
 
 ZiqArray ZiqArray::mul(const ZiqArray& other) const
 {
+    assert(ctx_ == other.ctx_);
     fmpz_vector result(size_);
     ctx_->mul(result, data_, other.data_);
     return ZiqArray(result, ctx_);
@@ -62,6 +65,7 @@ ZiqArray ZiqArray::mul_scalar(const fmpz_t other) const
 
 bool ZiqArray::eq(const ZiqArray& other) const
 {
+    assert(ctx_ == other.ctx_);
     return ctx_->eq(data_, other.data_);
 }
 
@@ -85,6 +89,7 @@ ZiqArray ZiqArray::xy_intt() const
 
 ZiqArray ZiqArray::circledast(const ZiqArray& other) const
 {
+    assert(ctx_ == other.ctx_);
     return ZiqArray(ctx_->circledast(data_, other.data_), ctx_);
 }
 
