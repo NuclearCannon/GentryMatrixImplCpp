@@ -22,6 +22,34 @@ std::pair<ZiqArray, ZiqArray> encrypt(const ZiqArray& message, const ZiqArray& s
     return std::make_pair(std::move(a), std::move(b));
 }
 
+std::pair<ZiqArray, ZiqArray> encrypt_no_e(const ZiqArray& message, const ZiqArray& sk)
+{
+    assert (message.ctx() == sk.ctx());
+    const ZiqArrayContext* ctx = message.ctx();
+    // 随机生成一个a
+    ZiqArray a = ctx->uniform();
+    // b = message - a*s
+    ZiqArray a_ntt = a.iw_ntt().xy_ntt();
+    ZiqArray s_ntt = sk.iw_ntt().xy_ntt();
+    ZiqArray as_ntt = a_ntt.mul(s_ntt);
+    ZiqArray as = as_ntt.xy_intt().iw_intt();
+    ZiqArray b = message.sub(as);
+    // ZiqArray b = message.sub(as);
+    return std::make_pair(std::move(a), std::move(b));
+}
+
+std::pair<ZiqArray, ZiqArray> encrypt_no_ea(const ZiqArray& message, const ZiqArray& sk)
+{
+    assert (message.ctx() == sk.ctx());
+    const ZiqArrayContext* ctx = message.ctx();
+    // 随机生成一个a
+    ZiqArray a = ctx->zeros();
+    ZiqArray b = message.add(a);
+    return std::make_pair(std::move(a), std::move(b));
+}
+
+
+
 
 ZiqArray decrypt(const ZiqArray& ct_a, const ZiqArray& ct_b, const ZiqArray& sk)
 {
