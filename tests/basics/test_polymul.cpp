@@ -18,9 +18,12 @@ int test_polymul()
     fmpz_vector data(size_);
     for(int i=0;i<size_;i++)fmpz_set_ui(data[i], i);
 
-    ZiqArray A(data, &ctx);
-    ZiqArray A_ntt = A.iw_ntt().xy_ntt();
-    ZiqArray B_ntt = A_ntt.mul(A_ntt);
+    ZiqArray A1 = ctx.uniform();
+    ZiqArray A2 = ctx.uniform();
+
+    ZiqArray A1_ntt = A1.iw_ntt().xy_ntt();
+    ZiqArray A2_ntt = A2.iw_ntt().xy_ntt();
+    ZiqArray B_ntt = A1_ntt.mul(A2_ntt);
     ZiqArray B = B_ntt.xy_intt().iw_intt();
 
     // 朴素计算C
@@ -71,9 +74,9 @@ int test_polymul()
                                     }
                                     // 一个新的项目
                                     // 读取系数
-                                    fmpz_set(coeff1.raw(), A.data()[i1*(p-1)*n*n + w1*n*n + x1*n + y1]);
+                                    fmpz_set(coeff1.raw(), A1.data()[i1*(p-1)*n*n + w1*n*n + x1*n + y1]);
                                     
-                                    fmpz_set(coeff2.raw(), A.data()[i2*(p-1)*n*n + w2*n*n + x2*n + y2]);
+                                    fmpz_set(coeff2.raw(), A2.data()[i2*(p-1)*n*n + w2*n*n + x2*n + y2]);
                                     // 计算
                                     fmpz_mod_mul(coeff3.raw(), coeff1.raw(), coeff2.raw(), qctx);
                                     if (sign == -1)
