@@ -307,3 +307,23 @@ ZiqArray ZiqArrayContext::dg() const
     // _fmpz_vec_scalar_mod_fmpz(r.raw(), r.raw(), size_, q_);
     return ZiqArray(r, this);
 }
+
+ZiqArray ZiqArrayContext::sk() const
+{
+    fmpz_vector dg = fmpz_vector::dg(2*(p_-1)*n_);
+    fmpz_vector r = fmpz_vector::zeros(size_);
+    int j = 0;
+
+    for(int i=0;i<2;i++)
+    {
+        for(int w=0;w<p_-1;w++)
+        {
+            for(int x=0;x<n_;x++)
+            {
+                fmpz_set(r[i*pnn_ + w*nn_ + x*n_], dg[j++]);
+            }
+        }
+    }
+    
+    return ZiqArray(r, this);
+}

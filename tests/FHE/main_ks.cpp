@@ -22,10 +22,7 @@ int test_ks()
     // sk2=0, 误差显著减小
 
     ZiqArray sk = ctx.dg();
-    // printf("sk1=\n");
-    // sk.data().mod_centered(q.raw()).print();
-    ZiqArray sk2 = ctx.zeros();
-    // ZiqArray sk2 = ctx.dg();
+    ZiqArray sk2 = ctx.sk();
     // 加密
     auto [a,b] = encrypt_no_e(msg, sk);
     // 制造KSK

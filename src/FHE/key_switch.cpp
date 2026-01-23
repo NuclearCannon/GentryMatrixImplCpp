@@ -59,8 +59,7 @@ KeySwitchingKey::KeySwitchingKey(
         fmpz_clear(B_pow_i);
         fmpz_clear(temp_prod);
         // 将这一份结果加密成密文
-        // TODO: 这里的no_e是为了调试，我们得找到误差来源，因此先把这个明显导致误差的换掉
-        auto [a, b] = encrypt_no_e(ZiqArray(std::move(bis), ctx_Q), sk_to_Q);
+        auto [a, b] = encrypt(ZiqArray(std::move(bis), ctx_Q), sk_to_Q);
         auto a_ntt = a.iw_ntt().xy_ntt();
         auto b_ntt = b.iw_ntt().xy_ntt();
         cts.push_back(std::make_pair(std::move(a_ntt), std::move(b_ntt)));

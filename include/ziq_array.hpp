@@ -61,6 +61,7 @@ public:
     ZiqArray zeros() const;
     ZiqArray uniform() const;
     ZiqArray dg() const;
+    ZiqArray sk() const;
 
     inline const fmpz* q() const { return q_; }
 
