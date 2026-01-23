@@ -62,6 +62,7 @@ public:
     ZiqArray uniform() const;
     ZiqArray dg() const;
     ZiqArray sk() const;
+    ZiqArray randint(int lb, int ub) const;
 
     inline const fmpz* q() const { return q_; }
 
@@ -100,6 +101,7 @@ public:
     ZiqArray sub(const ZiqArray& other) const;
     ZiqArray mul(const ZiqArray& other) const;
     ZiqArray mul_scalar(const fmpz_t other) const;
+    ZiqArray mul_poly(const ZiqArray& other) const;
 
     bool eq(const ZiqArray& other) const;
 
@@ -113,5 +115,10 @@ public:
     inline const ZiqArrayContext* ctx() const { return ctx_; };
 
     ZiqArray ctx_switch(const ZiqArrayContext* new_ctx) const;
+
+    ZiqArray transpose() const;
+    ZiqArray conj() const;
+    ZiqArray w_inversion() const;
+
 
 };

@@ -1,4 +1,5 @@
 #include "ziq_array.hpp"
+#include "random.hpp"
 
 ZiqArrayContext::ZiqArrayContext(int n, int p, int g, const fmpz_t q, const fmpz_t root_q):
     n_(n), p_(p),
@@ -298,6 +299,12 @@ ZiqArray ZiqArrayContext::zeros() const
 ZiqArray ZiqArrayContext::uniform() const
 {
     fmpz_vector r = fmpz_vector::uniform(size_, q_);
+    return ZiqArray(r, this);
+}
+ZiqArray ZiqArrayContext::randint(int lb, int ub) const
+{
+    fmpz_vector r = fmpz_vector::zeros(size_);
+    for(int i=0;i<size_;i++)fmpz_set_si(r[i], ramdom_generators::randint(lb, ub));
     return ZiqArray(r, this);
 }
 ZiqArray ZiqArrayContext::dg() const
