@@ -15,8 +15,6 @@ int test_polymul()
     fmpz_scalar q("1601");
     fmpz_scalar root_q("3");
     ZiqArrayContext ctx(n, p, g, q.raw(), root_q.raw());
-    fmpz_vector data(size_);
-    for(int i=0;i<size_;i++)fmpz_set_ui(data[i], i);
 
     ZiqArray A1 = ctx.uniform();
     ZiqArray A2 = ctx.uniform();
@@ -27,7 +25,7 @@ int test_polymul()
     ZiqArray B = B_ntt.xy_intt().iw_intt();
 
     // 朴素计算C
-    fmpz_vector c_data(size_);
+    fmpz_vector c_data = fmpz_vector::zeros(size_);
     fmpz_scalar coeff1, coeff2, coeff3;
 
     fmpz_mod_ctx_t qctx;
