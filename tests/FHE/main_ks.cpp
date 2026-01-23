@@ -15,13 +15,19 @@ int test_ks()
 
     // 生成明文
     fmpz_vector msg_v(2*(p-1)*n*n);
-    for(int i=0;i<2*(p-1)*n*n;i++)fmpz_set_si(msg_v[i], 10000*i);
+    for(int i=0;i<2*(p-1)*n*n;i++)fmpz_set_si(msg_v[i], 0);
     ZiqArray msg(msg_v, &ctx);
     // 生成私钥
+    // 即使sk=0, 误差依然很大
+    // sk2=0, 误差显著减小
+
     ZiqArray sk = ctx.dg();
-    ZiqArray sk2 = ctx.dg();
+    // printf("sk1=\n");
+    // sk.data().mod_centered(q.raw()).print();
+    ZiqArray sk2 = ctx.zeros();
+    // ZiqArray sk2 = ctx.dg();
     // 加密
-    auto [a,b] = encrypt(msg, sk);
+    auto [a,b] = encrypt_no_e(msg, sk);
     // 制造KSK
     fmpz_scalar B(16);
     KeySwitchingKey ksk(sk, sk2, &ctx, &ctx2, B.raw(), 10);

@@ -24,12 +24,16 @@ KeySwitchingKey::KeySwitchingKey(
     assert(ctx_q->get_size() == length);
     assert(ctx_Q->get_size() == length);
 
-    fmpz_vector sk_from_Q = sk_from.data().mod_centered(q);
+    fmpz_vector sk_from_Q = sk_from.data();
     ZiqArray sk_to_Q = sk_to.ctx_switch(ctx_Q);
+
+    fmpz_fdiv_q_si(q_half_.raw(), q, 2);
+    fmpz_fdiv_q_si(Q_half_.raw(), Q, 2);
+
 
     for(int i=0;i<L;i++)
     {
-        // 获取B^i * sk_from * Q // q，存入result中
+        // 获取B^i * sk_from * Q // q，存入bis中
         fmpz_vector bis(length);
         fmpz_t B_pow_i, temp_prod;
         fmpz_init(B_pow_i);
@@ -47,14 +51,16 @@ KeySwitchingKey::KeySwitchingKey(
             fmpz_mod(temp_prod, temp_prod, q);
             // temp_prod = temp_prod * Q
             fmpz_mul(temp_prod, temp_prod, Q);
-
-            // bis[j] = trunc( temp_prod / q ) —— 忽略余数，向零取整
-            fmpz_tdiv_q(bis[j], temp_prod, q);
+            // + q//2
+            fmpz_add(temp_prod, temp_prod, q_half_.raw());
+            // bis[j] = trunc( temp_prod / q ) —— 忽略余数
+            fmpz_fdiv_q(bis[j], temp_prod, q);
         }
         fmpz_clear(B_pow_i);
         fmpz_clear(temp_prod);
         // 将这一份结果加密成密文
-        auto [a, b] = encrypt(ZiqArray(std::move(bis), ctx_Q), sk_to_Q);
+        // TODO: 这里的no_e是为了调试，我们得找到误差来源，因此先把这个明显导致误差的换掉
+        auto [a, b] = encrypt_no_e(ZiqArray(std::move(bis), ctx_Q), sk_to_Q);
         auto a_ntt = a.iw_ntt().xy_ntt();
         auto b_ntt = b.iw_ntt().xy_ntt();
         cts.push_back(std::make_pair(std::move(a_ntt), std::move(b_ntt)));
@@ -128,6 +134,12 @@ std::pair<ZiqArray, ZiqArray> KeySwitchingKey::key_switch_big_1(
     // 降低模数
     _fmpz_vec_scalar_mul_fmpz(a_sum.raw(), a_sum.raw(), len, q_.raw());
     _fmpz_vec_scalar_mul_fmpz(b_sum.raw(), b_sum.raw(), len, q_.raw());
+    // +Q/2
+    for(int i=0;i<len;i++)
+    {
+        fmpz_add(a_sum[i], a_sum[i], Q_half_.raw());
+        fmpz_add(b_sum[i], b_sum[i], Q_half_.raw());
+    }
     _fmpz_vec_scalar_tdiv_q_fmpz(a_sum.raw(), a_sum.raw(), len, Q_.raw());
     _fmpz_vec_scalar_tdiv_q_fmpz(b_sum.raw(), b_sum.raw(), len, Q_.raw());
 

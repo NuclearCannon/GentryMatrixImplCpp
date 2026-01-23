@@ -4,7 +4,7 @@
 class KeySwitchingKey
 {
 private:
-    fmpz_scalar B_, Q_, q_;
+    fmpz_scalar B_, Q_, q_, q_half_, Q_half_;
     int L_;
     const ZiqArrayContext *ctx_q_, *ctx_Q_;
     // sk_from在sk_to下的各段密文
