@@ -26,16 +26,26 @@ void rader(
         fmpz_mod_poly_set_coeff_fmpz(a,i,input[gnp[i]],q_ctx);
     }
     // 和b相乘得到c，并且取模xn1 = X^{p-1}-1
-    fmpz_mod_poly_mulmod(c,a,b,xn1,q_ctx);
+    // fmpz_mod_poly_mulmod(c,a,b,xn1,q_ctx);
+
+    fmpz_mod_poly_mul(c, a, b, q_ctx);
+
     // 写回
     fmpz_t tmp;
+    fmpz_t tmp2;
     fmpz_init(tmp);
+    fmpz_init(tmp2);
     for(int i=0;i<p-1;i++)
     {
         // 读取c的X^i系数
         fmpz_mod_poly_get_coeff_fmpz(
             tmp, c, i, q_ctx
         );
+        // 读取c的X^(i+p-1)系数，并加回去
+        fmpz_mod_poly_get_coeff_fmpz(
+            tmp2, c, i+p-1, q_ctx
+        );
+        fmpz_add(tmp, tmp, tmp2);
         // output[g^i] = x0+c[i]
         fmpz_mod_add(
             output[gpp[i]], tmp, input[0], q_ctx
@@ -51,6 +61,7 @@ void rader(
 
 
     fmpz_clear(tmp);
+    fmpz_clear(tmp2);
 
 }
 
