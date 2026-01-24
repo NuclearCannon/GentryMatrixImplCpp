@@ -1,4 +1,3 @@
-#pragma once
 #include "FHE/key_switch.hpp"
 #include "FHE/circledast_ct.hpp"
 #include <memory>
