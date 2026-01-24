@@ -49,6 +49,16 @@ std::pair<ZiqArray, ZiqArray> encrypt_no_ea(const ZiqArray& message, const ZiqAr
 }
 
 
+std::pair<ZiqArray, ZiqArray> encrypt_CNNN(const ZiqArray& message, const ZiqArray& sk_ntt)
+{
+    assert (message.ctx() == sk_ntt.ctx());
+    const ZiqArrayContext* ctx = message.ctx();
+    ZiqArray me_ntt = message.add(ctx->dg()).iw_ntt().xy_ntt();
+    ZiqArray a_ntt = ctx->uniform();
+    ZiqArray as_ntt = a_ntt.mul(sk_ntt);
+    // b = m+e-as
+    return std::make_pair(std::move(a_ntt), me_ntt.sub(as_ntt));
+}
 
 
 ZiqArray decrypt(const ZiqArray& ct_a, const ZiqArray& ct_b, const ZiqArray& sk)

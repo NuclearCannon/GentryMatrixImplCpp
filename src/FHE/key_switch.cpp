@@ -26,6 +26,7 @@ KeySwitchingKey::KeySwitchingKey(
 
     fmpz_vector sk_from_Q = sk_from.data();
     ZiqArray sk_to_Q = sk_to.ctx_switch(ctx_Q);
+    ZiqArray sk_to_Q_ntt = sk_to_Q.iw_ntt().xy_ntt();
 
     fmpz_fdiv_q_si(q_half_.raw(), q, 2);
     fmpz_fdiv_q_si(Q_half_.raw(), Q, 2);
@@ -59,9 +60,7 @@ KeySwitchingKey::KeySwitchingKey(
         fmpz_clear(B_pow_i);
         fmpz_clear(temp_prod);
         // 将这一份结果加密成密文
-        auto [a, b] = encrypt(ZiqArray(std::move(bis), ctx_Q), sk_to_Q);
-        auto a_ntt = a.iw_ntt().xy_ntt();
-        auto b_ntt = b.iw_ntt().xy_ntt();
+        auto [a_ntt, b_ntt] = encrypt_CNNN(ZiqArray(std::move(bis), ctx_Q), sk_to_Q_ntt);
         cts.push_back(std::make_pair(std::move(a_ntt), std::move(b_ntt)));
     }
 }
