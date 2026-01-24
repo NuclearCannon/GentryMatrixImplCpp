@@ -16,6 +16,8 @@ private:
     fmpz_vector zeta_pos_pows_, zeta_neg_pows_ninv_;
     fmpz_vector buffer_;    // 私有缓冲区
 
+    fmpz_vector omega_pos_powers_, omega_neg_powers_;
+
 public:
     TwistedNtterXY(int n, const fmpz_t q, const fmpz_t zeta);
     ~TwistedNtterXY();

@@ -69,10 +69,13 @@ public:
         return *this;
     }
 
-    inline fmpz* raw() {
+    inline __attribute__((always_inline))
+    fmpz* raw() {
         return data_;
     }
-    inline const fmpz* raw() const {
+
+    inline __attribute__((always_inline))
+    const fmpz* raw() const {
         return data_;
     }
 
@@ -105,34 +108,42 @@ public:
 
     void print() const;
 
-    inline fmpz* raw(){
+    inline __attribute__((always_inline)) 
+    fmpz* raw(){
         return data_;
     }
-    inline const fmpz* raw() const {
+
+    inline __attribute__((always_inline)) 
+    const fmpz* raw() const {
         return data_;
     }
 
-    inline int len() const { return len_; }
+    inline __attribute__((always_inline)) 
+    int len() const { return len_; }
 
-    inline fmpz* at(int idx) {
+    inline __attribute__((always_inline))
+    fmpz* at(int idx) {
         assert(idx < len_);
         assert(idx >= 0);
         return data_ + idx;
     }
 
-    inline fmpz* operator[](int idx) {
+    inline __attribute__((always_inline))
+    fmpz* operator[](int idx) {
         assert(idx < len_);
         assert(idx >= 0);
         return data_ + idx;
     }
 
-    inline const fmpz* at(int idx) const {
+    inline __attribute__((always_inline))
+    const fmpz* at(int idx) const {
         assert(idx < len_);
         assert(idx >= 0);
         return data_ + idx;
     }
 
-    inline const fmpz* operator[](int idx) const {
+    inline __attribute__((always_inline))
+    const fmpz* operator[](int idx) const {
         assert(idx < len_);
         assert(idx >= 0);
         return data_ + idx;

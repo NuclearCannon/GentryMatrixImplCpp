@@ -6,7 +6,9 @@ TwistedNtterXY::TwistedNtterXY(int n, const fmpz_t q, const fmpz_t zeta):
     n_(n),
     zeta_pos_pows_(n), 
     zeta_neg_pows_ninv_(n),
-    buffer_(n)
+    buffer_(n),
+    omega_pos_powers_(n), 
+    omega_neg_powers_(n)
 {
     assert(n > 0);
     // 初始化各个数字
@@ -49,6 +51,11 @@ TwistedNtterXY::TwistedNtterXY(int n, const fmpz_t q, const fmpz_t zeta):
     fmpz_clear(n_mpz);
     fmpz_clear(n_inv);
     fmpz_clear(zeta_inv);
+    // 计算omega powers
+    fmpz_set_ui(omega_pos_powers_[0], 1);
+    for(int i=1;i<n;i++)fmpz_mod_mul(omega_pos_powers_[i], omega_pos_powers_[i-1], omega_, q_ctx_);
+    // omega是n阶本原单位根，有omega^n=1，所以……
+    for(int i=0;i<n;i++)fmpz_set(omega_neg_powers_[i], omega_pos_powers_[(n-i)%n]);
 }
 
 TwistedNtterXY::~TwistedNtterXY()
@@ -67,14 +74,14 @@ void TwistedNtterXY::ntt(const fmpz_vector& src, fmpz_vector& dst)
     // let buffer = src 逐位乘 zeta_pos_pows
     _fmpz_mod_vec_mul(buffer_.raw(), src.raw(), zeta_pos_pows_.raw(), n_, q_ctx_);
     // let dst = NTT(buffer, omega, n, ctx)
-    ntt_standard_flint(buffer_, dst, omega_, n_, q_ctx_);
+    ntt_standard_flint_with_roots(buffer_, dst, omega_pos_powers_, n_, q_ctx_);
     // 结束
 }
 
 void TwistedNtterXY::intt(const fmpz_vector& src, fmpz_vector& dst)
 {
     // let buffer = NTT(buffer, omega^{-1}, n, ctx)
-    ntt_standard_flint(src, buffer_, omega_inv_, n_, q_ctx_);
+    ntt_standard_flint_with_roots(src, buffer_, omega_neg_powers_, n_, q_ctx_);
     // let dst = buffer 逐位乘 zeta_neg_pows_ninv
     _fmpz_mod_vec_mul(dst.raw(), buffer_.raw(), zeta_neg_pows_ninv_.raw(), n_, q_ctx_);
     // 结束
