@@ -21,7 +21,7 @@ ZiqArray::ZiqArray(fmpz_vector data, const ZiqArrayContext* ctx):
 
 ZiqArray::~ZiqArray() = default;
 
-
+ZiqArray::ZiqArray(const ZiqArray&) = default;
 ZiqArray::ZiqArray(ZiqArray&&) = default;
 
 // 运算符重载：逐元素操作

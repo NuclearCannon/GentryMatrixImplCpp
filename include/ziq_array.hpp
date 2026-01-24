@@ -92,7 +92,7 @@ public:
     ZiqArray& operator=(const ZiqArray&) = delete;
     ZiqArray& operator=(ZiqArray&&) = delete;
 
-    ZiqArray(const ZiqArray&) = delete; // 原则上不应该允许复制
+    ZiqArray(const ZiqArray&); // 可以复制
     ZiqArray(ZiqArray&&);   // 可以移动
 
     // 运算符重载：逐元素操作
