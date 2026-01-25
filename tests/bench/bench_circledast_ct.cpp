@@ -53,7 +53,7 @@ int bench_circledast_ct()
 
     // 统计 circledast_ct 耗时
     auto t3 = std::chrono::high_resolution_clock::now();
-    auto [a3,b3] = circledast_ct(a1,b1,a2,b2,*ksk1,*ksk2);
+    auto [a3,b3] = circledast_ct_timer(a1,b1,a2,b2,*ksk1,*ksk2);
     auto t4 = std::chrono::high_resolution_clock::now();
     auto duration_circledast = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
     printf("circledast_ct: %ld us\n", duration_circledast);
@@ -63,6 +63,49 @@ int bench_circledast_ct()
     fmpz_vector error = msg3.sub(msg3_real).data().mod_centered(q.raw());
     int error_max = error.max_abs();
     printf("circledast_ct: error_max=%d\n", error_max);
+    return 0;
+
+}
+
+
+int bench_circledast_ct_without_checking()
+{
+    // 准备参数
+    int n = 256;
+    int p = 17;
+    printf("本次测试n=%d, p=%d\n", n, p);
+    int g = 3;
+    fmpz_scalar q("696898287454081973172991196020261322423297"), root_q("3");
+    ZiqArrayContext ctx(n, p, g, q.raw(), root_q.raw());
+    fmpz_scalar q2("803469022129495137770981046170581301261101496891396432432129"), root_q2("3");
+    ZiqArrayContext ctx2(n, p, g, q2.raw(), root_q2.raw());
+
+    // 生成明文
+
+    ZiqArray msg1 = ctx.randint(-50000, +50000);
+    ZiqArray msg2 = ctx.randint(-50000, +50000);
+    // 生成私钥
+    ZiqArray sk = ctx.sk();
+    // ZiqArray sk = ctx.zeros();
+    // 加密
+    auto [a1,b1] = encrypt_no_e(msg1, sk);
+    auto [a2,b2] = encrypt_no_e(msg2, sk);
+    // 制造KSK
+    fmpz_scalar B(1<<30);int L=5;
+
+    // 统计 create_ksks_for_circledast 耗时
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto [ksk1, ksk2] = create_ksks_for_circledast(sk, &ctx, &ctx2, B.raw(), L);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto duration_ksk = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    printf("create_ksks_for_circledast: %ld us\n", duration_ksk);
+
+    // 统计 circledast_ct 耗时
+    auto t3 = std::chrono::high_resolution_clock::now();
+    auto [a3,b3] = circledast_ct_timer(a1,b1,a2,b2,*ksk1,*ksk2);
+    auto t4 = std::chrono::high_resolution_clock::now();
+    auto duration_circledast = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
+    printf("circledast_ct: %ld us\n", duration_circledast);
     return 0;
 
 }

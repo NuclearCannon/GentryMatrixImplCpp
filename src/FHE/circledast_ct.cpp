@@ -1,6 +1,8 @@
 #include "FHE/key_switch.hpp"
 #include "FHE/circledast_ct.hpp"
 #include <memory>
+#include <chrono>
+#include <iostream>
 
 
 std::pair<std::unique_ptr<KeySwitchingKey>, std::unique_ptr<KeySwitchingKey>> create_ksks_for_circledast(
@@ -65,6 +67,54 @@ std::pair<ZiqArray, ZiqArray> circledast_ct(
     ZiqArray bubv = buh.circledast(bvh).iw_intt();
     auto [buav0, buav1] = ksk1.key_switch_big_1(buav);
     auto [auav0, auav1] = ksk2.key_switch_big_1(auav);
+    return std::make_pair(
+        aubv.add(buav0).add(auav0),
+        bubv.add(buav1).add(auav1)
+    );
+}
+
+
+std::pair<ZiqArray, ZiqArray> circledast_ct_timer(
+    const ZiqArray& au,
+    const ZiqArray& bu,
+    const ZiqArray& av,
+    const ZiqArray& bv,
+    const KeySwitchingKey& ksk1,
+    const KeySwitchingKey& ksk2
+)
+{
+    using namespace std::chrono;
+    auto t0 = high_resolution_clock::now();
+    // 第一段：iw_ntt
+    ZiqArray auh = au.iw_ntt();
+    ZiqArray avh = av.iw_ntt();
+    ZiqArray buh = bu.iw_ntt();
+    ZiqArray bvh = bv.iw_ntt();
+    auto t1 = high_resolution_clock::now();
+    std::cout << "[circledast_ct_timer] iw_ntt      耗时: " << duration_cast<microseconds>(t1 - t0).count() << " us" << std::endl;
+
+    // 第二段：circledast
+    ZiqArray auavh = auh.circledast(avh);
+    ZiqArray aubvh = auh.circledast(bvh);
+    ZiqArray buavh = buh.circledast(avh);
+    ZiqArray bubvh = buh.circledast(bvh);
+    auto t2 = high_resolution_clock::now();
+    std::cout << "[circledast_ct_timer] circledast  耗时: " << duration_cast<microseconds>(t2 - t1).count() << " us" << std::endl;
+
+    // 第三段：iw_intt
+    ZiqArray auav = auavh.iw_intt();
+    ZiqArray aubv = aubvh.iw_intt();
+    ZiqArray buav = buavh.iw_intt();
+    ZiqArray bubv = bubvh.iw_intt();
+    auto t3 = high_resolution_clock::now();
+    std::cout << "[circledast_ct_timer] iw_intt     耗时: " << duration_cast<microseconds>(t3 - t2).count() << " us" << std::endl;
+
+    // 第四段：Key Switch
+    auto [buav0, buav1] = ksk1.key_switch_big_1(buav);
+    auto [auav0, auav1] = ksk2.key_switch_big_1(auav);
+    auto t4 = high_resolution_clock::now();
+    std::cout << "[circledast_ct_timer] KeySwitch   耗时: " << duration_cast<microseconds>(t4 - t3).count() << " us" << std::endl;
+
     return std::make_pair(
         aubv.add(buav0).add(auav0),
         bubv.add(buav1).add(auav1)

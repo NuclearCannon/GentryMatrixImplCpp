@@ -17,3 +17,12 @@ std::pair<ZiqArray, ZiqArray> circledast_ct(
     const KeySwitchingKey& ksk1,
     const KeySwitchingKey& ksk2
 );
+
+std::pair<ZiqArray, ZiqArray> circledast_ct_timer(
+    const ZiqArray& au,
+    const ZiqArray& bu,
+    const ZiqArray& av,
+    const ZiqArray& bv,
+    const KeySwitchingKey& ksk1,
+    const KeySwitchingKey& ksk2
+);
