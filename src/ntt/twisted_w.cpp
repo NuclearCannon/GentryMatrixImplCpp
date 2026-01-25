@@ -5,6 +5,14 @@
 
 
 
+/*
+请不要试图继续优化本源文件实现，已经尝试过但放弃的方式包括：
+1.朴素实现
+2.用我们自己的ntt_standard替换flint多项式乘法
+这些方式最终都被测试为负优化
+*/
+
+// 老版本留在这吧
 void rader(
     int p, int g,
     fmpz_mod_ctx_t q_ctx,
@@ -60,6 +68,113 @@ void rader(
     fmpz_set(output[0], tmp);
 
 
+    fmpz_clear(tmp);
+    fmpz_clear(tmp2);
+
+}
+
+
+// rader, 但是input[0]==0，因此整个input向左移动1格
+void rader_for_intt(
+    int p, int g,
+    fmpz_mod_ctx_t q_ctx,
+    const std::vector<int>& gpp,
+    const std::vector<int>& gnp,
+    fmpz_mod_poly_t a, 
+    const fmpz_mod_poly_t b, 
+    fmpz_mod_poly_t c,
+    const fmpz_mod_poly_t xn1, 
+    const fmpz_vector& input,
+    fmpz_vector& output
+)
+{
+    // 准备poly a
+    // a[i] = x[gnp[i]]
+    fmpz_mod_poly_set_ui(a, 0, q_ctx);  // 先清零
+    for(int i=0;i<p-1;i++)
+    {
+        fmpz_mod_poly_set_coeff_fmpz(a,i,input[gnp[i]-1],q_ctx);
+    }
+    // 和b相乘得到c，并且取模xn1 = X^{p-1}-1
+    // fmpz_mod_poly_mulmod(c,a,b,xn1,q_ctx);
+
+    fmpz_mod_poly_mul(c, a, b, q_ctx);
+
+    // 写回
+    fmpz_t tmp;
+    fmpz_t tmp2;
+    fmpz_init(tmp);
+    fmpz_init(tmp2);
+    for(int i=0;i<p-1;i++)
+    {
+        // 读取c的X^i系数
+        fmpz_mod_poly_get_coeff_fmpz(
+            tmp, c, i, q_ctx
+        );
+        // 读取c的X^(i+p-1)系数，并加回去
+        fmpz_mod_poly_get_coeff_fmpz(
+            tmp2, c, i+p-1, q_ctx
+        );
+        fmpz_mod_add(output[gpp[i]], tmp, tmp2, q_ctx);
+    }
+    // 计算X0 = sum(input)
+    fmpz_set_ui(tmp, 0);
+    for(int i=0;i<p-1;i++)
+    {
+        fmpz_mod_add_fmpz(tmp, tmp, input[i], q_ctx);
+    }
+    fmpz_set(output[0], tmp);
+    fmpz_clear(tmp);
+    fmpz_clear(tmp2);
+
+}
+
+// rader NTT，但是output向左移动1格，input[p-1]=0
+void rader_for_ntt(
+    int p, int g,
+    fmpz_mod_ctx_t q_ctx,
+    const std::vector<int>& gpp,
+    const std::vector<int>& gnp,
+    fmpz_mod_poly_t a, 
+    const fmpz_mod_poly_t b, 
+    fmpz_mod_poly_t c,
+    const fmpz_mod_poly_t xn1, 
+    const fmpz_vector& input,
+    fmpz_vector& output
+)
+{
+    // 准备poly a
+    // a[i] = x[gnp[i]]
+    fmpz_mod_poly_set_ui(a, 0, q_ctx);  // 先清零
+    for(int i=0;i<p-1;i++)
+    {
+        fmpz_mod_poly_set_coeff_fmpz(a,i,input[gnp[i]],q_ctx);
+    }
+    // 和b相乘得到c，并且取模xn1 = X^{p-1}-1
+    // fmpz_mod_poly_mulmod(c,a,b,xn1,q_ctx);
+    fmpz_mod_poly_mul(c, a, b, q_ctx);
+    // 写回
+    fmpz_t tmp;
+    fmpz_t tmp2;
+    fmpz_init(tmp);
+    fmpz_init(tmp2);
+    for(int i=0;i<p-1;i++)
+    {
+        // 读取c的X^i系数
+        fmpz_mod_poly_get_coeff_fmpz(
+            tmp, c, i, q_ctx
+        );
+        // 读取c的X^(i+p-1)系数，并加回去
+        fmpz_mod_poly_get_coeff_fmpz(
+            tmp2, c, i+p-1, q_ctx
+        );
+        fmpz_add(tmp, tmp, tmp2);
+        // output[g^i] = x0+c[i]
+        fmpz_mod_add_fmpz(
+            output[gpp[i]-1], tmp, input[0], q_ctx
+        );
+    }
+    // 不计算output[0]
     fmpz_clear(tmp);
     fmpz_clear(tmp2);
 
@@ -135,26 +250,26 @@ void TwistedNtterW::ntt(const fmpz_vector& src, fmpz_vector& dst)
     _fmpz_vec_set(buf1.raw(), src.raw(), p_-1);
     fmpz_set_ui(buf1[p_-1], 0);
     // buf2 = rader(buf1)
-    rader(
+    rader_for_ntt(
         p_, g_, q_ctx_, gpp_, gnp_, 
         a_poly_, b_poly_, c_poly_, xn1_, 
-        buf1, buf2
+        buf1, dst
     );
     // 写回
-    _fmpz_vec_set(dst.raw(), buf2.raw()+1, p_-1);
+    // _fmpz_vec_set(dst.raw(), buf2.raw()+1, p_-1);
 
 
 }
 void TwistedNtterW::intt(const fmpz_vector& src, fmpz_vector& dst)
 {
     // buf1 = [0]+src
-    _fmpz_vec_set(buf1.raw()+1, src.raw(), p_-1);
-    fmpz_set_ui(buf1[0], 0);
+    // _fmpz_vec_set(buf1.raw()+1, src.raw(), p_-1);
+    // fmpz_set_ui(buf1[0], 0);
     // iNTT rader
-    rader(
+    rader_for_intt(
         p_, g_, q_ctx_, gpp_, gnp_, 
         a_poly_, b2_poly_, c_poly_, xn1_, 
-        buf1, buf2
+        src, buf2
     );  // 只要使用b2_poly就好了
     // delta=buf2[p-1]
     for(int i=0;i<p_-1;i++)
