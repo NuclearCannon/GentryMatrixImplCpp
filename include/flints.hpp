@@ -166,3 +166,12 @@ public:
     std::vector<u_int64_t> to_uint64() const;
 
 };
+
+// 下面是一些计算工具函数
+
+
+// uint64模乘
+inline __attribute__((always_inline)) u_int64_t mod_mul(u_int64_t a, u_int64_t b, u_int64_t mod) {
+    __uint128_t product = (__uint128_t)a * b;
+    return (u_int64_t)(product % mod);
+}

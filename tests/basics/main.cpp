@@ -12,6 +12,7 @@ int test_ziq_ctx();
 int test_circledast();
 int test_polymul();
 int test_crt();
+int test_ntt_64();
 
 int main()
 {
@@ -23,5 +24,6 @@ int main()
     sum += test_circledast();
     sum += test_polymul();
     sum += test_crt();
+    sum += test_ntt_64();
     std::cout << "Total Pass: " << sum << std::endl; 
 }
