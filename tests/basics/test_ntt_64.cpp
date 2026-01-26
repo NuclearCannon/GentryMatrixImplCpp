@@ -16,7 +16,7 @@ int test_ntt_64()
     roots[0] = 1;
     for(int i=1;i<8;i++)roots[i] = mod_mul(roots[i-1], root, q);
 
-    ntt_standard_64(a, b, roots, 8, q);
+    ntt_standard_64_with_roots(a, b, roots, 8, q);
     // 预期输出：[36, 1365, 156, 1045, 1597, 548, 1437, 228]
     u_int64_t expected[8] = {36, 1365, 156, 1045, 1597, 548, 1437, 228};
 

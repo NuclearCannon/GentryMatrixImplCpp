@@ -1,9 +1,21 @@
 #include "ntt.hpp"
 
-
-
-
 void ntt_standard_64(
+    const u_int64_t* a, 
+    u_int64_t* dst, 
+    u_int64_t root,
+    size_t n, 
+    const u_int64_t mod
+)
+{
+    std::vector<u_int64_t> roots(n);
+    roots[0] = 1;
+    for(int i=1;i<n;i++)roots[i] = mod_mul(roots[i-1], root, mod);
+    ntt_standard_64_with_roots(a,dst,roots.data(), n, mod);
+}
+
+
+void ntt_standard_64_with_roots(
     const u_int64_t* a, 
     u_int64_t* dst, 
     const u_int64_t* roots,   // 需要提供root的至少[0,n/2)次方 
