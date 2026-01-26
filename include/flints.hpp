@@ -11,6 +11,7 @@
 #include <vector>
 #include <cassert>
 #include <stdexcept>
+#include <ctype.h>
 
 // 各类转化函数
 
@@ -99,6 +100,7 @@ public:
 
     fmpz_vector(int len);
     fmpz_vector(const std::vector<std::string>&);
+    fmpz_vector(const std::vector<u_int64_t>&);
 
     ~fmpz_vector();
 
@@ -161,5 +163,6 @@ public:
 
     // 绝对值的最大值
     long max_abs() const;
+    std::vector<u_int64_t> to_uint64() const;
 
 };

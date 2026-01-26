@@ -50,6 +50,18 @@ fmpz_vector::fmpz_vector(const std::vector<std::string>& lst_str)
     }
 }
 
+fmpz_vector::fmpz_vector(const std::vector<u_int64_t>& src)
+{
+    int len = src.size();
+    fmpz *vec = _fmpz_vec_init(len);
+    this->data_ = vec;
+    this->len_ = len;
+    for(int i=0;i<len;i++)
+    {
+        fmpz_set_ui(data_+i, src[i]);
+    }
+}
+
 
 std::vector<std::string> fmpz_vector::export_to_vec_str() const
 {
@@ -146,4 +158,23 @@ long fmpz_vector::max_abs() const
     }
     fmpz_clear(tmp);
     return max_val;
+}
+
+
+std::vector<u_int64_t> fmpz_vector::to_uint64() const
+{
+    std::vector<u_int64_t> result(len_);
+    static_assert(std::is_same_v<mp_limb_t, u_int64_t>);
+    for (int i = 0; i < len_; ++i) {
+        if (!fmpz_abs_fits_ui(data_+i))
+        {
+            throw std::invalid_argument("fmpz_vector::to_uint64() 绝对值太大\n");
+        }
+        if (fmpz_sgn(data_+i) < 0)
+        {
+            throw std::invalid_argument("fmpz_vector::to_uint64() 存在负数\n");
+        }
+        result[i] = fmpz_get_ui(data_+i);
+    }
+    return result;
 }
