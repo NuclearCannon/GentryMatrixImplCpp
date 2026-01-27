@@ -1,10 +1,12 @@
 #pragma once
-#include <sys/types.h>
 #include <vector>
+#include <type_traits>
+#include <cstdint>
 
-typedef u_int64_t u64;
+typedef std::uint64_t u64;
 static_assert(sizeof(u64) == 8);
 typedef std::vector<u64> vec64;
+typedef std::vector<vec64> vv64;
 
 // 下面是一些计算工具函数
 
@@ -17,3 +19,23 @@ u64 mod_pow(u64 base, u64 e, u64 mod);
 
 // uinr64乘法逆元（通过return x^{mod-2}实现）
 u64 mod_inv(u64 x, u64 mod);
+
+
+// 判断一个整数是不是power of 2
+template<typename T>
+inline constexpr bool is_power_of_two(T x) noexcept {
+    static_assert(std::is_integral_v<T>, "T must be an integral type");
+    return ((x>0) && ((x & (x - 1)) == 0));
+}
+
+// 逐位乘（允许别名）
+void vec_mul(vec64& dst, const vec64& src1, const vec64& src2, u64 mod);
+
+// 逐位乘（允许别名）
+void vec_scalar_mul(vec64& dst, const vec64& src1, u64 src2, u64 mod);
+
+// 返回x的[0,len)次幂组成的向量
+void get_powers(vec64& dst, u64 x, size_t len, u64 mod);
+
+// return src[begin : begin+length]
+std::vector<u64> copy_from(const std::vector<u64>& src, size_t begin, size_t length);

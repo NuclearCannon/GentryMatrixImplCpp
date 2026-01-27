@@ -12,7 +12,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <ctype.h>
-
+#include "uint64.hpp"
 // 各类转化函数
 
 std::string fmpz_to_string(fmpz_t x);

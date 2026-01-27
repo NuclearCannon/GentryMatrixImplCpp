@@ -3,9 +3,9 @@
 
 
 // CRT分解
-std::vector<std::vector<u64>> crt(const fmpz_vector& src, const std::vector<u64>& mods)
+vv64 crt(const fmpz_vector& src, const vec64& mods)
 {
-    std::vector<std::vector<u64>> result;
+    vv64 result;
     int len = src.len();
     fmpz_vector buf(len);
     for(u64 mod : mods)
@@ -18,7 +18,7 @@ std::vector<std::vector<u64>> crt(const fmpz_vector& src, const std::vector<u64>
 }
 
 // CRT合并
-void icrt(fmpz_vector& dst, const std::vector<std::vector<u64>>& src, const std::vector<u64>& mods)
+void icrt(fmpz_vector& dst, const vv64& src, const vec64& mods)
 {
     int mod_len = mods.size();
     assert(mod_len >= 1);

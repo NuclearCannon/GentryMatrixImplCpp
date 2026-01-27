@@ -2,7 +2,7 @@
 #include <vector>
 #include <unordered_map>
 #include "flints.hpp"
-
+#include "uint64.hpp"
 
 const std::vector<size_t>& get_bit_reverse_table(size_t n);
 int log2(int x);
