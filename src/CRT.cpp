@@ -1,14 +1,14 @@
 #include "CRT.hpp"
-
+#include "uint64.hpp"
 
 
 // CRT分解
-std::vector<std::vector<u_int64_t>> crt(const fmpz_vector& src, const std::vector<u_int64_t>& mods)
+std::vector<std::vector<u64>> crt(const fmpz_vector& src, const std::vector<u64>& mods)
 {
-    std::vector<std::vector<u_int64_t>> result;
+    std::vector<std::vector<u64>> result;
     int len = src.len();
     fmpz_vector buf(len);
-    for(u_int64_t mod : mods)
+    for(u64 mod : mods)
     {
         fmpz_scalar mod_mpz(mod);
         _fmpz_vec_scalar_mod_fmpz(buf.raw(), src.raw(), len, mod_mpz.raw());
@@ -18,7 +18,7 @@ std::vector<std::vector<u_int64_t>> crt(const fmpz_vector& src, const std::vecto
 }
 
 // CRT合并
-void icrt(fmpz_vector& dst, const std::vector<std::vector<u_int64_t>>& src, const std::vector<u_int64_t>& mods)
+void icrt(fmpz_vector& dst, const std::vector<std::vector<u64>>& src, const std::vector<u64>& mods)
 {
     int mod_len = mods.size();
     assert(mod_len >= 1);
@@ -42,7 +42,7 @@ void icrt(fmpz_vector& dst, const std::vector<std::vector<u_int64_t>>& src, cons
 
     // 逐个合并后续模数
     for (int i = 1; i < mod_len; ++i) {
-        u_int64_t mi = mods[i];
+        u64 mi = mods[i];
         fmpz_set_ui(m2, mi);          // m2 = mods[i]
         fmpz_set(m1, M.raw());        // m1 = 当前累积模数 M
 

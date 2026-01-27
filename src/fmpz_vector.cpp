@@ -1,7 +1,7 @@
 
 #include "flints.hpp"
 #include "random.hpp"
-
+#include "uint64.hpp"
 
 fmpz_vector::fmpz_vector(int len)
 {
@@ -50,7 +50,7 @@ fmpz_vector::fmpz_vector(const std::vector<std::string>& lst_str)
     }
 }
 
-fmpz_vector::fmpz_vector(const std::vector<u_int64_t>& src)
+fmpz_vector::fmpz_vector(const std::vector<u64>& src)
 {
     int len = src.size();
     fmpz *vec = _fmpz_vec_init(len);
@@ -161,10 +161,10 @@ long fmpz_vector::max_abs() const
 }
 
 
-std::vector<u_int64_t> fmpz_vector::to_uint64() const
+std::vector<u64> fmpz_vector::to_uint64() const
 {
-    std::vector<u_int64_t> result(len_);
-    static_assert(std::is_same_v<mp_limb_t, u_int64_t>);
+    std::vector<u64> result(len_);
+    static_assert(std::is_same_v<mp_limb_t, u64>);
     for (int i = 0; i < len_; ++i) {
         if (!fmpz_abs_fits_ui(data_+i))
         {

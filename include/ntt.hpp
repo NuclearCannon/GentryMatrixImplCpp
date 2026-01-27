@@ -30,17 +30,17 @@ void ntt_standard_flint_with_roots(
 );
 
 void ntt_standard_64(
-    const u_int64_t* a, 
-    u_int64_t* dst, 
-    u_int64_t root,
+    const u64* a, 
+    u64* dst, 
+    u64 root,
     size_t n, 
-    const u_int64_t mod
+    const u64 mod
 );
 
 void ntt_standard_64_with_roots(
-    const u_int64_t* a, 
-    u_int64_t* dst, 
-    const u_int64_t* roots,   // 需要提供root的至少[0,n/2)次方 
+    const u64* a, 
+    u64* dst, 
+    const u64* roots,   // 需要提供root的至少[0,n/2)次方 
     size_t n, 
-    const u_int64_t mod
+    const u64 mod
 );

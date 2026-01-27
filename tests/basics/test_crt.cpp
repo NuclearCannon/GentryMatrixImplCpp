@@ -13,7 +13,7 @@ int test_crt()
 {
     printf("test_crt\n");
     fmpz_scalar Q("1962189608304824093585857412065247859367422524039");
-    std::vector<u_int64_t> mods = {
+    std::vector<u64> mods = {
         1152921504606847009UL, 
         1152921504606847067UL, 
         1152921504606847081UL, 

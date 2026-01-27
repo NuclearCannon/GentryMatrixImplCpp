@@ -10,15 +10,15 @@ int test_ntt_64()
     printf("test_ntt_64\n");
     // n=8 q=1601
     // root-n: 408
-    u_int64_t a[8] = {1,2,3,4,5,6,7,8}, b[8], roots[8];
-    u_int64_t q=1601, root=408;
+    u64 a[8] = {1,2,3,4,5,6,7,8}, b[8], roots[8];
+    u64 q=1601, root=408;
     // 需要提供root的各个次幂
     roots[0] = 1;
     for(int i=1;i<8;i++)roots[i] = mod_mul(roots[i-1], root, q);
 
     ntt_standard_64_with_roots(a, b, roots, 8, q);
     // 预期输出：[36, 1365, 156, 1045, 1597, 548, 1437, 228]
-    u_int64_t expected[8] = {36, 1365, 156, 1045, 1597, 548, 1437, 228};
+    u64 expected[8] = {36, 1365, 156, 1045, 1597, 548, 1437, 228};
 
     int first_error = -1;
     for(int i=0;i<8;i++)

@@ -1,5 +1,6 @@
 #include "ntt.hpp"
 #include "CRT.hpp"
+#include "uint64.hpp"
 /*
 
 本论文做这样的试验
@@ -26,24 +27,6 @@ fmpz_mod_ctx_t Qctx;
 // 质数: 1152921504606847123       原根: 2
 // 质数: 1152921504606847127       原根: 5
 
-u_int64_t mod_pow(u_int64_t base, u_int64_t e, u_int64_t mod)
-{
-    u_int64_t result = 1;
-    base = base % mod;
-    while (e > 0) {
-        if (e & 1) {
-            result = mod_mul(result, base, mod);
-        }
-        base = mod_mul(base, base, mod);
-        e >>= 1;
-    }
-    return result;
-}
-
-u_int64_t mod_inv(u_int64_t x, u_int64_t mod)
-{
-    return mod_pow(x, mod-1, mod);
-}
 
 /*
 质数                   256阶本原单位根      单位根的逆元
@@ -55,11 +38,11 @@ u_int64_t mod_inv(u_int64_t x, u_int64_t mod)
 */
 
 
-std::vector<u_int64_t> mods = {1152921504606876929, 1152921504606877697, 1152921504606889217, 1152921504606894593, 1152921504606899969};
+std::vector<u64> mods = {1152921504606876929, 1152921504606877697, 1152921504606889217, 1152921504606894593, 1152921504606899969};
 // 原根
-std::vector<u_int64_t> roots = {302590808370805342, 1039092709060134491, 272532665442783039, 568358301744714721, 898653445164898652};
+std::vector<u64> roots = {302590808370805342, 1039092709060134491, 272532665442783039, 568358301744714721, 898653445164898652};
 // N单位根
-std::vector<u_int64_t> roots_inv = {203576432732386606, 550634830399138777, 806171715214065977, 431433276899556624, 912894953107837243};
+std::vector<u64> roots_inv = {203576432732386606, 550634830399138777, 806171715214065977, 431433276899556624, 912894953107837243};
 
 
 
@@ -104,26 +87,26 @@ int main()
     auto a_crt = crt(a, mods);
     auto b_crt = crt(a, mods);
     // 对于crt数据，每个进行NTT
-    std::vector<std::vector<u_int64_t>> a_crt_ntt, b_crt_ntt, c_crt_ntt, c_crt;
+    std::vector<std::vector<u64>> a_crt_ntt, b_crt_ntt, c_crt_ntt, c_crt;
     for(int i=0;i<5;i++)
     {
-        std::vector<u_int64_t> tmp(n);
+        std::vector<u64> tmp(n);
         ntt_standard_64(a_crt[i].data(), tmp.data(), roots[i], n, mods[i]);
         a_crt_ntt.push_back(std::move(tmp));
     }
     for(int i=0;i<5;i++)
     {
-        std::vector<u_int64_t> tmp(n);
+        std::vector<u64> tmp(n);
         ntt_standard_64(b_crt[i].data(), tmp.data(), roots[i], n, mods[i]);
         b_crt_ntt.push_back(std::move(tmp));
     }
     // 相乘
     for(int i=0;i<5;i++)
     {
-        u_int64_t m = mods[i];
+        u64 m = mods[i];
 
-        std::vector<u_int64_t> tmp(n);
-        std::vector<u_int64_t> &s1 = a_crt_ntt[i], &s2 = b_crt_ntt[i];
+        std::vector<u64> tmp(n);
+        std::vector<u64> &s1 = a_crt_ntt[i], &s2 = b_crt_ntt[i];
 
         for(int j=0;j<n;j++)tmp[j] = mod_mul(s1[j], s2[j], m);
         c_crt_ntt.push_back(std::move(tmp));
@@ -131,7 +114,7 @@ int main()
     // 逆NTT
     for(int i=0;i<5;i++)
     {
-        std::vector<u_int64_t> tmp(n);
+        std::vector<u64> tmp(n);
         ntt_standard_64(c_crt_ntt[i].data(), tmp.data(), roots_inv[i], n, mods[i]);
         c_crt.push_back(std::move(tmp));
     }
