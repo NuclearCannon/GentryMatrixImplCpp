@@ -46,17 +46,17 @@ public:
 
     
     // 逐位加法
-    void add(fmpz_vector& dst, const fmpz_vector src1, const fmpz_vector& src2) const;
+    void add(fmpz_vector& dst, const fmpz_vector& src1, const fmpz_vector& src2) const;
     // 逐位减法
-    void sub(fmpz_vector& dst, const fmpz_vector src1, const fmpz_vector& src2) const;
+    void sub(fmpz_vector& dst, const fmpz_vector& src1, const fmpz_vector& src2) const;
     // 逐位乘法
-    void mul(fmpz_vector& dst, const fmpz_vector src1, const fmpz_vector& src2) const;
+    void mul(fmpz_vector& dst, const fmpz_vector& src1, const fmpz_vector& src2) const;
     // 逐位负
-    void neg(fmpz_vector& dst, const fmpz_vector src1) const;
+    void neg(fmpz_vector& dst, const fmpz_vector& src1) const;
     // 标量乘
-    void mul_scalar(fmpz_vector& dst, const fmpz_vector src_vec, const fmpz_t src_scalar) const;
+    void mul_scalar(fmpz_vector& dst, const fmpz_vector& src_vec, const fmpz_t src_scalar) const;
     // 比较
-    bool eq(const fmpz_vector src1, const fmpz_vector& src2) const;
+    bool eq(const fmpz_vector& src1, const fmpz_vector& src2) const;
 
     ZiqArray zeros() const;
     ZiqArray uniform() const;
