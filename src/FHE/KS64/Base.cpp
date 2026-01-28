@@ -43,7 +43,9 @@ KeySwitchKey64Base::KeySwitchKey64Base(const CRTArray& sk_from, const CRTArray& 
     {
         // 加密sk_from_qo
         CRTArray sk_from_qo_Bi = CRTArray::from_fmpz_vector(sk_from_qo, cc_hig_);
-        cts_.push_back(encrypt64(sk_from_qo_Bi, *sk_to_hig));
+        auto [a, b] = encrypt64(sk_from_qo_Bi, *sk_to_hig);
+
+        cts_.push_back({a.all_ntt(), b.all_ntt()});
         // sk_from_qo *= B
         _fmpz_vec_scalar_mul_ui(sk_from_qo.raw(), sk_from_qo.raw(), size, B);
     }
@@ -72,7 +74,7 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64Base::key_switch_big_1(const CRTArra
         _fmpz_vec_scalar_mod_fmpz(t_mod.raw(), a2.raw(), len, B.raw());
         // let a = a // B
         _fmpz_vec_scalar_tdiv_q_fmpz(a2.raw(), a2.raw(), len, B.raw());
-        a_split.push_back(CRTArray::from_fmpz_vector(t_mod, cc_hig_));
+        a_split.push_back(CRTArray::from_fmpz_vector(t_mod, cc_hig_).all_ntt());
     }
     // 检查长度
     if (a_split.size() > L_)
@@ -84,11 +86,11 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64Base::key_switch_big_1(const CRTArra
     for(int i=0;i<a_split.size();i++)
     {
         auto& [cta, ctb] = cts_[i];
-        a_sum.push_back(a_split[i].mul_poly(cta));
-        b_sum.push_back(a_split[i].mul_poly(ctb));
+        a_sum.push_back(a_split[i].mul(cta));
+        b_sum.push_back(a_split[i].mul(ctb));
     }
-    CRTArray a_res = CRTArray::sum(a_sum);
-    CRTArray b_res = CRTArray::sum(b_sum);
+    CRTArray a_res = CRTArray::sum(a_sum).all_intt();
+    CRTArray b_res = CRTArray::sum(b_sum).all_intt();
     // 降低模数
     return std::make_pair(
         a_res.mod_reduce(cc_low_),
