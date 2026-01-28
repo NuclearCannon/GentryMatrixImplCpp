@@ -1,19 +1,5 @@
 #include "FHE/key_switch_64.hpp"
 
-
-void prod(fmpz_t dst, const vec64& src)
-{
-    fmpz_set_ui(dst, 1);
-    for(u64 i : src)
-    {
-        fmpz_mul_ui(dst, dst, i);
-    }
-}
-
-
-static std::unique_ptr<CRTArray> sk_to_hig;
-
-
 KeySwitchKey64Base::KeySwitchKey64Base(const CRTArray& sk_from, const CRTArray& sk_to, u64 B, u64 L, u64 qo, u64 qor):
     B_(B),
     L_(L)
@@ -34,7 +20,7 @@ KeySwitchKey64Base::KeySwitchKey64Base(const CRTArray& sk_from, const CRTArray& 
     fmpz_vector sk_from_fmpz = sk_from.to_fmpz_vector_centered();
     fmpz_vector sk_to_fmpz   = sk_to.to_fmpz_vector_centered();
     // 计算sk_to的cc_hig_形式
-    sk_to_hig = std::make_unique<CRTArray>(CRTArray::from_fmpz_vector(sk_to_fmpz, cc_hig_));
+    CRTArray sk_to_hig =CRTArray::from_fmpz_vector(sk_to_fmpz, cc_hig_);
     // 计算sk_from * qo
     fmpz_vector sk_from_qo(size);
     _fmpz_vec_scalar_mul_ui(sk_from_qo.raw(), sk_from_fmpz.raw(), size, qo);
@@ -43,7 +29,7 @@ KeySwitchKey64Base::KeySwitchKey64Base(const CRTArray& sk_from, const CRTArray& 
     {
         // 加密sk_from_qo
         CRTArray sk_from_qo_Bi = CRTArray::from_fmpz_vector(sk_from_qo, cc_hig_);
-        auto [a, b] = encrypt64(sk_from_qo_Bi, *sk_to_hig);
+        auto [a, b] = encrypt64(sk_from_qo_Bi, sk_to_hig);
 
         cts_.push_back({a.all_ntt(), b.all_ntt()});
         // sk_from_qo *= B
