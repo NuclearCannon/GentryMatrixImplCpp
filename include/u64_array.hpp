@@ -144,6 +144,9 @@ public:
     // 构造函数: 从 vector 构造（需正确大小）
     CRTArray(vv64 data, std::shared_ptr<const U64CtxChain> cc);
 
+    // 构造函数: 从raw构造
+    CRTArray(const vec64& data, std::shared_ptr<const U64CtxChain> cc);
+
     static CRTArray from_fmpz_vector(const fmpz_vector& data, std::shared_ptr<const U64CtxChain> cc);
     fmpz_vector to_fmpz_vector() const;
     fmpz_vector to_fmpz_vector_centered() const;
@@ -185,6 +188,9 @@ public:
 
     // 缩减模数链长度，主要用于Key Switch
     CRTArray mod_reduce(std::shared_ptr<const U64CtxChain> cc2) const;
+
+    // 分解为raw形式
+    vv64 mod_by_modulo() const;
 
     
 

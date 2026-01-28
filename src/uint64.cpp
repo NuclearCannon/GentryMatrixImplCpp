@@ -68,3 +68,21 @@ std::vector<u64> copy_from(const std::vector<u64>& src, size_t begin, size_t len
     // 使用迭代器构造新 vector
     return std::vector<u64>(src.begin() + begin, src.begin() + begin + length);
 }
+
+std::size_t vec64hash(const vec64& v) {
+    std::size_t seed = 0;
+    for (uint64_t x : v) {
+        // 使用 boost 风格的 hash_combine 简化版
+        seed += x + (seed << 6) + (seed >> 2);
+    }
+    return seed;
+}
+
+
+std::size_t vv64hash(const vv64& v) {
+    std::size_t seed = 0;
+    for (const auto& inner : v) {
+        seed += vec64hash(inner) + (seed << 6) + (seed >> 2);
+    }
+    return seed;
+}

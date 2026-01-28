@@ -81,15 +81,15 @@ void U64Context::iw_intt(vec64& dst, const vec64& src) const
             for(int y=0;y<n_;y++)
             {
                 size_t base_y = base_x + y;
-                for(int w=0;w<p_-1;w++)buf_p[w] = dst[base_y + w*nn_];
+                for(int w=0;w<p_-1;w++)buf_p[w] = src[base_y + w*nn_];
                 ntter_w->intt(buf_p, buf_p);
                 for(int w=0;w<p_-1;w++)dst[base_y + w*nn_] = buf_p[w];
             }
         }
     }
     // I-iNTT
-    vec64 real_add_imag_I = copy_from(src, 0, pnn_);
-    vec64 real_sub_imag_I = copy_from(src, pnn_, pnn_);
+    vec64 real_add_imag_I = copy_from(dst, 0, pnn_);
+    vec64 real_sub_imag_I = copy_from(dst, pnn_, pnn_);
     for(int i=0;i<pnn_;i++)
     {
         dst[i] = real_add_imag_I[i] + real_sub_imag_I[i];

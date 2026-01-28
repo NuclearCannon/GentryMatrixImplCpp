@@ -40,3 +40,7 @@ void get_powers(vec64& dst, u64 x, size_t len, u64 mod);
 
 // return src[begin : begin+length]
 std::vector<u64> copy_from(const std::vector<u64>& src, size_t begin, size_t length);
+
+// 不一定有用，但是调试的时候或许很有用。
+std::size_t vec64hash(const vec64& v);
+std::size_t vv64hash(const vv64& v);

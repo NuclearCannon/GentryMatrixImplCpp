@@ -28,6 +28,18 @@ CRTArray CRTArray::mod_reduce(std::shared_ptr<const U64CtxChain> cc2) const
         u64 qo_inv = mod_inv(qo, mods[i]);
         ctxs[i]->mul_scalar(data[i], data[i], qo_inv);
     }
-    // 这样就行了
+    // 对于余数大于一半的位，+1
+    u64 half = qo/2;
+    for(int i=0; i<cc2->get_size(); i++)
+    {
+        if(remainder[i]>half)
+        {
+            for(int j=0;j<cc2->get_chain_length(); j++)
+            {
+                data[j][i] += 1;
+                data[j][i] %= mods[j];
+            }
+        }
+    }
     return CRTArray(data, cc2);
 }

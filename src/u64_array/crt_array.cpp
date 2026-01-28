@@ -1,6 +1,12 @@
 #include "u64_array.hpp"
 #include "CRT.hpp"
 #include <cassert>
+
+
+
+
+
+
 // 构造函数: 全零数组
 CRTArray::CRTArray(std::shared_ptr<const U64CtxChain> cc):
     cc_(cc),
@@ -19,6 +25,19 @@ CRTArray::CRTArray(vv64 data, std::shared_ptr<const U64CtxChain> cc):
     for(auto& t : data_)
     {
         assert(t.size() == size);
+    }
+}
+
+CRTArray::CRTArray(const vec64& data, std::shared_ptr<const U64CtxChain> cc):
+    cc_(cc),
+    data_(cc_->get_chain_length(), data)
+{
+    int size = cc_->get_size();
+    for(int i=0; i<cc_->get_chain_length(); i++)
+    {
+        u64 mod = cc_->get_mods()[i];
+        vec64& row = data_[i];
+        for(int j=0; j<size; j++)row[j] %= mod;
     }
 }
 
