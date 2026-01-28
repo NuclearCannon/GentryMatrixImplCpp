@@ -195,7 +195,7 @@ void U64Context::add(vec64& dst, const vec64& src1, const vec64& src2) const
 {
     for(int i=0;i<size_;i++)
     {
-        dst[i] = (src1[i] + src2[i]) % q_;
+        dst[i] = mod_add(src1[i], src2[i], q_);
     }
 }
 // 逐位减法
@@ -203,10 +203,7 @@ void U64Context::sub(vec64& dst, const vec64& src1, const vec64& src2) const
 {
     for(int i=0;i<size_;i++)
     {
-        dst[i] = (src1[i] + q_ - src2[i]) % q_;
-        dst[i] %= q_;
-        while(dst[i] < 0) dst[i]+=q_;
-        dst[i] %= q_;
+        dst[i] = mod_sub(src1[i], src2[i], q_);
     }
 }
 // 逐位乘法

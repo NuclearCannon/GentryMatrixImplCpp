@@ -11,6 +11,8 @@ typedef std::vector<vec64> vv64;
 
 // 下面是一些计算工具函数
 
+u64 mod_add(u64 a, u64 b, u64 mod);
+u64 mod_sub(u64 a, u64 b, u64 mod);
 
 // uint64模乘。调试期间暂不考虑内联它。
 u64 mod_mul(u64 a, u64 b, u64 mod);

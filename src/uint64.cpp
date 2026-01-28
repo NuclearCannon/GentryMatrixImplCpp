@@ -2,8 +2,17 @@
 #include <cassert>
 
 u64 mod_mul(u64 a, u64 b, u64 mod) {
+    a %= mod;
+    b %= mod;
     __uint128_t product = (__uint128_t)a * b;
     return (u64)(product % mod);
+}
+
+u64 mod_add(u64 a, u64 b, u64 mod) {
+    return (((a%mod)+(b%mod)) % mod);
+}
+u64 mod_sub(u64 a, u64 b, u64 mod) {
+    return (((a%mod)+(mod-(b%mod))) % mod);
 }
 
 
