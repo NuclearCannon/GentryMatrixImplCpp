@@ -172,7 +172,9 @@ public:
     static CRTArray zeros(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray uniform(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray dg(std::shared_ptr<const U64CtxChain> cc);
+    static CRTArray sk(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray randint(std::shared_ptr<const U64CtxChain> cc, i64 start, i64 end);
+    inline std::shared_ptr<const U64CtxChain> get_cc() const { return cc_; }
 
     
 
