@@ -94,6 +94,7 @@ private:
     // 模数链和对应的单位根
     vec64 mods_, roots_;
     std::vector<std::shared_ptr<const U64Context>> ctxs_;
+    fmpz_scalar mod_prod_;
     
 public:
     U64CtxChain(int n, int p, const vec64& mods, const vec64& roots);
@@ -122,6 +123,9 @@ public:
     inline int get_p() const {return p_; }
     inline int get_size() const {return 2*n_*n_*(p_-1); }
     inline const vec64& get_mods() const {return mods_; }
+    inline const vec64& get_roots() const {return roots_; }
+    inline const fmpz* get_mod_prod() const {return mod_prod_.raw(); }
+    inline const std::vector<std::shared_ptr<const U64Context>>& get_ctx() const {return ctxs_; }
 
 };
 
@@ -141,7 +145,8 @@ public:
     CRTArray(vv64 data, std::shared_ptr<const U64CtxChain> cc);
 
     static CRTArray from_fmpz_vector(const fmpz_vector& data, std::shared_ptr<const U64CtxChain> cc);
-    void to_fmpz_vector(fmpz_vector& dst);
+    fmpz_vector to_fmpz_vector() const;
+    fmpz_vector to_fmpz_vector_centered() const;
 
     ~CRTArray();
 
@@ -175,6 +180,11 @@ public:
     static CRTArray sk(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray randint(std::shared_ptr<const U64CtxChain> cc, i64 start, i64 end);
     inline std::shared_ptr<const U64CtxChain> get_cc() const { return cc_; }
+
+    static CRTArray sum(const std::vector<CRTArray>& );
+
+    // 缩减模数链长度，主要用于Key Switch
+    CRTArray mod_reduce(std::shared_ptr<const U64CtxChain> cc2) const;
 
     
 

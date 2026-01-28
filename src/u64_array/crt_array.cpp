@@ -28,9 +28,21 @@ CRTArray CRTArray::from_fmpz_vector(const fmpz_vector& data, std::shared_ptr<con
     auto data2 = crt(data, cc->get_mods());
     return CRTArray(data2, cc);
 }
-void CRTArray::to_fmpz_vector(fmpz_vector& dst)
+fmpz_vector CRTArray::to_fmpz_vector() const
 {
+    int size = cc_->get_size();
+    fmpz_vector dst(size);
     icrt(dst, data_, cc_->get_mods());
+    return dst;
+}
+
+fmpz_vector CRTArray::to_fmpz_vector_centered() const
+{
+    int size = cc_->get_size();
+    fmpz_vector buf1(size);
+    icrt(buf1, data_, cc_->get_mods());
+    fmpz_vector buf2 = buf1.mod_centered(cc_->get_mod_prod());
+    return buf2;
 }
 
 CRTArray::~CRTArray() = default;

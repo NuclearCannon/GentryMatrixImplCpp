@@ -88,3 +88,18 @@ CRTArray CRTArray::randint(std::shared_ptr<const U64CtxChain> cc, i64 start, i64
     }
     return CRTArray(data, cc);
 }
+
+
+CRTArray CRTArray::sum(const std::vector<CRTArray>& v)
+{
+    assert(v.size() >= 1);
+    std::shared_ptr<const U64CtxChain> cc = v[0].get_cc();
+    int size = cc->get_size();
+
+    vv64 data(cc->get_chain_length(), vec64(size, 0));
+    for(auto& t : v)
+    {
+        cc->add(data, data, t.data_);
+    }
+    return CRTArray(data, cc);
+}

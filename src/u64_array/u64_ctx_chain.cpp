@@ -3,7 +3,7 @@
 
 
 U64CtxChain::U64CtxChain(int n, int p, const vec64& mods, const vec64& roots):
-    n_(n), p_(p), mods_(mods), roots_(roots)
+    n_(n), p_(p), mods_(mods), roots_(roots), mod_prod_(1)
 {
     chain_len_ = mods.size();
     assert(chain_len_ == roots.size());
@@ -14,6 +14,7 @@ U64CtxChain::U64CtxChain(int n, int p, const vec64& mods, const vec64& roots):
                 n, p, mods_[i], roots_[i]
             )
         );
+        fmpz_mul_ui(mod_prod_.raw(), mod_prod_.raw(), mods_[i]);
     }
     
 }
