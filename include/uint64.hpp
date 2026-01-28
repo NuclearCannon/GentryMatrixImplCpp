@@ -4,6 +4,7 @@
 #include <cstdint>
 
 typedef std::uint64_t u64;
+typedef std::int64_t i64;
 static_assert(sizeof(u64) == 8);
 typedef std::vector<u64> vec64;
 typedef std::vector<vec64> vv64;

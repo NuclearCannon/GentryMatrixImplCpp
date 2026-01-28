@@ -4,7 +4,7 @@
 // 构造函数: 全零数组
 CRTArray::CRTArray(std::shared_ptr<const U64CtxChain> cc):
     cc_(cc),
-    data_(cc_->get_chain_length(), std::vector<uint64_t>(cc_->get_size()))
+    data_(cc_->get_chain_length(), std::vector<uint64_t>(cc_->get_size(), 0))
 {
     
 }

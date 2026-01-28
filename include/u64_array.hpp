@@ -168,6 +168,12 @@ public:
     CRTArray xy_intt() const;
     CRTArray all_ntt() const;
     CRTArray all_intt() const;
+
+    static CRTArray zeros(std::shared_ptr<const U64CtxChain> cc);
+    static CRTArray uniform(std::shared_ptr<const U64CtxChain> cc);
+    static CRTArray dg(std::shared_ptr<const U64CtxChain> cc);
+    static CRTArray randint(std::shared_ptr<const U64CtxChain> cc, i64 start, i64 end);
+
     
 
 };
