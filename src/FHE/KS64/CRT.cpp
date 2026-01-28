@@ -68,7 +68,7 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray
 
     // printf("debug 4\n");
     // 进行一个分别的乘
-    std::vector<CRTArray> a_sum, b_sum;
+    CRTArray a_sum = CRTArray::zeros(cc_hig_), b_sum = CRTArray::zeros(cc_hig_);
     // printf("debug 5\n");
     for(int i=0;i<a_split_raw.size();i++)
     {
@@ -79,8 +79,8 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray
         if constexpr (_PRE_NTT_)
         {
             auto ntted = a_split_i.all_ntt();
-            a_sum.push_back(ntted.mul(cta));
-            b_sum.push_back(ntted.mul(ctb));
+            a_sum.adde(ntted.mul(cta));
+            b_sum.adde(ntted.mul(ctb));
         }
         else
         {
@@ -88,15 +88,15 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray
             // a_sum.push_back(a_split_i.all_ntt().mul(cta.all_ntt()).all_intt());
             // b_sum.push_back(a_split_i.all_ntt().mul(ctb.all_ntt()).all_intt());
             // 用这个就没问题：
-            a_sum.push_back(a_split_i.mul_poly(cta));
-            b_sum.push_back(a_split_i.mul_poly(ctb));
+            a_sum.adde(a_split_i.mul_poly(cta));
+            b_sum.adde(a_split_i.mul_poly(ctb));
         }
         
     }
     if (_PRE_NTT_)
     {
-        CRTArray a_res = CRTArray::sum(a_sum).all_intt();
-        CRTArray b_res = CRTArray::sum(b_sum).all_intt();
+        CRTArray a_res = a_sum.all_intt();
+        CRTArray b_res = b_sum.all_intt();
         // 降低模数
         return std::make_pair(
             a_res.mod_reduce(cc_low_),
@@ -105,12 +105,10 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray
     }
     else
     {
-        CRTArray a_res = CRTArray::sum(a_sum);
-        CRTArray b_res = CRTArray::sum(b_sum);
         // 降低模数
         return std::make_pair(
-            a_res.mod_reduce(cc_low_),
-            b_res.mod_reduce(cc_low_)
+            a_sum.mod_reduce(cc_low_),
+            b_sum.mod_reduce(cc_low_)
         );
     }
 

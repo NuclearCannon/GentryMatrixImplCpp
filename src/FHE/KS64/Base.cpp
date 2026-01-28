@@ -68,15 +68,15 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64Base::key_switch_big_1(const CRTArra
         throw std::invalid_argument("ct_a_from不能被完整分解！\n");
     }
     // 进行一个分别的乘
-    std::vector<CRTArray> a_sum, b_sum;
+    CRTArray a_sum = CRTArray::zeros(cc_hig_), b_sum = CRTArray::zeros(cc_hig_);
     for(int i=0;i<a_split.size();i++)
     {
         auto& [cta, ctb] = cts_[i];
-        a_sum.push_back(a_split[i].mul(cta));
-        b_sum.push_back(a_split[i].mul(ctb));
+        a_sum.adde(a_split[i].mul(cta));
+        b_sum.adde(a_split[i].mul(ctb));
     }
-    CRTArray a_res = CRTArray::sum(a_sum).all_intt();
-    CRTArray b_res = CRTArray::sum(b_sum).all_intt();
+    CRTArray a_res = a_sum.all_intt();
+    CRTArray b_res = b_sum.all_intt();
     // 降低模数
     return std::make_pair(
         a_res.mod_reduce(cc_low_),

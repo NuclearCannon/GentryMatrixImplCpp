@@ -162,6 +162,7 @@ public:
 
     // 运算符重载：逐元素操作
     CRTArray add(const CRTArray& other) const;
+    void adde(const CRTArray& other) ;
     CRTArray neg() const;
     CRTArray sub(const CRTArray& other) const;
     CRTArray mul(const CRTArray& other) const;
@@ -183,8 +184,6 @@ public:
     static CRTArray sk(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray randint(std::shared_ptr<const U64CtxChain> cc, i64 start, i64 end);
     inline std::shared_ptr<const U64CtxChain> get_cc() const { return cc_; }
-
-    static CRTArray sum(const std::vector<CRTArray>& );
 
     // 缩减模数链长度，主要用于Key Switch
     CRTArray mod_reduce(std::shared_ptr<const U64CtxChain> cc2) const;

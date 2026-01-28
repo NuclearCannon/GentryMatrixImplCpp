@@ -76,6 +76,10 @@ CRTArray CRTArray::add(const CRTArray& other) const
     cc_->add(res.data_, data_, other.data_);
     return res;
 }
+void CRTArray::adde(const CRTArray& other)
+{
+    cc_->add(data_, data_, other.data_);
+}
 CRTArray CRTArray::neg() const
 {
     CRTArray res(cc_);
