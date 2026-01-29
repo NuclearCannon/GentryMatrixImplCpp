@@ -15,8 +15,6 @@
 
 */
 
-constexpr bool _PRE_NTT_ = false;
-
 
 KeySwitchKey64CRT::KeySwitchKey64CRT(const CRTArray& sk_from, const CRTArray& sk_to, u64 qo, u64 qor)
 {
@@ -46,15 +44,7 @@ KeySwitchKey64CRT::KeySwitchKey64CRT(const CRTArray& sk_from, const CRTArray& sk
         // 加密sk_from_qo
         CRTArray sk_from_qo_Bi = CRTArray::from_fmpz_vector(sk_from_qo, cc_hig_);
         auto [a, b] = encrypt64(sk_from_qo_Bi, sk_to_hig);
-        if constexpr (_PRE_NTT_)
-        {
-            cts_.push_back({a.all_ntt(), b.all_ntt()});
-        }
-        else
-        {
-            cts_.push_back({a, b});
-        }
-        
+        cts_.push_back({a.all_ntt(), b.all_ntt()});
         // sk_from_qo *= mods[l]
         _fmpz_vec_scalar_mul_ui(sk_from_qo.raw(), sk_from_qo.raw(), size, mods[l]);
     }
@@ -76,41 +66,18 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray
         auto& [cta, ctb] = cts_[i];
         // printf("debug 7\n");
         auto a_split_i = CRTArray(a_split_raw[i], cc_hig_);
-        if constexpr (_PRE_NTT_)
-        {
-            auto ntted = a_split_i.all_ntt();
-            a_sum.adde(ntted.mul(cta));
-            b_sum.adde(ntted.mul(ctb));
-        }
-        else
-        {
-            // 用这个就有问题：
-            // a_sum.push_back(a_split_i.all_ntt().mul(cta.all_ntt()).all_intt());
-            // b_sum.push_back(a_split_i.all_ntt().mul(ctb.all_ntt()).all_intt());
-            // 用这个就没问题：
-            a_sum.adde(a_split_i.mul_poly(cta));
-            b_sum.adde(a_split_i.mul_poly(ctb));
-        }
-        
+        auto ntted = a_split_i.all_ntt();
+        a_sum.adde(ntted.mul(cta));
+        b_sum.adde(ntted.mul(ctb));
     }
-    if (_PRE_NTT_)
-    {
-        CRTArray a_res = a_sum.all_intt();
-        CRTArray b_res = b_sum.all_intt();
-        // 降低模数
-        return std::make_pair(
-            a_res.mod_reduce(cc_low_),
-            b_res.mod_reduce(cc_low_)
-        );
-    }
-    else
-    {
-        // 降低模数
-        return std::make_pair(
-            a_sum.mod_reduce(cc_low_),
-            b_sum.mod_reduce(cc_low_)
-        );
-    }
+    CRTArray a_res = a_sum.all_intt();
+    CRTArray b_res = b_sum.all_intt();
+    // 降低模数
+    return std::make_pair(
+        a_res.mod_reduce(cc_low_),
+        b_res.mod_reduce(cc_low_)
+    );
+
 
 }
 
