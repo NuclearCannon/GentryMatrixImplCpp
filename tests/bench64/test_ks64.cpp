@@ -25,9 +25,8 @@ int test_ks64(bool test_base, bool test_crt)
     // 构造KSK到sk
     if (test_base)
     {
-        int logB = 20;
         printf("生成kskb\n");
-        KeySwitchKey64Base kskb(sk, sk2, 1UL<<logB, ((61*4)/logB), qo, qor);
+        KeySwitchKey64Base kskb(sk, sk2, 1UL<<50, 3, qo, qor);
         auto t1 = std::chrono::high_resolution_clock::now();
         auto [cta2, ctb2] = kskb.key_switch_big_2(cta, ctb);
         auto t2 = std::chrono::high_resolution_clock::now();
