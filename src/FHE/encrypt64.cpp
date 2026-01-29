@@ -15,6 +15,25 @@ std::pair<CRTArray, CRTArray> encrypt64(const CRTArray& message, const CRTArray&
     );
 }
 
+std::pair<CRTArray, CRTArray> encrypt64_CNNN(const CRTArray& message, const CRTArray& sk)
+{
+    auto cc = message.get_cc();
+    auto cc_sk = sk.get_cc();
+    assert(cc.get() == cc_sk.get());
+    CRTArray e = CRTArray::dg(cc);
+    CRTArray me = message.add(e);
+    CRTArray me_ntt = me.all_ntt();
+    CRTArray a_ntt = CRTArray::uniform(cc);
+    CRTArray as_ntt = a_ntt.mul(sk);
+    CRTArray b_ntt = me_ntt.sub(as_ntt);
+    return std::make_pair(
+        std::move(a_ntt),
+        std::move(b_ntt)
+    );
+}
+
+
+
 // 调试用加密函数
 
 // 无噪声

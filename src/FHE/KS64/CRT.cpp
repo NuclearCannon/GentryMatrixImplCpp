@@ -35,6 +35,7 @@ KeySwitchKey64CRT::KeySwitchKey64CRT(const CRTArray& sk_from, const CRTArray& sk
     fmpz_vector sk_to_fmpz   = sk_to.to_fmpz_vector_centered();
     // 计算sk_to的cc_hig_形式
     CRTArray sk_to_hig =CRTArray::from_fmpz_vector(sk_to_fmpz, cc_hig_);
+    CRTArray sk_to_hig_ntt = sk_to_hig.all_ntt();
     // 计算sk_from * qo
     fmpz_vector sk_from_qo(size);
     _fmpz_vec_scalar_mul_ui(sk_from_qo.raw(), sk_from_fmpz.raw(), size, qo);
@@ -43,8 +44,7 @@ KeySwitchKey64CRT::KeySwitchKey64CRT(const CRTArray& sk_from, const CRTArray& sk
     {
         // 加密sk_from_qo
         CRTArray sk_from_qo_Bi = CRTArray::from_fmpz_vector(sk_from_qo, cc_hig_);
-        auto [a, b] = encrypt64(sk_from_qo_Bi, sk_to_hig);
-        cts_.push_back({a.all_ntt(), b.all_ntt()});
+        cts_.push_back(encrypt64_CNNN(sk_from_qo_Bi, sk_to_hig_ntt));
         // sk_from_qo *= mods[l]
         _fmpz_vec_scalar_mul_ui(sk_from_qo.raw(), sk_from_qo.raw(), size, mods[l]);
     }
