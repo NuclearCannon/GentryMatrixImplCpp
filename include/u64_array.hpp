@@ -163,6 +163,7 @@ public:
     // 运算符重载：逐元素操作
     CRTArray add(const CRTArray& other) const;
     void adde(const CRTArray& other) ;
+    void mul_scalar_e(u64 other) ;
     CRTArray neg() const;
     CRTArray sub(const CRTArray& other) const;
     CRTArray mul(const CRTArray& other) const;

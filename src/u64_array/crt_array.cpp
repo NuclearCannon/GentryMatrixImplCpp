@@ -80,6 +80,10 @@ void CRTArray::adde(const CRTArray& other)
 {
     cc_->add(data_, data_, other.data_);
 }
+void CRTArray::mul_scalar_e(u64 other)
+{
+    cc_->mul_scalar(data_, data_, other);
+}
 CRTArray CRTArray::neg() const
 {
     CRTArray res(cc_);
