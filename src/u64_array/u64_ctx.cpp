@@ -92,9 +92,9 @@ void U64Context::iw_intt(vec64& dst, const vec64& src) const
     vec64 real_sub_imag_I = copy_from(dst, pnn_, pnn_);
     for(int i=0;i<pnn_;i++)
     {
-        dst[i] = real_add_imag_I[i] + real_sub_imag_I[i];
+        dst[i] = mod_add(real_add_imag_I[i], real_sub_imag_I[i], q_);
         dst[i+pnn_] = mod_mul(
-            real_add_imag_I[i] + q_ - real_sub_imag_I[i],
+            mod_sub(real_add_imag_I[i], real_sub_imag_I[i], q_),
             I_inv_,
             q_
         );
@@ -204,6 +204,13 @@ void U64Context::sub(vec64& dst, const vec64& src1, const vec64& src2) const
     for(int i=0;i<size_;i++)
     {
         dst[i] = mod_sub(src1[i], src2[i], q_);
+    }
+}
+void U64Context::sub_unsafe(vec64& dst, const vec64& src1, const vec64& src2) const
+{
+    for(int i=0;i<size_;i++)
+    {
+        dst[i] = mod_sub(src1[i] % q_, src2[i] % q_, q_);
     }
 }
 // 逐位乘法

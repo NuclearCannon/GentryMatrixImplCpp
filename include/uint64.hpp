@@ -2,6 +2,7 @@
 #include <vector>
 #include <type_traits>
 #include <cstdint>
+#include <cassert>
 
 typedef std::uint64_t u64;
 typedef std::int64_t i64;
@@ -11,11 +12,29 @@ typedef std::vector<vec64> vv64;
 
 // 下面是一些计算工具函数
 
-u64 mod_add(u64 a, u64 b, u64 mod);
-u64 mod_sub(u64 a, u64 b, u64 mod);
+// TODO: 我们应该在性能测试的情况下避免assert
 
-// uint64模乘。调试期间暂不考虑内联它。
-u64 mod_mul(u64 a, u64 b, u64 mod);
+inline __attribute__((always_inline))
+u64 mod_mul(u64 a, u64 b, u64 mod) {
+    assert(a<mod);
+    assert(b<mod);
+    __uint128_t product = (__uint128_t)a * b;
+    return (u64)(product % mod);
+}
+
+inline __attribute__((always_inline))
+u64 mod_add(u64 a, u64 b, u64 mod) {
+    assert(a<mod);
+    assert(b<mod);
+    return ((a+b) % mod);
+}
+
+inline __attribute__((always_inline))
+u64 mod_sub(u64 a, u64 b, u64 mod) {
+    assert(a<mod);
+    assert(b<mod);
+    return ((a+(mod-b)) % mod);
+}
 
 // uint64模幂
 u64 mod_pow(u64 base, u64 e, u64 mod);

@@ -58,8 +58,7 @@ void TwistedNtterW64::_ntt_no_alias(vec64& dst, const vec64& src) const
         u64 Xk = 0;
         for(int j=0;j<p_-1;j++)
         {
-            Xk += mod_mul(src[j], eta_powers_[(k*j)%p_], q_);
-            Xk %= q_;
+            Xk = mod_add(Xk, mod_mul(src[j], eta_powers_[(k*j)%p_], q_), q_);
         }
         dst[k-1] = Xk;
     }
@@ -75,16 +74,15 @@ void TwistedNtterW64::_intt_no_alias(vec64& dst, const vec64& src) const
         u64 tj = 0;
         for(int k=1;k<p_;k++)
         {
-            tj += mod_mul(src[k-1], eta_powers_[(k*(p_-j))%p_], q_);
-            tj %= q_;
+            tj = mod_add(tj, mod_mul(src[k-1], eta_powers_[(k*(p_-j))%p_], q_), q_);
         }
         dst[j] = tj;
-        sum_t = (sum_t + tj) % q_;
+        sum_t = mod_add(sum_t, tj, q_);
     }
     for(int j=0;j<p_-1;j++)
     {
         dst[j] = mod_mul(
-            (dst[j]+sum_t) % q_, 
+            mod_add(dst[j], sum_t, q_),
             p_inv_,
             q_
         );

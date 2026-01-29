@@ -19,7 +19,7 @@ CRTArray CRTArray::mod_reduce(std::shared_ptr<const U64CtxChain> cc2) const
 
     for(int i=0;i<cc2->get_chain_length(); i++)
     {
-        ctxs[i]->sub(data[i], data[i], remainder);
+        ctxs[i]->sub_unsafe(data[i], data[i], remainder);
     }
     // 然后，乘以额外模数的乘法逆元
     u64 qo = cc_->get_mods().back();

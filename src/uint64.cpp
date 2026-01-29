@@ -1,19 +1,6 @@
 #include "uint64.hpp"
 #include <cassert>
 
-u64 mod_mul(u64 a, u64 b, u64 mod) {
-    a %= mod;
-    b %= mod;
-    __uint128_t product = (__uint128_t)a * b;
-    return (u64)(product % mod);
-}
-
-u64 mod_add(u64 a, u64 b, u64 mod) {
-    return (((a%mod)+(b%mod)) % mod);
-}
-u64 mod_sub(u64 a, u64 b, u64 mod) {
-    return (((a%mod)+(mod-(b%mod))) % mod);
-}
 
 
 u64 mod_pow(u64 base, u64 e, u64 mod)
@@ -53,6 +40,7 @@ void vec_scalar_mul(vec64& dst, const vec64& src1, u64 src2, u64 mod)
     std::size_t len = dst.size();
     assert(src1.size() == len);
     assert(mod);
+    src2 %= mod;
     for(std::size_t i=0;i<len;i++)
     {
         dst[i] = mod_mul(src1[i], src2, mod);
@@ -63,6 +51,7 @@ void get_powers(vec64& dst, u64 x, size_t len, u64 mod)
 {
     assert(dst.size() == len);
     dst[0] = 1;
+    x %= mod;
     for(int i=1;i<len;i++)
     {
         dst[i] = mod_mul(dst[i-1], x, mod);

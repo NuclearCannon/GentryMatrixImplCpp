@@ -66,6 +66,8 @@ public:
     void add(vec64& dst, const vec64& src1, const vec64& src2) const;
     // 逐位减法
     void sub(vec64& dst, const vec64& src1, const vec64& src2) const;
+    // 逐位减法（不安全版本，这个版本下不假设src<mod）
+    void sub_unsafe(vec64& dst, const vec64& src1, const vec64& src2) const;
     // 逐位乘法
     void mul(vec64& dst, const vec64& src1, const vec64& src2) const;
     // 逐位负

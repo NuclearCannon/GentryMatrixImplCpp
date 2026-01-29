@@ -43,8 +43,8 @@ void ntt_standard_64_with_roots(
                 u64 w = roots[k<<t];
                 u64 u = dst[j];
                 u64 v = mod_mul(dst[j+m], w, mod);
-                dst[j] = (u+v)%mod;
-                dst[j+m] = (mod-v+u)%mod;         
+                dst[j] = mod_add(u, v, mod);
+                dst[j+m] = mod_sub(u, v, mod);         
             }
         }
         m <<= 1;    // m *= 2
