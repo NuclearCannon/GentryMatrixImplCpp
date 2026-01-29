@@ -2,10 +2,11 @@
 #include "FHE/key_switch_64.hpp"
 #include <chrono>
 
-int test_ks64()
+
+int test_ks64(bool test_base, bool test_crt)
 {
     // 准备参数
-    int n = 256;
+    int n = 64;
     int p = 17;
     // 质数链
     vec64 mods = {70368747120641, 70368747294721, 70368748426241};
@@ -22,23 +23,39 @@ int test_ks64()
     // 加密（KS测试不考虑加密本身的噪声）
     auto [cta, ctb] = encrypt64_no_e(m, sk);
     // 构造KSK到sk
-    int logB = 20;
-    printf("生成kskb\n");
-    KeySwitchKey64Base kskb(sk, sk2, 1UL<<logB, ((61*4)/logB), qo, qor);
-    printf("生成kskc\n");
-    KeySwitchKey64CRT kskc(sk, sk2, qo, qor);
-    printf("开始kskb\n");
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto [cta2, ctb2] = kskb.key_switch_big_2(cta, ctb);
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration_ksk = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-    printf("ks64B: %ld us\n", duration_ksk);
-    printf("开始kskc\n");
-    t1 = std::chrono::high_resolution_clock::now();
-    auto [cta3, ctb3] = kskc.key_switch_big_2(cta, ctb);
-    t2 = std::chrono::high_resolution_clock::now();
-    duration_ksk = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-    printf("ks64C: %ld us\n", duration_ksk);
+    if (test_base)
+    {
+        int logB = 20;
+        printf("生成kskb\n");
+        KeySwitchKey64Base kskb(sk, sk2, 1UL<<logB, ((61*4)/logB), qo, qor);
+        auto t1 = std::chrono::high_resolution_clock::now();
+        auto [cta2, ctb2] = kskb.key_switch_big_2(cta, ctb);
+        auto t2 = std::chrono::high_resolution_clock::now();
+        auto duration_ksk = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        printf("ks64B: %ld us\n", duration_ksk);
+        // 解密
+        auto res = decrypt64(cta2, ctb2, sk2);
+        auto error = res.sub(m);
+        fmpz_vector error_mpz = error.to_fmpz_vector_centered();
+        long error_abs = error_mpz.max_abs();
+        printf("ks64B: error_abs=%ld\n", error_abs);
+    }
+    if (test_crt)
+    {
+        printf("生成kskc\n");
+        KeySwitchKey64CRT kskc(sk, sk2, qo, qor);
+        auto t1 = std::chrono::high_resolution_clock::now();
+        auto [cta2, ctb2] = kskc.key_switch_big_2(cta, ctb);
+        auto t2 = std::chrono::high_resolution_clock::now();
+        auto duration_ksk = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        printf("ks64C: %ld us\n", duration_ksk);
+        // 解密
+        auto res = decrypt64(cta2, ctb2, sk2);
+        auto error = res.sub(m);
+        fmpz_vector error_mpz = error.to_fmpz_vector_centered();
+        long error_abs = error_mpz.max_abs();
+        printf("ks64C: error_abs=%ld\n", error_abs);
+    }
     return 1;
 
 }
