@@ -19,8 +19,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    ProfilerStart("bench64.prof");
     sum += test_ks64(test_base, test_crt);
-    ProfilerStop();
     std::cout << "Total Pass: " << sum << std::endl; 
 }

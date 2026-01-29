@@ -1,12 +1,12 @@
 #include "FHE/encrypt64.hpp"
 #include "FHE/key_switch_64.hpp"
 #include <chrono>
-
+#include <gperftools/profiler.h>
 
 int test_ks64(bool test_base, bool test_crt)
 {
     // 准备参数
-    int n = 64;
+    int n = 256;
     int p = 17;
     // 质数链
     vec64 mods = {70368747120641, 70368747294721, 70368748426241};
@@ -28,7 +28,9 @@ int test_ks64(bool test_base, bool test_crt)
         printf("生成kskb\n");
         KeySwitchKey64Base kskb(sk, sk2, 1UL<<50, 3, qo, qor);
         auto t1 = std::chrono::high_resolution_clock::now();
+        ProfilerStart("bench64b.prof");
         auto [cta2, ctb2] = kskb.key_switch_big_2(cta, ctb);
+        ProfilerStop();
         auto t2 = std::chrono::high_resolution_clock::now();
         auto duration_ksk = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
         printf("ks64B: %ld us\n", duration_ksk);
@@ -44,7 +46,9 @@ int test_ks64(bool test_base, bool test_crt)
         printf("生成kskc\n");
         KeySwitchKey64CRT kskc(sk, sk2, qo, qor);
         auto t1 = std::chrono::high_resolution_clock::now();
+        ProfilerStart("bench64c.prof");
         auto [cta2, ctb2] = kskc.key_switch_big_2(cta, ctb);
+        ProfilerStop();
         auto t2 = std::chrono::high_resolution_clock::now();
         auto duration_ksk = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
         printf("ks64C: %ld us\n", duration_ksk);
