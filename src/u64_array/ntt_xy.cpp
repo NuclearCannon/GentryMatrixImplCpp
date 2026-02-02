@@ -5,7 +5,7 @@
 TwistedNtterXY64::TwistedNtterXY64(int n, u64 q, u64 zeta):
     n_(n), q_(q),
     zeta_pos_pows_(n),
-    zeta_neg_pows_ninv_(n),
+    zeta_neg_pows_(n),
     omega_pos_pows_(n),
     omega_neg_pows_(n)
 
@@ -19,10 +19,8 @@ TwistedNtterXY64::TwistedNtterXY64(int n, u64 q, u64 zeta):
     // 生成 zeta_pos_pows_
     get_powers(zeta_pos_pows_, zeta, n, q);
     // 生成 zeta_neg_pows_ninv_
-    u64 ninv = mod_inv(n, q);
     u64 zeta_inv = mod_inv(zeta, q);
-    get_powers(zeta_neg_pows_ninv_, zeta_inv, n, q);
-    vec_scalar_mul(zeta_neg_pows_ninv_, zeta_neg_pows_ninv_, ninv, q);
+    get_powers(zeta_neg_pows_, zeta_inv, n, q);
     // 生成 omega_pos_pows_
     u64 omega = mod_pow(zeta, 4, q);
     get_powers(omega_pos_pows_, omega, n, q);
@@ -40,15 +38,14 @@ void TwistedNtterXY64::ntt(vec64& dst, const vec64& src) const
     vec64 buf(n_);
     // let buf = src 逐位乘 zeta_pos_pows
     vec_mul(buf, src, zeta_pos_pows_, q_);
-    ntt_standard_64_with_roots(buf.data(), dst.data(), omega_pos_pows_.data(), n_, q_);
+    ntt_standard_64_cm(dst.data(), buf.data(), n_, q_, false);
 
 
 }
 void TwistedNtterXY64::intt(vec64& dst, const vec64& src) const
 {
     vec64 buf(n_);
-    // let buffer = NTT(buffer, omega^{-1}, n, ctx)
-    ntt_standard_64_with_roots(src.data(), buf.data(), omega_neg_pows_.data(), n_, q_);
-    // let dst = buffer 逐位乘 zeta_neg_pows_ninv
-    vec_mul(dst, buf, zeta_neg_pows_ninv_, q_);
+    ntt_standard_64_cm(buf.data(), src.data(), n_, q_, true);
+    // let dst = buffer 逐位乘 zeta_neg_pows
+    vec_mul(dst, buf, zeta_neg_pows_, q_);
 }

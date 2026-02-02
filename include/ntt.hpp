@@ -44,3 +44,11 @@ void ntt_standard_64_with_roots(
     size_t n, 
     const u64 mod
 );
+
+void ntt_standard_64_cm(
+    u64* dst, 
+    const u64* src, 
+    size_t n, 
+    const u64 mod,
+    bool inverse
+);

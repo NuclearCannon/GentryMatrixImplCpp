@@ -12,7 +12,7 @@ private:
     int n_;
     u64 q_;
     vec64 zeta_pos_pows_;
-    vec64 zeta_neg_pows_ninv_;
+    vec64 zeta_neg_pows_;
     vec64 omega_pos_pows_;
     vec64 omega_neg_pows_;
 
