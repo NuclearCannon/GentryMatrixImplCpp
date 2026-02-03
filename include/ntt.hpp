@@ -5,7 +5,19 @@
 #include "uint64.hpp"
 
 const std::vector<size_t>& get_bit_reverse_table(size_t n);
-int log2(int x);
+const std::vector<size_t>& get_bit_reverse_table_by_logn(size_t log2n);
+
+constexpr int log2(int x)
+{
+    assert((x & (x - 1)) == 0 && x >= 1);
+    int i=-1;
+    while(x)
+    {
+        x>>=1;
+        i++;
+    }    
+    return i;
+}
 
 void ntt_standard_flint(const fmpz* a, fmpz* dst, const fmpz_t root, size_t n, const fmpz_mod_ctx_t ctx);
 

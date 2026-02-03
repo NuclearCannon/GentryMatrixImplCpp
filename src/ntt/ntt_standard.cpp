@@ -68,17 +68,6 @@ void ntt_standard_flint(const fmpz_vector& a, fmpz_vector& dst, const fmpz_t roo
 
 
 
-int log2(int x)
-{
-    assert((x & (x - 1)) == 0 && x >= 1);
-    int i=-1;
-    while(x)
-    {
-        x>>=1;
-        i++;
-    }    
-    return i;
-}
 
 
 void ntt_standard_flint_with_roots(

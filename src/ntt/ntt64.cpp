@@ -63,7 +63,8 @@ void ntt_standard_constant_modulo(u64* dst, const u64* src)
     static_assert((n & (n-1)) == 0);
     static_assert((M-1)%n==0);
     assert(&dst != &src);
-    const auto& rev = get_bit_reverse_table(n);
+    constexpr int logn = log2(n);
+    static const auto& rev = get_bit_reverse_table_by_logn(logn);
     for (size_t i = 0; i < n; ++i) {
         dst[i] = src[rev[i]];
     }
@@ -71,7 +72,8 @@ void ntt_standard_constant_modulo(u64* dst, const u64* src)
     constexpr u64 root = (inverse?(mod_inv_tmpl<M>(zeta)):zeta);
     static const vec64 roots = get_powers(root, n, M);
     size_t m = 1;
-    int t = log2(n>>1);
+    
+    int t = logn-1;
     while (t>=0) {
         for (size_t i = 0; i < n; i += 2 * m) {
             for (size_t k=0; k < m; ++k) {
