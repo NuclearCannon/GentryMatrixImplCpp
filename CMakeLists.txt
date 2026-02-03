@@ -15,6 +15,7 @@ find_library(GMP_LIB gmp REQUIRED)  # 新增：查找 GMP
 
 # 生成静态库
 add_library(poly_impl_flint STATIC ${SRC_FILES})
+target_compile_options(poly_impl_flint PRIVATE -O3)
 target_link_libraries(poly_impl_flint PRIVATE ${FLINT_LIB} ${GMP_LIB} profiler tcmalloc)
 
 # 编译tests下每个次级文件夹为一个可执行文件

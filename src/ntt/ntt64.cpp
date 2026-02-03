@@ -1,6 +1,5 @@
 #include "ntt.hpp"
 #include "uint64.hpp"
-#include "constant_modulo/mod_int.hpp"
 
 void ntt_standard_64(
     const u64* a, 
@@ -68,29 +67,29 @@ void ntt_standard_constant_modulo(u64* dst, const u64* src)
     for (size_t i = 0; i < n; ++i) {
         dst[i] = src[rev[i]];
     }
-    constexpr ModInt<M> zeta = ModInt<M>(Mr).pow((M-1)/n);
-    constexpr ModInt<M> root = inverse?(zeta.inv()):zeta;
+    constexpr u64 zeta = mod_pow_tmpl<M>(Mr, (M-1)/n);
+    constexpr u64 root = (inverse?(mod_inv_tmpl<M>(zeta)):zeta);
+    static const vec64 roots = get_powers(root, n, M);
     size_t m = 1;
-    ModInt<M> exponent, w_m, w, u, v;
-    while (m < n) {
-        exponent = n / (2 * m);
-        w_m = root.pow(exponent.val());
+    int t = log2(n>>1);
+    while (t>=0) {
         for (size_t i = 0; i < n; i += 2 * m) {
-            w = 1;
-            for (size_t j = i; j < i + m; ++j) {
-                u = dst[j];
-                v = dst[j+m]*w;
-                dst[j] = (u + v).val();
-                dst[j + m] = (u - v).val();
-                w *= w_m;
+            for (size_t k=0; k < m; ++k) {
+                size_t j = i+k;
+                u64 w = roots[k<<t];
+                u64 u = dst[j];
+                u64 v = mod_mul_tmpl<M>(dst[j+m], w);
+                dst[j] = mod_add_tmpl<M>(u, v);
+                dst[j+m] = mod_sub_tmpl<M>(u, v);         
             }
         }
-        m *= 2;
+        m <<= 1;    // m *= 2
+        t--;
     }
     if constexpr (inverse)
     {
-        constexpr ModInt<M> ninv = ModInt<M>(n).inv();
-        for(int i=0; i<n; i++)dst[i] = (ModInt<M>(dst[i]) * ninv).val();
+        constexpr u64 ninv = mod_inv_tmpl<M>(n);
+        for(int i=0; i<n; i++)dst[i] = mod_mul_tmpl<M>(dst[i], ninv);
     }
 }
 

@@ -58,6 +58,13 @@ void get_powers(vec64& dst, u64 x, size_t len, u64 mod)
     }
 }
 
+vec64 get_powers(u64 x, size_t len, u64 mod)
+{
+    vec64 result(len);
+    get_powers(result, x, len, mod);
+    return result;
+}
+
 
 std::vector<u64> copy_from(const std::vector<u64>& src, size_t begin, size_t length)
 {

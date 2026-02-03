@@ -22,11 +22,24 @@ u64 mod_mul(u64 a, u64 b, u64 mod) {
     return (u64)(product % mod);
 }
 
+template<u64 M>
+inline __attribute__((always_inline))
+constexpr u64 mod_mul_tmpl(u64 a, u64 b) {
+    __uint128_t product = (__uint128_t)a * b;
+    return (u64)(product % M);
+}
+
 inline __attribute__((always_inline))
 u64 mod_add(u64 a, u64 b, u64 mod) {
     // assert(a<mod);
     // assert(b<mod);
     return ((a+b) % mod);
+}
+
+template<u64 M>
+inline __attribute__((always_inline))
+constexpr u64 mod_add_tmpl(u64 a, u64 b) {
+    return ((a+b) % M);
 }
 
 inline __attribute__((always_inline))
@@ -36,11 +49,39 @@ u64 mod_sub(u64 a, u64 b, u64 mod) {
     return ((a+(mod-b)) % mod);
 }
 
+template<u64 M>
+inline __attribute__((always_inline))
+constexpr u64 mod_sub_tmpl(u64 a, u64 b) {
+    return ((a+(M-b)) % M);
+}
+
 // uint64模幂
 u64 mod_pow(u64 base, u64 e, u64 mod);
 
+template<u64 M>
+constexpr u64 mod_pow_tmpl(u64 base, u64 e)
+{
+    u64 result = 1;
+    base = base % M;
+    while (e > 0) {
+        if (e & 1) {
+            result = mod_mul_tmpl<M>(result, base);
+        }
+        base = mod_mul_tmpl<M>(base, base);
+        e >>= 1;
+    }
+    return result;
+}
+
 // uinr64乘法逆元（通过return x^{mod-2}实现）
 u64 mod_inv(u64 x, u64 mod);
+
+template<u64 M>
+constexpr u64 mod_inv_tmpl(u64 x)
+{
+    return mod_pow_tmpl<M>(x, M-2);
+}
+
 
 
 // 判断一个整数是不是power of 2
@@ -58,6 +99,9 @@ void vec_scalar_mul(vec64& dst, const vec64& src1, u64 src2, u64 mod);
 
 // 返回x的[0,len)次幂组成的向量
 void get_powers(vec64& dst, u64 x, size_t len, u64 mod);
+
+// 返回x的[0,len)次幂组成的向量
+vec64 get_powers(u64 x, size_t len, u64 mod);
 
 // return src[begin : begin+length]
 std::vector<u64> copy_from(const std::vector<u64>& src, size_t begin, size_t length);
