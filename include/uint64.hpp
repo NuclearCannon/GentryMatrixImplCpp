@@ -109,3 +109,8 @@ std::vector<u64> copy_from(const std::vector<u64>& src, size_t begin, size_t len
 // 不一定有用，但是调试的时候或许很有用。
 std::size_t vec64hash(const vec64& v);
 std::size_t vv64hash(const vv64& v);
+
+// 工具函数
+
+// 找到一个质数的一个原根。该实现是低效的。
+u64 findPrimitiveRoot(u64 p);

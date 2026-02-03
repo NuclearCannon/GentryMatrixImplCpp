@@ -4,6 +4,7 @@
 #include "flints.hpp"
 #include "twisted_ntter.hpp"
 #include "uint64.hpp"
+#include "ntt.hpp"
 #include <memory>
 
 class TwistedNtterXY64
@@ -29,13 +30,9 @@ public:
 class TwistedNtterW64
 {
 private:
-    int p_;
+    u64 p_;
     u64 q_;
-    u64 p_inv_; // p的乘法逆元
-    vec64 eta_powers_;
-
-    void _ntt_no_alias(vec64& dst, const vec64& src) const;
-    void _intt_no_alias(vec64& dst, const vec64& src) const;
+    RaderNTTer64 rader;
 public:
     TwistedNtterW64(int p , u64 q, u64 eta);
     ~TwistedNtterW64();

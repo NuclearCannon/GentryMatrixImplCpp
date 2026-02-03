@@ -104,6 +104,16 @@ template void ntt_standard_constant_modulo<70368747294721,      11,     256, tru
 template void ntt_standard_constant_modulo<70368748426241,      6,      256, true >(u64* dst, const u64* src);
 template void ntt_standard_constant_modulo<576460752303421441,  19,     256, true >(u64* dst, const u64* src);
 
+template void ntt_standard_constant_modulo<70368747120641,      6,      16, false>(u64* dst, const u64* src);
+template void ntt_standard_constant_modulo<70368747294721,      11,     16, false>(u64* dst, const u64* src);
+template void ntt_standard_constant_modulo<70368748426241,      6,      16, false>(u64* dst, const u64* src);
+template void ntt_standard_constant_modulo<576460752303421441,  19,     16, false>(u64* dst, const u64* src);
+
+template void ntt_standard_constant_modulo<70368747120641,      6,      16, true >(u64* dst, const u64* src);
+template void ntt_standard_constant_modulo<70368747294721,      11,     16, true >(u64* dst, const u64* src);
+template void ntt_standard_constant_modulo<70368748426241,      6,      16, true >(u64* dst, const u64* src);
+template void ntt_standard_constant_modulo<576460752303421441,  19,     16, true >(u64* dst, const u64* src);
+
 
 void ntt_standard_64_cm(
     u64* dst, 
@@ -151,6 +161,48 @@ void ntt_standard_64_cm(
             }
         }
     }
+    if (n == 16) {
+        if (!inverse) {
+            if (mod == 70368747120641ULL) {
+                ntt_standard_constant_modulo<70368747120641ULL, 6, 16, false>(dst, src);
+                return;
+            }
+            if (mod == 70368747294721ULL) {
+                ntt_standard_constant_modulo<70368747294721ULL, 11, 16, false>(dst, src);
+                return;
+            }
+            if (mod == 70368748426241ULL) {
+                ntt_standard_constant_modulo<70368748426241ULL, 6, 16, false>(dst, src);
+                return;
+            }
+            if (mod == 576460752303421441ULL) {
+                ntt_standard_constant_modulo<576460752303421441ULL, 19, 16, false>(dst, src);
+                return;
+            }
+        } else {
+            if (mod == 70368747120641ULL) {
+                ntt_standard_constant_modulo<70368747120641ULL, 6, 16, true>(dst, src);
+                return;
+            }
+            if (mod == 70368747294721ULL) {
+                ntt_standard_constant_modulo<70368747294721ULL, 11, 16, true>(dst, src);
+                return;
+            }
+            if (mod == 70368748426241ULL) {
+                ntt_standard_constant_modulo<70368748426241ULL, 6, 16, true>(dst, src);
+                return;
+            }
+            if (mod == 576460752303421441ULL) {
+                ntt_standard_constant_modulo<576460752303421441ULL, 19, 16, true>(dst, src);
+                return;
+            }
+        }
+    }
     // 没有对应实例，报错
-    throw std::runtime_error("ntt_standard_64_cm: No matching constant-modulo NTT instance for the given parameters.");
+    throw std::runtime_error(
+        "ntt_standard_64_cm: No matching constant-modulo NTT instance for the given parameters. "
+        "n=" + std::to_string(n) +
+        ", mod=" + std::to_string(mod) +
+        ", inverse=" + std::to_string(inverse)
+    );
 }

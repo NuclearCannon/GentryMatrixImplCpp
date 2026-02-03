@@ -2,15 +2,12 @@
 #include "ntt.hpp"
 
 
-TwistedNtterW64::TwistedNtterW64(int p, u64 q, u64 eta):
+TwistedNtterW64::TwistedNtterW64(int p , u64 q, u64 eta):
     p_(p), q_(q), 
-    eta_powers_(p), 
-    p_inv_(mod_inv(p, q))
+    rader(p, q, eta)
 {
     // 检查eta合法性
     assert(mod_pow(eta, p, q) == 1);
-    // 计算eta的各个次幂
-    get_powers(eta_powers_, eta, p, q);
 }
 
 TwistedNtterW64::~TwistedNtterW64()
@@ -20,72 +17,27 @@ TwistedNtterW64::~TwistedNtterW64()
 
 void TwistedNtterW64::ntt(vec64& dst, const vec64& src) const
 {
-    if (&src == &dst)
+    vec64 a2(src), A2(p_);
+    a2.push_back(0);
+    rader.rader(A2.data(), a2.data());
+    for(int i=0;i<p_-1;i++)
     {
-        vec64 buf(dst.size());
-        _ntt_no_alias(buf, src);
-        dst.swap(buf);
-    }
-    else
-    {
-        _ntt_no_alias(dst, src);
+        dst[i] = A2[i+1];
     }
 }
 void TwistedNtterW64::intt(vec64& dst, const vec64& src) const
 {
-    if (&src == &dst)
+    vec64 A2(p_), a2(p_);
+    for(int i=0;i<p_-1;i++)
     {
-        vec64 buf(dst.size());
-        _intt_no_alias(buf, src);
-        dst.swap(buf);
+        A2[i+1] = src[i];
     }
-    else
+    A2[0] = 0;
+    rader.irader(a2.data(), A2.data());
+    u64 delta = a2[p_-1];
+    for(int i=0;i<p_-1;i++)
     {
-        _intt_no_alias(dst, src);
+        dst[i] = mod_sub(a2[i], delta, q_);
     }
-    
 }
 
-
-void TwistedNtterW64::_ntt_no_alias(vec64& dst, const vec64& src) const
-{
-    // 朴素实现
-    assert(src.size() == p_-1);
-    assert(dst.size() == p_-1);
-    assert(&src != &dst);
-    for(int k=1;k<p_;k++)
-    {
-        u64 Xk = 0;
-        for(int j=0;j<p_-1;j++)
-        {
-            Xk = mod_add(Xk, mod_mul(src[j], eta_powers_[(k*j)%p_], q_), q_);
-        }
-        dst[k-1] = Xk;
-    }
-}
-void TwistedNtterW64::_intt_no_alias(vec64& dst, const vec64& src) const
-{
-    assert(src.size() == p_-1);
-    assert(dst.size() == p_-1);
-    assert(&src != &dst);
-    u64 sum_t = 0;
-    for(int j=0;j<p_-1;j++)
-    {
-        u64 tj = 0;
-        for(int k=1;k<p_;k++)
-        {
-            tj = mod_add(tj, mod_mul(src[k-1], eta_powers_[(k*(p_-j))%p_], q_), q_);
-        }
-        dst[j] = tj;
-        sum_t = mod_add(sum_t, tj, q_);
-    }
-    for(int j=0;j<p_-1;j++)
-    {
-        dst[j] = mod_mul(
-            mod_add(dst[j], sum_t, q_),
-            p_inv_,
-            q_
-        );
-    }
-    
-}

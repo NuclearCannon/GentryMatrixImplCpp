@@ -52,3 +52,20 @@ void ntt_standard_64_cm(
     const u64 mod,
     bool inverse
 );
+
+// Rader NTT
+class RaderNTTer64 {
+private:
+    u64 p_, g_, eta_, q_, pinv_;
+    vec64 gpp, gnp;
+    vec64 b1ntt, b2ntt;
+    void _rader_inner(u64* dst, const u64* src, const vec64& bntt) const;
+
+public:
+    RaderNTTer64(u64 p, u64 q, u64 eta);
+    ~RaderNTTer64();
+    
+    void rader(u64* dst, const u64* src) const;
+    void irader(u64* dst, const u64* src) const;
+
+};
