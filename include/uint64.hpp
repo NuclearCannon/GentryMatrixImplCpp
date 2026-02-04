@@ -95,6 +95,9 @@ inline constexpr bool is_power_of_two(T x) noexcept {
 void vec_mul(vec64& dst, const vec64& src1, const vec64& src2, u64 mod);
 
 // 逐位乘（允许别名）
+void vec_mul_mont(vec64& dst, const vec64& src1, const vec64& src2, u64 mod);
+
+// 逐位乘（允许别名）
 void vec_scalar_mul(vec64& dst, const vec64& src1, u64 src2, u64 mod);
 
 // 返回x的[0,len)次幂组成的向量

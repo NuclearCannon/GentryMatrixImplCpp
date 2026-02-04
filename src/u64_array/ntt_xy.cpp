@@ -38,14 +38,14 @@ void TwistedNtterXY64::ntt(vec64& dst, const vec64& src) const
     vec64 buf(n_);
     // let buf = src 逐位乘 zeta_pos_pows
     vec_mul(buf, src, zeta_pos_pows_, q_);
-    ntt_standard_64_cm(dst.data(), buf.data(), n_, q_, false);
+    ntt_standard_64_cm(dst.data(), buf.data(), n_, q_, false, false, false);
 
 
 }
 void TwistedNtterXY64::intt(vec64& dst, const vec64& src) const
 {
     vec64 buf(n_);
-    ntt_standard_64_cm(buf.data(), src.data(), n_, q_, true);
+    ntt_standard_64_cm(buf.data(), src.data(), n_, q_, true, false, false);
     // let dst = buffer 逐位乘 zeta_neg_pows
     vec_mul(dst, buf, zeta_neg_pows_, q_);
 }

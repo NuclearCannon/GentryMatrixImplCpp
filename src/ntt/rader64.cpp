@@ -20,8 +20,8 @@ RaderNTTer64::RaderNTTer64(u64 p, u64 q, u64 eta):
         b2[i] = mod_pow(ieta, gpp[i], q);
     }
     // 预先NTT
-    ntt_standard_64_cm(b1ntt.data(), b1.data(), p-1, q, false);
-    ntt_standard_64_cm(b2ntt.data(), b2.data(), p-1, q, false);
+    ntt_standard_64_cm(b1ntt.data(), b1.data(), p-1, q, false, false, true);
+    ntt_standard_64_cm(b2ntt.data(), b2.data(), p-1, q, false, false, true);
 
 }
 
@@ -37,9 +37,9 @@ void RaderNTTer64::_rader_inner(u64* dst, const u64* src, const vec64& bntt) con
     }
     u64 x0 = src[0];
     vec64 antt(p_-1);
-    ntt_standard_64_cm(antt.data(), a.data(), p_-1, q_, false);
-    vec_mul(cntt, antt, bntt, q_);
-    ntt_standard_64_cm(c.data(), cntt.data(), p_-1, q_, true);
+    ntt_standard_64_cm(antt.data(), a.data(), p_-1, q_, false, false, true);
+    vec_mul_mont(cntt, antt, bntt, q_);
+    ntt_standard_64_cm(c.data(), cntt.data(), p_-1, q_, true, true, false);
     for(int u=0; u<p_-1; u++)
     {
         dst[gpp[u]] = mod_add(x0, c[u], q_);

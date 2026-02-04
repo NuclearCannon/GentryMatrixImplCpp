@@ -1,5 +1,7 @@
 #include "ntt.hpp"
 #include "uint64.hpp"
+#include "montgomery.hpp"
+
 
 void ntt_standard_64(
     const u64* a, 
@@ -51,28 +53,43 @@ void ntt_standard_64_with_roots(
     }
 }
 
-
+template<uint64_t M>
+vec64 get_powers_mont(u64 x, int len)
+{
+    vec64 res = get_powers(x, len, M);
+    for(int i=0;i<len;i++)res[i] = MontgomeryMultiplier<M>::encode(res[i]);
+    return res;
+}
 // NTT standard（常数模数版）
 // M: 模数
 // Mr: 模数的一个生成元
 // n: 长度（必须为power of 2）
 // inverse: true表示ntt逆变换（使用相反zeta, 对结果乘以n.inv()）
 template<uint64_t M, uint64_t Mr, size_t n, bool inverse>
-void ntt_standard_constant_modulo(u64* dst, const u64* src)
+void ntt_standard_constant_modulo(u64* dst, const u64* src, bool mont_in, bool mont_out)
 {
     static_assert((n & (n-1)) == 0);
     static_assert((M-1)%n==0);
     assert(&dst != &src);
     constexpr int logn = log2(n);
     static const auto& rev = get_bit_reverse_table_by_logn(logn);
-    for (size_t i = 0; i < n; ++i) {
-        dst[i] = src[rev[i]];
+    if (mont_in)
+    {
+        for (size_t i = 0; i < n; ++i) {
+            dst[i] = src[rev[i]];
+        }
     }
+    else
+    {
+        for (size_t i = 0; i < n; ++i) {
+            dst[i] = MontgomeryMultiplier<M>::encode(src[rev[i]]);
+        }
+    }
+    
     constexpr u64 zeta = mod_pow_tmpl<M>(Mr, (M-1)/n);
     constexpr u64 root = (inverse?(mod_inv_tmpl<M>(zeta)):zeta);
-    static const vec64 roots = get_powers(root, n, M);
+    static const vec64 roots = get_powers_mont<M>(root, n);
     size_t m = 1;
-    
     int t = logn-1;
     while (t>=0) {
         for (size_t i = 0; i < n; i += 2 * m) {
@@ -80,7 +97,7 @@ void ntt_standard_constant_modulo(u64* dst, const u64* src)
                 size_t j = i+k;
                 u64 w = roots[k<<t];
                 u64 u = dst[j];
-                u64 v = mod_mul_tmpl<M>(dst[j+m], w);
+                u64 v = MontgomeryMultiplier<M>::mul(dst[j+m], w);
                 dst[j] = mod_add_tmpl<M>(u, v);
                 dst[j+m] = mod_sub_tmpl<M>(u, v);         
             }
@@ -90,31 +107,33 @@ void ntt_standard_constant_modulo(u64* dst, const u64* src)
     }
     if constexpr (inverse)
     {
-        constexpr u64 ninv = mod_inv_tmpl<M>(n);
-        for(int i=0; i<n; i++)dst[i] = mod_mul_tmpl<M>(dst[i], ninv);
+        constexpr u64 ninv = MontgomeryMultiplier<M>::encode(mod_inv_tmpl<M>(n));
+        for(int i=0; i<n; i++)dst[i] = MontgomeryMultiplier<M>::mul(dst[i], ninv);
+    }
+    if(!mont_out)
+    {
+        for(int i=0; i<n; i++)dst[i] = MontgomeryMultiplier<M>::decode(dst[i]);
     }
 }
 
 // 实例化一些
-template void ntt_standard_constant_modulo<70368747120641,      6,      256, false>(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<70368747294721,      11,     256, false>(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<70368748426241,      6,      256, false>(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<576460752303421441,  19,     256, false>(u64* dst, const u64* src);
+template void ntt_standard_constant_modulo<70368747120641,      6,      256, true >(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368747294721,      11,     256, true >(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368748426241,      6,      256, true >(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<576460752303421441,  19,     256, true >(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368747120641,      6,      16, true >(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368747294721,      11,     16, true >(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368748426241,      6,      16, true >(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<576460752303421441,  19,     16, true >(u64* dst, const u64* src, bool, bool);
 
-template void ntt_standard_constant_modulo<70368747120641,      6,      256, true >(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<70368747294721,      11,     256, true >(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<70368748426241,      6,      256, true >(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<576460752303421441,  19,     256, true >(u64* dst, const u64* src);
-
-template void ntt_standard_constant_modulo<70368747120641,      6,      16, false>(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<70368747294721,      11,     16, false>(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<70368748426241,      6,      16, false>(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<576460752303421441,  19,     16, false>(u64* dst, const u64* src);
-
-template void ntt_standard_constant_modulo<70368747120641,      6,      16, true >(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<70368747294721,      11,     16, true >(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<70368748426241,      6,      16, true >(u64* dst, const u64* src);
-template void ntt_standard_constant_modulo<576460752303421441,  19,     16, true >(u64* dst, const u64* src);
+template void ntt_standard_constant_modulo<70368747120641,      6,      256, false>(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368747294721,      11,     256, false>(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368748426241,      6,      256, false>(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<576460752303421441,  19,     256, false>(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368747120641,      6,      16, false>(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368747294721,      11,     16, false>(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<70368748426241,      6,      16, false>(u64* dst, const u64* src, bool, bool);
+template void ntt_standard_constant_modulo<576460752303421441,  19,     16, false>(u64* dst, const u64* src, bool, bool);
 
 
 void ntt_standard_64_cm(
@@ -122,43 +141,45 @@ void ntt_standard_64_cm(
     const u64* src, 
     size_t n, 
     const u64 mod,
-    bool inverse
+    bool inverse,
+    bool mont_in,
+    bool mont_out
 )
 {
     // 只支持已实例化的组合
     if (n == 256) {
         if (!inverse) {
             if (mod == 70368747120641ULL) {
-                ntt_standard_constant_modulo<70368747120641ULL, 6, 256, false>(dst, src);
+                ntt_standard_constant_modulo<70368747120641ULL, 6, 256, false>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 70368747294721ULL) {
-                ntt_standard_constant_modulo<70368747294721ULL, 11, 256, false>(dst, src);
+                ntt_standard_constant_modulo<70368747294721ULL, 11, 256, false>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 70368748426241ULL) {
-                ntt_standard_constant_modulo<70368748426241ULL, 6, 256, false>(dst, src);
+                ntt_standard_constant_modulo<70368748426241ULL, 6, 256, false>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 576460752303421441ULL) {
-                ntt_standard_constant_modulo<576460752303421441ULL, 19, 256, false>(dst, src);
+                ntt_standard_constant_modulo<576460752303421441ULL, 19, 256, false>(dst, src, mont_in, mont_out);
                 return;
             }
         } else {
             if (mod == 70368747120641ULL) {
-                ntt_standard_constant_modulo<70368747120641ULL, 6, 256, true>(dst, src);
+                ntt_standard_constant_modulo<70368747120641ULL, 6, 256, true>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 70368747294721ULL) {
-                ntt_standard_constant_modulo<70368747294721ULL, 11, 256, true>(dst, src);
+                ntt_standard_constant_modulo<70368747294721ULL, 11, 256, true>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 70368748426241ULL) {
-                ntt_standard_constant_modulo<70368748426241ULL, 6, 256, true>(dst, src);
+                ntt_standard_constant_modulo<70368748426241ULL, 6, 256, true>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 576460752303421441ULL) {
-                ntt_standard_constant_modulo<576460752303421441ULL, 19, 256, true>(dst, src);
+                ntt_standard_constant_modulo<576460752303421441ULL, 19, 256, true>(dst, src, mont_in, mont_out);
                 return;
             }
         }
@@ -166,36 +187,36 @@ void ntt_standard_64_cm(
     if (n == 16) {
         if (!inverse) {
             if (mod == 70368747120641ULL) {
-                ntt_standard_constant_modulo<70368747120641ULL, 6, 16, false>(dst, src);
+                ntt_standard_constant_modulo<70368747120641ULL, 6, 16, false>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 70368747294721ULL) {
-                ntt_standard_constant_modulo<70368747294721ULL, 11, 16, false>(dst, src);
+                ntt_standard_constant_modulo<70368747294721ULL, 11, 16, false>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 70368748426241ULL) {
-                ntt_standard_constant_modulo<70368748426241ULL, 6, 16, false>(dst, src);
+                ntt_standard_constant_modulo<70368748426241ULL, 6, 16, false>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 576460752303421441ULL) {
-                ntt_standard_constant_modulo<576460752303421441ULL, 19, 16, false>(dst, src);
+                ntt_standard_constant_modulo<576460752303421441ULL, 19, 16, false>(dst, src, mont_in, mont_out);
                 return;
             }
         } else {
             if (mod == 70368747120641ULL) {
-                ntt_standard_constant_modulo<70368747120641ULL, 6, 16, true>(dst, src);
+                ntt_standard_constant_modulo<70368747120641ULL, 6, 16, true>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 70368747294721ULL) {
-                ntt_standard_constant_modulo<70368747294721ULL, 11, 16, true>(dst, src);
+                ntt_standard_constant_modulo<70368747294721ULL, 11, 16, true>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 70368748426241ULL) {
-                ntt_standard_constant_modulo<70368748426241ULL, 6, 16, true>(dst, src);
+                ntt_standard_constant_modulo<70368748426241ULL, 6, 16, true>(dst, src, mont_in, mont_out);
                 return;
             }
             if (mod == 576460752303421441ULL) {
-                ntt_standard_constant_modulo<576460752303421441ULL, 19, 16, true>(dst, src);
+                ntt_standard_constant_modulo<576460752303421441ULL, 19, 16, true>(dst, src, mont_in, mont_out);
                 return;
             }
         }

@@ -62,7 +62,9 @@ void ntt_standard_64_cm(
     const u64* src, 
     size_t n, 
     const u64 mod,
-    bool inverse
+    bool inverse,
+    bool mont_in,
+    bool mont_out
 );
 
 // Rader NTT
