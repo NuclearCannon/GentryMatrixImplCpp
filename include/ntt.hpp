@@ -20,23 +20,28 @@ constexpr int log2(int x)
 }
 
 
-void ntt_standard_64_with_roots(
-    const u64* a, 
-    u64* dst, 
-    const u64* roots,   // 需要提供root的至少[0,n/2)次方 
-    size_t n, 
-    const u64 mod
-);
+class StandardNTTer {
+private:
+    size_t n_;
+    size_t logn_;
+    u64 q_;      // 模数q
+    u64 qroot_;  // q的一个原根
+    u64 nroot_;   // = qroot ^ ((q-1)/n)
 
-void ntt_standard_64_cm(
-    u64* dst, 
-    const u64* src, 
-    size_t n, 
-    const u64 mod,
-    bool inverse,
-    bool mont_in,
-    bool mont_out
-);
+    vec64 roots_;    // nroot的[0,n/2)次幂
+    vec64 iroots_;    // nroot^{-1}的[0,n/2)次幂
+    u64 ninv_;       // n_在模q意义下的乘法逆元
+
+    
+    void _ntt_standard_inner(u64* dst, const u64* src, const u64* roots) const;
+public:
+    StandardNTTer(size_t n, u64 q, u64 qroot);
+    ~StandardNTTer();
+    void ntt(u64* dst, const u64* src) const;
+    void intt(u64* dst, const u64* src) const;
+
+};
+
 
 // Rader NTT
 class RaderNTTer64 {
@@ -44,10 +49,11 @@ private:
     u64 p_, g_, eta_, q_, pinv_;
     vec64 gpp, gnp;
     vec64 b1ntt, b2ntt;
+    StandardNTTer subntter;
     void _rader_inner(u64* dst, const u64* src, const vec64& bntt) const;
 
 public:
-    RaderNTTer64(u64 p, u64 q, u64 eta);
+    RaderNTTer64(u64 p, u64 q, u64 qroot);
     ~RaderNTTer64();
     
     void rader(u64* dst, const u64* src) const;

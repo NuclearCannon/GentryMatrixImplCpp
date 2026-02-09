@@ -10,18 +10,18 @@ U64Context::U64Context(int n, int p, u64 q, u64 root_q):
     q_(q)
 {
     // 计算zeta. zeta是4n阶本原单位根
-    assert((q-1)%((u64)(4*n)) == 0);
-    u64 zeta = mod_pow(root_q, (q-1)/((u64)(4*n)), q);
-    u64 zeta_inv = mod_inv(zeta, q);
+    assert((q-1)%((u64)(4*n)) == 0);;
     // 计算eta. eta是p阶本原单位根
     assert((q-1)%((u64)p) == 0);
-    u64 eta = mod_pow(root_q, (q-1)/((u64)p), q);
     // 生成各ntter对象
-    ntter_p = std::make_unique<TwistedNtterXY64>(n,q,zeta);
-    ntter_n = std::make_unique<TwistedNtterXY64>(n,q,zeta_inv);
-    ntter_w = std::make_unique<TwistedNtterW64>(p,q,eta);
+    ntter_p = std::make_unique<TwistedNtterXY64>(n,q,root_q);
+    ntter_n = std::make_unique<TwistedNtterXY64>(n,q,mod_inv(root_q, q));
+    ntter_w = std::make_unique<TwistedNtterW64>(p,q,root_q);
     // 计算I及其逆元
-    I_ = mod_pow(zeta, n, q);
+    // I = zeta^n
+    // zeta = qroot ^ ((q-1)/4n)
+    // => I=qroot^((q-1)/4)
+    I_ = mod_pow(root_q, (q-1)/4, q);
     I_inv_ = mod_pow(I_, 3, q);
     assert(mod_mul(I_, I_inv_, q) == 1);
 

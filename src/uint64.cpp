@@ -1,5 +1,4 @@
 #include "uint64.hpp"
-#include "montgomery.hpp"
 #include <cassert>
 
 
@@ -32,44 +31,6 @@ void vec_mul(vec64& dst, const vec64& src1, const vec64& src2, u64 mod)
     for(std::size_t i=0;i<len;i++)
     {
         dst[i] = mod_mul(src1[i], src2[i], mod);
-    }
-}
-
-template<uint64_t M>
-void vec_mul_mont_tmpl(vec64& dst, const vec64& src1, const vec64& src2)
-{
-    std::size_t len = dst.size();
-    for(std::size_t i=0;i<len;i++)
-    {
-        dst[i] = MontgomeryMultiplier<M>::mul(src1[i], src2[i]);
-    }
-}
-
-
-template void vec_mul_mont_tmpl<70368747120641>(vec64& dst, const vec64& src1, const vec64& src2);
-template void vec_mul_mont_tmpl<70368747294721>(vec64& dst, const vec64& src1, const vec64& src2);
-template void vec_mul_mont_tmpl<70368748426241>(vec64& dst, const vec64& src1, const vec64& src2);
-template void vec_mul_mont_tmpl<576460752303421441>(vec64& dst, const vec64& src1, const vec64& src2);
-
-
-void vec_mul_mont(vec64& dst, const vec64& src1, const vec64& src2, u64 mod)
-{
-    switch (mod)
-    {
-    case 70368747120641:
-        vec_mul_mont_tmpl<70368747120641>(dst, src1, src2);
-        break;
-    case 70368747294721:
-        vec_mul_mont_tmpl<70368747294721>(dst, src1, src2);
-        break;
-    case 70368748426241:
-        vec_mul_mont_tmpl<70368748426241>(dst, src1, src2);
-        break;
-    case 576460752303421441:
-        vec_mul_mont_tmpl<576460752303421441>(dst, src1, src2);
-        break;
-    default:
-        break;
     }
 }
 

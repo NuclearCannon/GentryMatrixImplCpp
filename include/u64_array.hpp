@@ -13,11 +13,10 @@ private:
     u64 q_;
     vec64 zeta_pos_pows_;
     vec64 zeta_neg_pows_;
-    vec64 omega_pos_pows_;
-    vec64 omega_neg_pows_;
+    StandardNTTer std_ntter;
 
 public:
-    TwistedNtterXY64(int n, u64 q, u64 zeta);
+    TwistedNtterXY64(int n, u64 q, u64 qroot);
     ~TwistedNtterXY64();
     void ntt(vec64& dst, const vec64& src) const;
     void intt(vec64& dst, const vec64& src) const;
@@ -33,7 +32,7 @@ private:
     u64 q_;
     RaderNTTer64 rader;
 public:
-    TwistedNtterW64(int p , u64 q, u64 eta);
+    TwistedNtterW64(int p , u64 q, u64 qroot);
     ~TwistedNtterW64();
     void ntt(vec64& dst, const vec64& src) const;
     void intt(vec64& dst, const vec64& src) const;

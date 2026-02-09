@@ -2,12 +2,11 @@
 #include "ntt.hpp"
 
 
-TwistedNtterW64::TwistedNtterW64(int p , u64 q, u64 eta):
+TwistedNtterW64::TwistedNtterW64(int p , u64 q, u64 qroot):
     p_(p), q_(q), 
-    rader(p, q, eta)
+    rader(p, q, qroot)
 {
-    // 检查eta合法性
-    assert(mod_pow(eta, p, q) == 1);
+
 }
 
 TwistedNtterW64::~TwistedNtterW64()
