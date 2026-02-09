@@ -14,6 +14,8 @@ private:
     u64 q_;
     vec64 zeta_pos_pows_;
     vec64 zeta_neg_pows_;
+    vec64 zeta_pos_pows_mont_;
+    vec64 zeta_neg_pows_mont_;
     StandardNTTer std_ntter;
     MontgomeryMultiplier mm;
 

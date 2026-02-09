@@ -23,6 +23,9 @@ TwistedNtterXY64::TwistedNtterXY64(int n, u64 q, u64 qroot):
     u64 zeta_inv = mod_inv(zeta, q);
     get_powers(zeta_neg_pows_, zeta_inv, n, q);
 
+    zeta_pos_pows_mont_ = mm.batch_encode(zeta_pos_pows_);
+    zeta_neg_pows_mont_ = mm.batch_encode(zeta_neg_pows_);
+
 }
 
 TwistedNtterXY64::~TwistedNtterXY64()
@@ -33,10 +36,8 @@ TwistedNtterXY64::~TwistedNtterXY64()
 void TwistedNtterXY64::ntt(vec64& dst, const vec64& src) const
 {
     vec64 buf(n_);
-    // let buf = src 逐位乘 zeta_pos_pows
-    vec_mul(buf, src, zeta_pos_pows_, q_);
-    // std_ntter.ntt(dst.data(), buf.data());
-    mm.batch_encode_inplace(buf);
+    vec64 src_encode = mm.batch_encode(src);
+    mm.vec_mul_mont(buf, src_encode, zeta_pos_pows_mont_);
     std_ntter.ntt_mont(dst.data(), buf.data());
     mm.batch_decode_inplace(dst);
 
@@ -48,7 +49,7 @@ void TwistedNtterXY64::intt(vec64& dst, const vec64& src) const
     // std_ntter.intt(buf.data(), src.data());
     vec64 src_encode = mm.batch_encode(src);
     std_ntter.intt_mont(buf.data(), src_encode.data());
-    mm.batch_decode_inplace(buf);
     // let dst = buffer 逐位乘 zeta_neg_pows
-    vec_mul(dst, buf, zeta_neg_pows_, q_);
+    mm.vec_mul_mont(dst, buf, zeta_neg_pows_mont_);
+    mm.batch_decode_inplace(dst);
 }

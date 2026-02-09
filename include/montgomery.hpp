@@ -61,6 +61,6 @@ public:
     void batch_encode_inplace(vec64& v) const;
     void batch_decode_inplace(vec64& v) const;
 
-    void vec_mul(vec64& dst, const vec64& src1, const vec64& src2) const;
+    void vec_mul_mont(vec64& dst, const vec64& src1, const vec64& src2) const;
     
 };

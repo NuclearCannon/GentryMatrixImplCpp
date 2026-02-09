@@ -53,7 +53,7 @@ void MontgomeryMultiplier::batch_decode_inplace(vec64& v) const
 }
 
 
-void MontgomeryMultiplier::vec_mul(vec64& dst, const vec64& src1, const vec64& src2) const
+void MontgomeryMultiplier::vec_mul_mont(vec64& dst, const vec64& src1, const vec64& src2) const
 {
     size_t size = dst.size();
     assert(src1.size() == size);

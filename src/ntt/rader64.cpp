@@ -63,7 +63,7 @@ void RaderNTTer64::_rader_inner_mont(u64* dst, const u64* src, const vec64& bntt
     u64 x0 = src[0];
     vec64 antt(p_-1);
     subntter.ntt_mont(antt.data(), a.data());
-    mm.vec_mul(cntt, antt, bntt);
+    mm.vec_mul_mont(cntt, antt, bntt);
     subntter.intt_mont(c.data(), cntt.data());
     for(int u=0; u<p_-1; u++)
     {
