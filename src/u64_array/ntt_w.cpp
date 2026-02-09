@@ -4,7 +4,8 @@
 
 TwistedNtterW64::TwistedNtterW64(int p , u64 q, u64 qroot):
     p_(p), q_(q), 
-    rader(p, q, qroot)
+    rader(p, q, qroot),
+    mm(q)
 {
 
 }
@@ -18,7 +19,10 @@ void TwistedNtterW64::ntt(vec64& dst, const vec64& src) const
 {
     vec64 a2(src), A2(p_);
     a2.push_back(0);
-    rader.rader(A2.data(), a2.data());
+    // rader.rader(A2.data(), a2.data());
+    mm.batch_encode_inplace(a2);
+    rader.rader_mont(A2.data(), a2.data());
+    mm.batch_decode_inplace(A2);
     for(int i=0;i<p_-1;i++)
     {
         dst[i] = A2[i+1];
@@ -32,7 +36,10 @@ void TwistedNtterW64::intt(vec64& dst, const vec64& src) const
         A2[i+1] = src[i];
     }
     A2[0] = 0;
-    rader.irader(a2.data(), A2.data());
+    // rader.irader(a2.data(), A2.data());
+    mm.batch_encode_inplace(A2);
+    rader.irader_mont(a2.data(), A2.data());
+    mm.batch_decode_inplace(a2);
     u64 delta = a2[p_-1];
     for(int i=0;i<p_-1;i++)
     {

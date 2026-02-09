@@ -5,6 +5,7 @@
 #include "uint64.hpp"
 #include "ntt.hpp"
 #include <memory>
+#include "montgomery.hpp"
 
 class TwistedNtterXY64
 {
@@ -14,6 +15,7 @@ private:
     vec64 zeta_pos_pows_;
     vec64 zeta_neg_pows_;
     StandardNTTer std_ntter;
+    MontgomeryMultiplier mm;
 
 public:
     TwistedNtterXY64(int n, u64 q, u64 qroot);
@@ -31,6 +33,7 @@ private:
     u64 p_;
     u64 q_;
     RaderNTTer64 rader;
+    MontgomeryMultiplier mm;
 public:
     TwistedNtterW64(int p , u64 q, u64 qroot);
     ~TwistedNtterW64();
