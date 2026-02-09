@@ -22,65 +22,28 @@ u64 mod_mul(u64 a, u64 b, u64 mod) {
     return (u64)(product % mod);
 }
 
-template<u64 M>
-inline __attribute__((always_inline))
-constexpr u64 mod_mul_tmpl(u64 a, u64 b) {
-    __uint128_t product = (__uint128_t)a * b;
-    return (u64)(product % M);
-}
 
 inline __attribute__((always_inline))
 u64 mod_add(u64 a, u64 b, u64 mod) {
-    // assert(a<mod);
-    // assert(b<mod);
-    return ((a+b) % mod);
+    u64 c = a+b;
+    return (c<mod)?c:c-mod;
 }
 
-template<u64 M>
-inline __attribute__((always_inline))
-constexpr u64 mod_add_tmpl(u64 a, u64 b) {
-    return ((a+b) % M);
-}
 
 inline __attribute__((always_inline))
 u64 mod_sub(u64 a, u64 b, u64 mod) {
-    // assert(a<mod);
-    // assert(b<mod);
-    return ((a+(mod-b)) % mod);
+    u64 c = a+mod-b;
+    return (c<mod)?c:c-mod;
 }
 
-template<u64 M>
-inline __attribute__((always_inline))
-constexpr u64 mod_sub_tmpl(u64 a, u64 b) {
-    return ((a+(M-b)) % M);
-}
 
 // uint64模幂
 u64 mod_pow(u64 base, u64 e, u64 mod);
 
-template<u64 M>
-constexpr u64 mod_pow_tmpl(u64 base, u64 e)
-{
-    u64 result = 1;
-    base = base % M;
-    while (e > 0) {
-        if (e & 1) {
-            result = mod_mul_tmpl<M>(result, base);
-        }
-        base = mod_mul_tmpl<M>(base, base);
-        e >>= 1;
-    }
-    return result;
-}
 
 // uinr64乘法逆元（通过return x^{mod-2}实现）
 u64 mod_inv(u64 x, u64 mod);
 
-template<u64 M>
-constexpr u64 mod_inv_tmpl(u64 x)
-{
-    return mod_pow_tmpl<M>(x, M-2);
-}
 
 
 
