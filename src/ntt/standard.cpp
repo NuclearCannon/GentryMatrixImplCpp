@@ -29,13 +29,13 @@ void StandardNTTer::_ntt_standard_inner(u64* dst, const u64* src, const u64* roo
         dst[i] = src[rev[i]];
     }
     size_t m = 1;
-    int t = logn_-1;
-    while (t>=0) {
+    u64 t = n_>>1;
+    // 恒有m*t == n/2
+    while (t) {
         for (size_t i = 0; i < n_; i += 2 * m) {
-            for (size_t k=0; k < m; ++k) {
-                size_t j = i+k;
-                // printf("k=%zu, t=%d, k<<t=%zu\n", k, t, k<<t);
-                u64 w = roots[k<<t];
+            size_t end = i+m;
+            for (size_t k=0, j=i; j < end; k+=t, ++j) {
+                u64 w = roots[k];
                 u64 u = dst[j];
                 u64 v = mod_mul(dst[j+m], w, q_);
                 dst[j] = mod_add(u, v, q_);
@@ -43,7 +43,7 @@ void StandardNTTer::_ntt_standard_inner(u64* dst, const u64* src, const u64* roo
             }
         }
         m <<= 1;    // m *= 2
-        t--;
+        t >>= 1;
     }
 }
 
@@ -57,12 +57,13 @@ void StandardNTTer::_ntt_standard_inner_mont(u64* dst, const u64* src, const u64
         dst[i] = src[rev[i]];
     }
     size_t m = 1;
-    int t = logn_-1;
-    while (t>=0) {
+    u64 t = n_>>1;
+    // 恒有m*t == n/2
+    while (t) {
         for (size_t i = 0; i < n_; i += 2 * m) {
-            for (size_t k=0; k < m; ++k) {
-                size_t j = i+k;
-                u64 w = roots[k<<t];
+            size_t end = i+m;
+            for (size_t k=0, j=i; j < end; k+=t, ++j) {
+                u64 w = roots[k];
                 u64 u = dst[j];
                 u64 v = mm.mul(dst[j+m], w);
                 dst[j] = mod_add(u, v, q_);
@@ -70,7 +71,7 @@ void StandardNTTer::_ntt_standard_inner_mont(u64* dst, const u64* src, const u64
             }
         }
         m <<= 1;    // m *= 2
-        t--;
+        t >>= 1;
     }
 }
 
