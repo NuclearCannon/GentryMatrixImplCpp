@@ -3,19 +3,6 @@
 #include "montgomery.hpp"
 
 
-void ntt_standard_64(
-    const u64* a, 
-    u64* dst, 
-    u64 root,
-    size_t n, 
-    const u64 mod
-)
-{
-    std::vector<u64> roots(n);
-    roots[0] = 1;
-    for(int i=1;i<n;i++)roots[i] = mod_mul(roots[i-1], root, mod);
-    ntt_standard_64_with_roots(a,dst,roots.data(), n, mod);
-}
 
 
 void ntt_standard_64_with_roots(

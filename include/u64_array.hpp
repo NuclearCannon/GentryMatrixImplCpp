@@ -2,7 +2,6 @@
 #include <vector>
 #include <stdexcept>
 #include "flints.hpp"
-#include "twisted_ntter.hpp"
 #include "uint64.hpp"
 #include "ntt.hpp"
 #include <memory>
