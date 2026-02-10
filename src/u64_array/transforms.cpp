@@ -22,19 +22,21 @@ void U64Context::transpose(vec64& dst, const vec64& src) const
 void U64Context::conj(vec64& dst, const vec64& src) const
 {
     assert(&src != &dst);
-    for(int i=0; i<2; i++)
+
+    for(int w=0; w<p_-1; w++)
     {
-        for(int w=0; w<p_-1; w++)
+        for(int x=0; x<n_; x++)
         {
-            for(int x=0; x<n_; x++)
+            for(int y=0; y<n_; y++)
             {
-                for(int y=0; y<n_; y++)
-                {
-                    dst[i*pnn_ + w*nn_ + x*n_ + y] = src[(1-i)*pnn_ + w*nn_ + x*n_ + y];
-                }
+                // i==0
+                dst[w*nn_ + x*n_ + y] = src[w*nn_ + x*n_ + y];
+                // i==1
+                dst[pnn_ + w*nn_ + x*n_ + y] = (q_ - src[pnn_ + w*nn_ + x*n_ + y]) % q_;
             }
         }
     }
+    
 }
 void U64Context::w_inv(vec64& dst, const vec64& src) const
 {

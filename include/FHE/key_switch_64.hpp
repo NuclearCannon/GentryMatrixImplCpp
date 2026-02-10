@@ -44,3 +44,5 @@ public:
     std::pair<CRTArray, CRTArray> key_switch_big_1(const CRTArray &a) const;
     std::pair<CRTArray, CRTArray> key_switch_big_2(const CRTArray& a, const CRTArray& b) const;
 };
+
+std::pair<KeySwitchKey64CRT, KeySwitchKey64CRT> create_ksks_for_circledast_ct(const CRTArray& sk, u64 qo, u64 qor);
