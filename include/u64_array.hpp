@@ -162,6 +162,9 @@ public:
     // 构造函数: 从raw构造
     CRTArray(const vec64& data, std::shared_ptr<const U64CtxChain> cc);
 
+    void set_from_raw(const vec64& data);
+    void set_to_zero(const vec64& data);
+
     static CRTArray from_fmpz_vector(const fmpz_vector& data, std::shared_ptr<const U64CtxChain> cc);
     fmpz_vector to_fmpz_vector() const;
     fmpz_vector to_fmpz_vector_centered() const;
@@ -183,6 +186,7 @@ public:
     CRTArray sub(const CRTArray& other) const;
     CRTArray mul(const CRTArray& other) const;
     CRTArray mul_mont(const CRTArray& other) const;
+    static void mul_mont3(CRTArray& dst, const CRTArray& src1, const CRTArray& src2);
     CRTArray mul_scalar(u64 other) const;
     CRTArray mul_poly(const CRTArray& other) const;
 
@@ -193,7 +197,9 @@ public:
     CRTArray xy_ntt() const;
     CRTArray xy_intt() const;
     CRTArray all_ntt() const;
+    void all_ntt_to(CRTArray& dst) const;
     CRTArray all_intt() const;
+    void all_intt_to(CRTArray& dst) const;
 
     static CRTArray zeros(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray uniform(std::shared_ptr<const U64CtxChain> cc);

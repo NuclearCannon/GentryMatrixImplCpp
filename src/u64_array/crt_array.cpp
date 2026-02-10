@@ -1,6 +1,7 @@
 #include "u64_array.hpp"
 #include "CRT.hpp"
 #include <cassert>
+#include <cstring>
 
 
 
@@ -38,6 +39,27 @@ CRTArray::CRTArray(const vec64& data, std::shared_ptr<const U64CtxChain> cc):
         u64 mod = cc_->get_mods()[i];
         vec64& row = data_[i];
         for(int j=0; j<size; j++)row[j] %= mod;
+    }
+}
+
+void CRTArray::set_from_raw(const vec64& data)
+{
+    int size = cc_->get_size();
+    for(int i=0; i<cc_->get_chain_length(); i++)
+    {
+        u64 mod = cc_->get_mods()[i];
+        vec64& row = data_[i];
+        for(int j=0; j<size; j++)row[j] = data[j] % mod;
+    }
+}
+
+void CRTArray::set_to_zero(const vec64& data)
+{
+    int size = cc_->get_size();
+    for(int i=0; i<cc_->get_chain_length(); i++)
+    {
+        vec64& row = data_[i];
+        memset(row.data(), 0, row.size()*sizeof(u64));
     }
 }
 
@@ -108,6 +130,12 @@ CRTArray CRTArray::mul_mont(const CRTArray& other) const
     cc_->mul_mont(res.data_, data_, other.data_);
     return res;
 }
+void CRTArray::mul_mont3(CRTArray& dst, const CRTArray& src1, const CRTArray& src2)
+{
+    assert(dst.get_cc().get() == src1.get_cc().get());
+    assert(dst.get_cc().get() == src2.get_cc().get());
+    dst.get_cc()->mul_mont(dst.data_, src1.data_, src2.data_);
+}
 CRTArray CRTArray::mul_scalar(u64 other) const
 {
     CRTArray res(cc_);
@@ -165,6 +193,11 @@ CRTArray CRTArray::all_ntt() const
     cc_->xy_ntt(res.data_, res.data_);
     return res;
 }
+void CRTArray::all_ntt_to(CRTArray& dst) const
+{
+    cc_->iw_ntt(dst.data_, data_);
+    cc_->xy_ntt(dst.data_, dst.data_);
+}
 CRTArray CRTArray::all_intt() const
 {
     CRTArray res(cc_);
@@ -172,7 +205,11 @@ CRTArray CRTArray::all_intt() const
     cc_->iw_intt(res.data_, res.data_);
     return res;
 }
-
+void CRTArray::all_intt_to(CRTArray& dst) const
+{
+    cc_->xy_intt(dst.data_, data_);
+    cc_->iw_intt(dst.data_, dst.data_);
+}
 CRTArray CRTArray::mont_encode() const
 {
     CRTArray res(cc_);

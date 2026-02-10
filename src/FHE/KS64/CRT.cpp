@@ -63,21 +63,27 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray
     // printf("debug 4\n");
     // 进行一个分别的乘
     CRTArray a_sum = CRTArray::zeros(cc_hig_), b_sum = CRTArray::zeros(cc_hig_);
+    CRTArray mul_result = CRTArray::zeros(cc_hig_);
+    CRTArray ntted = CRTArray::zeros(cc_hig_);
+    CRTArray a_split_i = CRTArray::zeros(cc_hig_);
+    CRTArray a_res = CRTArray::zeros(cc_hig_);
+    CRTArray b_res = CRTArray::zeros(cc_hig_);
     // printf("debug 5\n");
     for(int i=0;i<a_split_raw.size();i++)
     {
         // printf("debug 6\n");
         auto& [cta, ctb] = cts_[i];
         // printf("debug 7\n");
-        auto a_split_i = CRTArray(a_split_raw[i], cc_hig_);
-        auto ntted = a_split_i.all_ntt();
+        a_split_i.set_from_raw(a_split_raw[i]);
+        a_split_i.all_ntt_to(ntted);
         // ntted.mont_encode_inplace(); // 理论上这一行应该存在，但是和下面抵消了
-        // auto montd = ntted.mont_encode();
-        a_sum.adde(ntted.mul_mont(cta));
-        b_sum.adde(ntted.mul_mont(ctb));
+        CRTArray::mul_mont3(mul_result, ntted, cta);
+        a_sum.adde(mul_result);
+        CRTArray::mul_mont3(mul_result, ntted, ctb);
+        b_sum.adde(mul_result);
     }
-    CRTArray a_res = a_sum.all_intt();
-    CRTArray b_res = b_sum.all_intt();
+    a_sum.all_intt_to(a_res);
+    b_sum.all_intt_to(b_res);
     // 理论上这两行应该存在，但是和上面抵消了
     // a_res.mont_decode_inplace();
     // b_res.mont_decode_inplace();
