@@ -218,6 +218,8 @@ public:
     void mont_encode_inplace();
     void mont_decode_inplace();
 
+    CRTArray circledast(const CRTArray& other) const;
+
     
 
 };
