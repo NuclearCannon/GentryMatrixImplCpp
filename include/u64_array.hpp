@@ -163,7 +163,7 @@ public:
     CRTArray(const vec64& data, std::shared_ptr<const U64CtxChain> cc);
 
     void set_from_raw(const vec64& data);
-    void set_to_zero(const vec64& data);
+    void set_to_zero();
 
     static CRTArray from_fmpz_vector(const fmpz_vector& data, std::shared_ptr<const U64CtxChain> cc);
     fmpz_vector to_fmpz_vector() const;

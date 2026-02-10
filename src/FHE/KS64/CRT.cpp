@@ -18,7 +18,14 @@
 KeySwitchKey64CRT::KeySwitchKey64CRT(std::shared_ptr<const U64CtxChain> cc_low,std::shared_ptr<const U64CtxChain> cc_hig, std::vector<std::pair<CRTArray, CRTArray>> cts):
     cc_low_(cc_low),
     cc_hig_(cc_hig),
-    cts_(std::move(cts))
+    cts_(std::move(cts)),
+    buf_a_sum_(cc_hig),
+    buf_b_sum_(cc_hig),
+    buf_mul_result_(cc_hig),
+    buf_ntted_(cc_hig),
+    buf_a_split_i_(cc_hig),
+    buf_a_res_(cc_hig),
+    buf_b_res_(cc_hig)
 {
 
 }
@@ -70,12 +77,16 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray
 
     // printf("debug 4\n");
     // 进行一个分别的乘
-    CRTArray a_sum = CRTArray::zeros(cc_hig_), b_sum = CRTArray::zeros(cc_hig_);
-    CRTArray mul_result = CRTArray::zeros(cc_hig_);
-    CRTArray ntted = CRTArray::zeros(cc_hig_);
-    CRTArray a_split_i = CRTArray::zeros(cc_hig_);
-    CRTArray a_res = CRTArray::zeros(cc_hig_);
-    CRTArray b_res = CRTArray::zeros(cc_hig_);
+    CRTArray& a_sum = buf_a_sum_;
+    CRTArray& b_sum = buf_b_sum_;
+    CRTArray& mul_result = buf_mul_result_;
+    CRTArray& ntted = buf_ntted_;
+    CRTArray& a_split_i = buf_a_split_i_;
+    CRTArray& a_res = buf_a_res_;
+    CRTArray& b_res = buf_b_res_;
+    a_sum.set_to_zero();
+    b_sum.set_to_zero();
+    
     // printf("debug 5\n");
     for(int i=0;i<a_split_raw.size();i++)
     {

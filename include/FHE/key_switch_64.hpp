@@ -25,6 +25,16 @@ private:
     std::shared_ptr<const U64CtxChain> cc_low_, cc_hig_;
     std::vector<std::pair<CRTArray, CRTArray>> cts_;
     KeySwitchKey64CRT(std::shared_ptr<const U64CtxChain> cc_low,std::shared_ptr<const U64CtxChain> cc_hig, std::vector<std::pair<CRTArray, CRTArray>> cts);
+
+    // mutable
+    mutable CRTArray buf_a_sum_;
+    mutable CRTArray buf_b_sum_;
+    mutable CRTArray buf_mul_result_;
+    mutable CRTArray buf_ntted_;
+    mutable CRTArray buf_a_split_i_;
+    mutable CRTArray buf_a_res_;
+    mutable CRTArray buf_b_res_;
+
 public:
     
 

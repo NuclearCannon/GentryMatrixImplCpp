@@ -53,7 +53,7 @@ void CRTArray::set_from_raw(const vec64& data)
     }
 }
 
-void CRTArray::set_to_zero(const vec64& data)
+void CRTArray::set_to_zero()
 {
     int size = cc_->get_size();
     for(int i=0; i<cc_->get_chain_length(); i++)
