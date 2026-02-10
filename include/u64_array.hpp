@@ -57,6 +57,7 @@ private:
     std::unique_ptr<const TwistedNtterXY64> ntter_p, ntter_n;    // 这两个ntter会分别负责模X^n-I的和模X^n+I的
     std::unique_ptr<const TwistedNtterW64> ntter_w;
     MontgomeryMultiplier mm_;
+    mutable vec64 bufp_, bufn_;
 public:
 
     U64Context(int n, int p, u64 q, u64 root_q);

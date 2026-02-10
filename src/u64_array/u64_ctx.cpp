@@ -9,7 +9,9 @@ U64Context::U64Context(int n, int p, u64 q, u64 root_q):
     pnn_((p-1)*n*n),
     size_(2*(p-1)*n*n),
     q_(q),
-    mm_(q)
+    mm_(q),
+    bufp_(p-1),
+    bufn_(n)
 {
     // 计算zeta. zeta是4n阶本原单位根
     assert((q-1)%((u64)(4*n)) == 0);;
@@ -50,7 +52,7 @@ void U64Context::iw_ntt(vec64& dst, const vec64& src) const
         dst[i+pnn_] = mod_sub(real_i, image_I_i, q_);
     }
     // 现在dst是I-ntted
-    vec64 buf_p(p_-1);
+    vec64& buf_p = bufp_;
     for(int i=0;i<2;i++)
     {
         size_t base_i = i?pnn_:0;
@@ -71,7 +73,7 @@ void U64Context::iw_ntt(vec64& dst, const vec64& src) const
 void U64Context::iw_intt(vec64& dst, const vec64& src) const
 {
     // W-iNTT
-    vec64 buf_p(p_-1);
+    vec64& buf_p = bufp_;
     for(int i=0;i<2;i++)
     {
         size_t base_i = i?pnn_:0;
@@ -105,7 +107,7 @@ void U64Context::xy_ntt(vec64& dst, const vec64& src) const
 {
     // x-ntt
     size_t nn = this->nn_;
-    vec64 buf_n(n_);
+    vec64& buf_n = bufn_;
 
     for(int i=0;i<2;i++)
     {
@@ -149,7 +151,7 @@ void U64Context::xy_intt(vec64& dst, const vec64& src) const
 {
     // x-ntt
     size_t nn = this->nn_;
-    vec64 buf_n(n_);
+    vec64& buf_n = bufn_;
 
     for(int i=0;i<2;i++)
     {
