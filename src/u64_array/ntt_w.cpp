@@ -7,8 +7,8 @@ TwistedNtterW64::TwistedNtterW64(int p , u64 q, u64 qroot):
     p_(p), q_(q), 
     rader(p, q, qroot),
     mm(q),
-    buf1(std::make_unique<vec64>(p)), 
-    buf2(std::make_unique<vec64>(p))
+    buf1(p), 
+    buf2(p)
 {
 
 }
@@ -20,7 +20,7 @@ TwistedNtterW64::~TwistedNtterW64()
 
 void TwistedNtterW64::ntt(vec64& dst, const vec64& src) const
 {
-    vec64& a = *buf1, &A = *buf2;
+    vec64& a = buf1, &A = buf2;
     memcpy(a.data(), src.data(), (p_-1)*sizeof(u64));
     a[p_-1] = 0;
     mm.batch_encode_inplace(a);
@@ -30,7 +30,7 @@ void TwistedNtterW64::ntt(vec64& dst, const vec64& src) const
 }
 void TwistedNtterW64::intt(vec64& dst, const vec64& src) const
 {
-    vec64& a = *buf1, &A = *buf2;
+    vec64& a = buf1, &A = buf2;
     memcpy(A.data()+1, src.data(), (p_-1)*sizeof(u64));
     A[0] = 0;
     mm.batch_encode_inplace(A);
@@ -45,7 +45,7 @@ void TwistedNtterW64::intt(vec64& dst, const vec64& src) const
 
 void TwistedNtterW64::ntt_mont(vec64& dst, const vec64& src) const
 {
-    vec64& a = *buf1, &A = *buf2;
+    vec64& a = buf1, &A = buf2;
     memcpy(a.data(), src.data(), (p_-1)*sizeof(u64));
     a[p_-1] = 0;
     rader.rader_mont(A.data(), a.data());
@@ -53,7 +53,7 @@ void TwistedNtterW64::ntt_mont(vec64& dst, const vec64& src) const
 }
 void TwistedNtterW64::intt_mont(vec64& dst, const vec64& src) const
 {
-    vec64& a = *buf1, &A = *buf2;
+    vec64& a = buf1, &A = buf2;
     memcpy(A.data()+1, src.data(), (p_-1)*sizeof(u64));
     A[0] = 0;
     rader.irader_mont(a.data(), A.data());
