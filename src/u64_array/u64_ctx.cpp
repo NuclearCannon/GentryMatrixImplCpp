@@ -35,17 +35,12 @@ U64Context::~U64Context()
 void U64Context::iw_ntt(vec64& dst, const vec64& src) const
 {
     // ntt-I
-    // src的低半部分是real，高半部分是imag
-    // result的低半部分是P，高半部分是N
-    // P = real + imag*I
-    // N = real - imag*I
-    vec64 real = copy_from(src, 0, pnn_);
-    vec64 imag = copy_from(src, pnn_, pnn_);
-    vec_scalar_mul(imag, imag, I_, q_);
     for(int i=0;i<pnn_;i++)
     {
-        dst[i] = (real[i] + imag[i]) % q_;
-        dst[i+pnn_] = (real[i] + q_ - imag[i]) % q_;
+        u64 real_i = src[i];
+        u64 image_I_i = mod_mul(src[i+pnn_], I_, q_);
+        dst[i] = mod_add(real_i, image_I_i, q_);
+        dst[i+pnn_] = mod_sub(real_i, image_I_i, q_);
     }
     // 现在dst是I-ntted
     vec64 buf_p(p_-1);
@@ -88,13 +83,12 @@ void U64Context::iw_intt(vec64& dst, const vec64& src) const
         }
     }
     // I-iNTT
-    vec64 real_add_imag_I = copy_from(dst, 0, pnn_);
-    vec64 real_sub_imag_I = copy_from(dst, pnn_, pnn_);
     for(int i=0;i<pnn_;i++)
     {
-        dst[i] = mod_add(real_add_imag_I[i], real_sub_imag_I[i], q_);
+        u64 Pi = dst[i], Ni = dst[i+pnn_];
+        dst[i] = mod_add(Pi, Ni, q_);
         dst[i+pnn_] = mod_mul(
-            mod_sub(real_add_imag_I[i], real_sub_imag_I[i], q_),
+            mod_sub(Pi, Ni, q_),
             I_inv_,
             q_
         );

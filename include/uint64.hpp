@@ -66,8 +66,6 @@ void get_powers(vec64& dst, u64 x, size_t len, u64 mod);
 // 返回x的[0,len)次幂组成的向量
 vec64 get_powers(u64 x, size_t len, u64 mod);
 
-// return src[begin : begin+length]
-std::vector<u64> copy_from(const std::vector<u64>& src, size_t begin, size_t length);
 
 // 不一定有用，但是调试的时候或许很有用。
 std::size_t vec64hash(const vec64& v);

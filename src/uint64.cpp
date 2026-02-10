@@ -67,13 +67,6 @@ vec64 get_powers(u64 x, size_t len, u64 mod)
 }
 
 
-std::vector<u64> copy_from(const std::vector<u64>& src, size_t begin, size_t length)
-{
-    // 边界检查：确保 begin 不越界
-    assert(begin + length <= src.size());
-    // 使用迭代器构造新 vector
-    return std::vector<u64>(src.begin() + begin, src.begin() + begin + length);
-}
 
 std::size_t vec64hash(const vec64& v) {
     std::size_t seed = 0;
