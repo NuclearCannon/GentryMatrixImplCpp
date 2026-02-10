@@ -69,6 +69,10 @@ public:
     void xy_ntt(vec64& dst, const vec64& src) const;
     void xy_intt(vec64& dst, const vec64& src) const;
 
+    void transpose(vec64& dst, const vec64& src) const;
+    void conj(vec64& dst, const vec64& src) const;
+    void w_inv(vec64& dst, const vec64& src) const;
+
     // 逐位加法
     void add(vec64& dst, const vec64& src1, const vec64& src2) const;
     // 逐位减法
@@ -114,6 +118,10 @@ public:
     void iw_intt(vv64& dst, const vv64& src) const;
     void xy_ntt(vv64& dst, const vv64& src) const;
     void xy_intt(vv64& dst, const vv64& src) const;
+
+    void transpose(vv64& dst, const vv64& src) const;
+    void conj(vv64& dst, const vv64& src) const;
+    void w_inv(vv64& dst, const vv64& src) const;
 
     // 逐位加法
     void add(vv64& dst, const vv64& src1, const vv64& src2) const;
@@ -220,6 +228,9 @@ public:
 
     CRTArray circledast(const CRTArray& other) const;
 
-    
+    CRTArray transpose() const;
+    CRTArray conj() const;
+    CRTArray w_inv() const;
+
 
 };
