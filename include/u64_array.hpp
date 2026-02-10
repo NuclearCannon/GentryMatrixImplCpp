@@ -36,6 +36,7 @@ private:
     u64 q_;
     RaderNTTer64 rader;
     MontgomeryMultiplier mm;
+    std::unique_ptr<vec64> buf1, buf2;
 public:
     TwistedNtterW64(int p , u64 q, u64 qroot);
     ~TwistedNtterW64();
