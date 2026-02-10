@@ -8,7 +8,7 @@ U64Context::U64Context(int n, int p, u64 q, u64 root_q):
     pnn_((p-1)*n*n),
     size_(2*(p-1)*n*n),
     q_(q),
-    mm(q)
+    mm_(q)
 {
     // 计算zeta. zeta是4n阶本原单位根
     assert((q-1)%((u64)(4*n)) == 0);;
@@ -26,10 +26,10 @@ U64Context::U64Context(int n, int p, u64 q, u64 root_q):
     I_inv_ = mod_pow(I_, 3, q);
     assert(mod_mul(I_, I_inv_, q) == 1);
 
-    I_mont_ = mm.encode(I_);
-    I_inv_mont_ = mm.encode(I_inv_);
+    I_mont_ = mm_.encode(I_);
+    I_inv_mont_ = mm_.encode(I_inv_);
 
-    inv2_mont = mm.encode(mod_inv(2, q));
+    inv2_mont = mm_.encode(mod_inv(2, q));
 
 }
 
@@ -38,14 +38,14 @@ U64Context::~U64Context()
     // do nothing
 }
 
-void U64Context::iw_ntt(vec64& dst, const vec64& src) const
+void U64Context::iw_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
 {
-    vec64 src_encode = mm.batch_encode(src);
+    if(!m_in)mm_.batch_encode_to(dst, src);
     // ntt-I
     for(int i=0;i<pnn_;i++)
     {
-        u64 real_i = src_encode[i];
-        u64 image_I_i = mm.mul(src_encode[i+pnn_], I_mont_);
+        u64 real_i = dst[i];
+        u64 image_I_i = mm_.mul(dst[i+pnn_], I_mont_);
         dst[i] = mod_add(real_i, image_I_i, q_);
         dst[i+pnn_] = mod_sub(real_i, image_I_i, q_);
     }
@@ -67,12 +67,12 @@ void U64Context::iw_ntt(vec64& dst, const vec64& src) const
             }
         }
     }
-    mm.batch_decode_inplace(dst);
+    if(!m_out)mm_.batch_decode_inplace(dst);
 
 }
-void U64Context::iw_intt(vec64& dst, const vec64& src) const
+void U64Context::iw_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
 {
-    vec64 src_encode = mm.batch_encode(src);
+    if(!m_in)mm_.batch_encode_to(dst, src);
     // W-iNTT
     vec64 buf_p(p_-1);
     for(int i=0;i<2;i++)
@@ -85,7 +85,7 @@ void U64Context::iw_intt(vec64& dst, const vec64& src) const
             for(int y=0;y<n_;y++)
             {
                 size_t base_y = base_x + y;
-                for(int w=0;w<p_-1;w++)buf_p[w] = src_encode[base_y + w*nn_];
+                for(int w=0;w<p_-1;w++)buf_p[w] = dst[base_y + w*nn_];
                 ntter_w->intt_mont(buf_p, buf_p);
                 for(int w=0;w<p_-1;w++)dst[base_y + w*nn_] = buf_p[w];
             }
@@ -96,18 +96,18 @@ void U64Context::iw_intt(vec64& dst, const vec64& src) const
     {
         u64 Pi = dst[i], Ni = dst[i+pnn_];
         dst[i] = mod_add(Pi, Ni, q_);
-        dst[i+pnn_] = mm.mul(
+        dst[i+pnn_] = mm_.mul(
             mod_sub(Pi, Ni, q_),
             I_inv_mont_
         );
     }
     // 除以2
-    for(auto& i:dst)i = mm.mul(i, inv2_mont);
-    mm.batch_decode_inplace(dst);
+    for(auto& i:dst)i = mm_.mul(i, inv2_mont);
+    if(!m_out)mm_.batch_decode_inplace(dst);
 }
-void U64Context::xy_ntt(vec64& dst, const vec64& src) const
+void U64Context::xy_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
 {
-    vec64 src_encode = mm.batch_encode(src);
+    if(!m_in)mm_.batch_encode_to(dst, src);
     // x-ntt
     size_t nn = this->nn_;
     vec64 buf_n(n_);
@@ -122,7 +122,7 @@ void U64Context::xy_ntt(vec64& dst, const vec64& src) const
             {
                 size_t base_y = base_w + y;
                 // 取出一列
-                for(int x=0;x<n_;x++)buf_n[x] = src_encode[base_y + x*n_];
+                for(int x=0;x<n_;x++)buf_n[x] = dst[base_y + x*n_];
                 if (i == 0)ntter_p->ntt_mont(buf_n, buf_n);
                 else       ntter_n->ntt_mont(buf_n, buf_n);
                 // 写回去
@@ -149,11 +149,11 @@ void U64Context::xy_ntt(vec64& dst, const vec64& src) const
             }
         }
     }
-    mm.batch_decode_inplace(dst);
+    if(!m_out)mm_.batch_decode_inplace(dst);
 }
-void U64Context::xy_intt(vec64& dst, const vec64& src) const
+void U64Context::xy_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
 {
-    vec64 src_encode = mm.batch_encode(src);
+    if(!m_in)mm_.batch_encode_to(dst, src);
     // x-ntt
     size_t nn = this->nn_;
     vec64 buf_n(n_);
@@ -168,7 +168,7 @@ void U64Context::xy_intt(vec64& dst, const vec64& src) const
             {
                 size_t base_y = base_w + y;
                 // 取出一列
-                for(int x=0;x<n_;x++)buf_n[x] = src_encode[base_y + x*n_];
+                for(int x=0;x<n_;x++)buf_n[x] = dst[base_y + x*n_];
                 if (i == 0)ntter_p->intt_mont(buf_n, buf_n);
                 else       ntter_n->intt_mont(buf_n, buf_n);
                 // 写回去
@@ -194,7 +194,7 @@ void U64Context::xy_intt(vec64& dst, const vec64& src) const
             }
         }
     }
-    mm.batch_decode_inplace(dst);
+    if(!m_out)mm_.batch_decode_inplace(dst);
 }
 
 // 逐位加法

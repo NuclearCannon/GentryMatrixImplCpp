@@ -58,17 +58,17 @@ private:
     u64 inv2_mont;
     std::unique_ptr<const TwistedNtterXY64> ntter_p, ntter_n;    // 这两个ntter会分别负责模X^n-I的和模X^n+I的
     std::unique_ptr<const TwistedNtterW64> ntter_w;
-    MontgomeryMultiplier mm;
+    MontgomeryMultiplier mm_;
 public:
 
     U64Context(int n, int p, u64 q, u64 root_q);
 
     ~U64Context();
 
-    void iw_ntt(vec64& dst, const vec64& src) const;
-    void iw_intt(vec64& dst, const vec64& src) const;
-    void xy_ntt(vec64& dst, const vec64& src) const;
-    void xy_intt(vec64& dst, const vec64& src) const;
+    void iw_ntt(vec64& dst, const vec64& src, bool m_in=false, bool m_out=false) const;
+    void iw_intt(vec64& dst, const vec64& src, bool m_in=false, bool m_out=false) const;
+    void xy_ntt(vec64& dst, const vec64& src, bool m_in=false, bool m_out=false) const;
+    void xy_intt(vec64& dst, const vec64& src, bool m_in=false, bool m_out=false) const;
 
     // 逐位加法
     void add(vec64& dst, const vec64& src1, const vec64& src2) const;
@@ -90,6 +90,7 @@ public:
     inline int get_n() const {return n_; }
     inline int get_p() const {return p_; }
     inline int get_size() const {return size_; }
+    inline const MontgomeryMultiplier& get_multiplier() const {return mm_; }
     
 
 };
@@ -110,10 +111,10 @@ public:
     U64CtxChain(int n, int p, const vec64& mods, const vec64& roots);
     ~U64CtxChain();
 
-    void iw_ntt(vv64& dst, const vv64& src) const;
-    void iw_intt(vv64& dst, const vv64& src) const;
-    void xy_ntt(vv64& dst, const vv64& src) const;
-    void xy_intt(vv64& dst, const vv64& src) const;
+    void iw_ntt(vv64& dst, const vv64& src, bool m_in=false, bool m_out=false) const;
+    void iw_intt(vv64& dst, const vv64& src, bool m_in=false, bool m_out=false) const;
+    void xy_ntt(vv64& dst, const vv64& src, bool m_in=false, bool m_out=false) const;
+    void xy_intt(vv64& dst, const vv64& src, bool m_in=false, bool m_out=false) const;
 
     // 逐位加法
     void add(vv64& dst, const vv64& src1, const vv64& src2) const;

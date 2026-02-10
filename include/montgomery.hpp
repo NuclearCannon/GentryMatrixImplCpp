@@ -57,7 +57,7 @@ public:
     vec64 get_powers(uint64_t x, size_t len) const;
 
     vec64 batch_encode(const vec64& src) const;
-
+    void batch_encode_to(vec64& dst, const vec64& src) const;
     void batch_encode_inplace(vec64& v) const;
     void batch_decode_inplace(vec64& v) const;
 
