@@ -228,7 +228,7 @@ void U64Context::neg(vec64& dst, const vec64& src1) const
 // 标量乘
 void U64Context::mul_scalar(vec64& dst, const vec64& src_vec, u64 src_scalar) const
 {
-    vec_scalar_mul(dst, src_vec, src_scalar, q_);
+    mm_.vec_scalar_mul_mont_vector(dst, src_vec, src_scalar);
 }
 // 比较
 bool U64Context::eq(const vec64& src1, const vec64& src2) const

@@ -75,3 +75,14 @@ void MontgomeryMultiplier::vec_mul_mont(vec64& dst, const vec64& src1, const vec
     assert(src2.size() == size);
     for(size_t i=0; i<size; i++)dst[i] = mul(src1[i], src2[i]);
 }
+void MontgomeryMultiplier::vec_scalar_mul_mont_ptr(u64* dst, const u64* src1, size_t len, u64 src2) const
+{
+    src2 = encode(src2);
+    for(size_t i=0; i<len; i++)dst[i] = mul(src1[i], src2);
+}
+void MontgomeryMultiplier::vec_scalar_mul_mont_vector(vec64& dst, const vec64& src1, u64 src2) const
+{
+    size_t size = dst.size();
+    assert(src1.size() == size);
+    vec_scalar_mul_mont_ptr(dst.data(), src1.data(), size, src2);
+}

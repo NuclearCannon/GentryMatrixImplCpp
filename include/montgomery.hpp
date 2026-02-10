@@ -63,5 +63,7 @@ public:
     void batch_decode_inplace(vec64& v) const;
 
     void vec_mul_mont(vec64& dst, const vec64& src1, const vec64& src2) const;
+    void vec_scalar_mul_mont_ptr(u64* dst, const u64* src1, size_t len, u64 src2) const;
+    void vec_scalar_mul_mont_vector(vec64& dst, const vec64& src1, u64 src2) const;
     
 };

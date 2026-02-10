@@ -35,19 +35,6 @@ void vec_mul(vec64& dst, const vec64& src1, const vec64& src2, u64 mod)
 }
 
 
-// 逐位乘
-void vec_scalar_mul(vec64& dst, const vec64& src1, u64 src2, u64 mod)
-{
-    std::size_t len = dst.size();
-    assert(src1.size() == len);
-    assert(mod);
-    src2 %= mod;
-    for(std::size_t i=0;i<len;i++)
-    {
-        dst[i] = mod_mul(src1[i], src2, mod);
-    }
-}
-
 void get_powers(vec64& dst, u64 x, size_t len, u64 mod)
 {
     assert(dst.size() == len);

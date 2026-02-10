@@ -94,6 +94,5 @@ void RaderNTTer64::irader_mont(u64* dst, const u64* src) const
 {
     _rader_inner_mont(dst, src, b2ntt_mont);
     // 除以p
-    u64 pinv_enc = mm.encode(pinv_);
-    for(int i=0; i<p_; i++)dst[i] = mm.mul(dst[i], pinv_enc);
+    mm.vec_scalar_mul_mont_ptr(dst, dst, p_, pinv_);
 }
