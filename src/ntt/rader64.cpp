@@ -4,7 +4,8 @@
 
 RaderNTTer64::RaderNTTer64(u64 p, u64 q, u64 qroot):
     p_(p), g_(findPrimitiveRoot(p)), eta_(mod_pow(qroot, (q-1)/p, q)), q_(q), pinv_(mod_inv(p, q)), 
-    gpp(p), gnp(p), b1ntt(p-1), b2ntt(p-1), subntter(p-1, q, qroot), mm(q)
+    gpp(p), gnp(p), b1ntt(p-1), b2ntt(p-1), subntter(p-1, q, qroot), mm(q),
+    buf_a_(p-1), buf_c_(p-1), buf_a_ntt_(p-1), buf_c_ntt_(p-1)
 {
 
     // 计算g的各个次幂
@@ -31,14 +32,13 @@ RaderNTTer64::~RaderNTTer64() = default;
 
 void RaderNTTer64::_rader_inner(u64* dst, const u64* src, const vec64& bntt) const
 {
-    vec64 a(p_-1), c(p_-1), cntt(p_-1);
+    vec64& a = buf_a_, &c = buf_c_, &antt = buf_a_ntt_, &cntt = buf_c_ntt_;
     // a[i] = x[gnp[i]]
     for(int i=0; i<p_-1; i++)
     {
         a[i] = src[gnp[i]];
     }
     u64 x0 = src[0];
-    vec64 antt(p_-1);
     subntter.ntt(antt.data(), a.data());
     vec_mul(cntt, antt, bntt, q_);
     subntter.intt(c.data(), cntt.data());
@@ -54,14 +54,13 @@ void RaderNTTer64::_rader_inner(u64* dst, const u64* src, const vec64& bntt) con
 
 void RaderNTTer64::_rader_inner_mont(u64* dst, const u64* src, const vec64& bntt) const
 {
-    vec64 a(p_-1), c(p_-1), cntt(p_-1);
+    vec64& a = buf_a_, &c = buf_c_, &antt = buf_a_ntt_, &cntt = buf_c_ntt_;
     // a[i] = x[gnp[i]]
     for(int i=0; i<p_-1; i++)
     {
         a[i] = src[gnp[i]];
     }
     u64 x0 = src[0];
-    vec64 antt(p_-1);
     subntter.ntt_mont(antt.data(), a.data());
     mm.vec_mul_mont(cntt, antt, bntt);
     subntter.intt_mont(c.data(), cntt.data());

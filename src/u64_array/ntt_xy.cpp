@@ -7,7 +7,8 @@ TwistedNtterXY64::TwistedNtterXY64(int n, u64 q, u64 qroot):
     zeta_pos_pows_(n),
     zeta_neg_pows_(n),
     std_ntter(n, q, qroot),
-    mm(q)
+    mm(q),
+    buf_n_(n)
 {
     // 检查n：必须是power of 2
     assert(is_power_of_two(n));
@@ -35,35 +36,30 @@ TwistedNtterXY64::~TwistedNtterXY64()
 
 void TwistedNtterXY64::ntt(vec64& dst, const vec64& src) const
 {
-    vec64 buf(n_);
     vec64 src_encode = mm.batch_encode(src);
-    mm.vec_mul_mont(buf, src_encode, zeta_pos_pows_mont_);
-    std_ntter.ntt_mont(dst.data(), buf.data());
+    mm.vec_mul_mont(buf_n_, src_encode, zeta_pos_pows_mont_);
+    std_ntter.ntt_mont(dst.data(), buf_n_.data());
     mm.batch_decode_inplace(dst);
 
 
 }
 void TwistedNtterXY64::intt(vec64& dst, const vec64& src) const
 {
-    vec64 buf(n_);
-    // std_ntter.intt(buf.data(), src.data());
     vec64 src_encode = mm.batch_encode(src);
-    std_ntter.intt_mont(buf.data(), src_encode.data());
+    std_ntter.intt_mont(buf_n_.data(), src_encode.data());
     // let dst = buffer 逐位乘 zeta_neg_pows
-    mm.vec_mul_mont(dst, buf, zeta_neg_pows_mont_);
+    mm.vec_mul_mont(dst, buf_n_, zeta_neg_pows_mont_);
     mm.batch_decode_inplace(dst);
 }
 
 void TwistedNtterXY64::ntt_mont(vec64& dst, const vec64& src) const
 {
-    vec64 buf(n_);
-    mm.vec_mul_mont(buf, src, zeta_pos_pows_mont_);
-    std_ntter.ntt_mont(dst.data(), buf.data());
+    mm.vec_mul_mont(buf_n_, src, zeta_pos_pows_mont_);
+    std_ntter.ntt_mont(dst.data(), buf_n_.data());
 }
 void TwistedNtterXY64::intt_mont(vec64& dst, const vec64& src) const
 {
-    vec64 buf(n_);
-    std_ntter.intt_mont(buf.data(), src.data());
+    std_ntter.intt_mont(buf_n_.data(), src.data());
     // let dst = buffer 逐位乘 zeta_neg_pows
-    mm.vec_mul_mont(dst, buf, zeta_neg_pows_mont_);
+    mm.vec_mul_mont(dst, buf_n_, zeta_neg_pows_mont_);
 }

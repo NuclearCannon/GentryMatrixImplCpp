@@ -65,6 +65,7 @@ private:
     MontgomeryMultiplier mm;
     vec64 b1ntt_mont, b2ntt_mont;
 
+    mutable vec64 buf_a_, buf_c_, buf_a_ntt_, buf_c_ntt_;
     void _rader_inner(u64* dst, const u64* src, const vec64& bntt) const;
     void _rader_inner_mont(u64* dst, const u64* src, const vec64& bntt) const;
 

@@ -19,6 +19,8 @@ private:
     StandardNTTer std_ntter;
     MontgomeryMultiplier mm;
 
+    mutable vec64 buf_n_;
+
 public:
     TwistedNtterXY64(int n, u64 q, u64 qroot);
     ~TwistedNtterXY64();
