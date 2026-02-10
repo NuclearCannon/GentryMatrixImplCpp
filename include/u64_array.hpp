@@ -24,8 +24,6 @@ private:
 public:
     TwistedNtterXY64(int n, u64 q, u64 qroot);
     ~TwistedNtterXY64();
-    void ntt(vec64& dst, const vec64& src) const;
-    void intt(vec64& dst, const vec64& src) const;
     void ntt_mont(vec64& dst, const vec64& src) const;
     void intt_mont(vec64& dst, const vec64& src) const;
 };
@@ -44,8 +42,6 @@ private:
 public:
     TwistedNtterW64(int p , u64 q, u64 qroot);
     ~TwistedNtterW64();
-    void ntt(vec64& dst, const vec64& src) const;
-    void intt(vec64& dst, const vec64& src) const;
     void ntt_mont(vec64& dst, const vec64& src) const;
     void intt_mont(vec64& dst, const vec64& src) const;
 };

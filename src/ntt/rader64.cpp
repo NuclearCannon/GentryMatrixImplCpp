@@ -21,8 +21,8 @@ RaderNTTer64::RaderNTTer64(u64 p, u64 q, u64 qroot):
         b2[i] = mod_pow(ieta, gpp[i], q);
     }
     // 预先NTT
-    subntter.ntt(b1ntt.data(), b1.data());
-    subntter.ntt(b2ntt.data(), b2.data());
+    subntter.ntt_mont(b1ntt.data(), b1.data());
+    subntter.ntt_mont(b2ntt.data(), b2.data());
     
     b1ntt_mont = mm.batch_encode(b1ntt);
     b2ntt_mont = mm.batch_encode(b2ntt);
@@ -30,27 +30,7 @@ RaderNTTer64::RaderNTTer64(u64 p, u64 q, u64 qroot):
 
 RaderNTTer64::~RaderNTTer64() = default;
 
-void RaderNTTer64::_rader_inner(u64* dst, const u64* src, const vec64& bntt) const
-{
-    vec64& a = buf_a_, &c = buf_c_, &antt = buf_a_ntt_, &cntt = buf_c_ntt_;
-    // a[i] = x[gnp[i]]
-    for(int i=0; i<p_-1; i++)
-    {
-        a[i] = src[gnp[i]];
-    }
-    u64 x0 = src[0];
-    subntter.ntt(antt.data(), a.data());
-    vec_mul(cntt, antt, bntt, q_);
-    subntter.intt(c.data(), cntt.data());
-    for(int u=0; u<p_-1; u++)
-    {
-        dst[gpp[u]] = mod_add(x0, c[u], q_);
-    }
-    u64 sumx = 0;
-    for(int i=0; i<p_; i++)sumx = mod_add(sumx, src[i], q_);
-    dst[0] = sumx;
 
-}
 
 void RaderNTTer64::_rader_inner_mont(u64* dst, const u64* src, const vec64& bntt) const
 {
@@ -74,16 +54,7 @@ void RaderNTTer64::_rader_inner_mont(u64* dst, const u64* src, const vec64& bntt
 
 }
 
-void RaderNTTer64::rader(u64* dst, const u64* src) const
-{
-    _rader_inner(dst, src, b1ntt);
-}
-void RaderNTTer64::irader(u64* dst, const u64* src) const
-{
-    _rader_inner(dst, src, b2ntt);
-    // 除以p
-    for(int i=0; i<p_; i++)dst[i] = mod_mul(dst[i], pinv_, q_);
-}
+
 
 void RaderNTTer64::rader_mont(u64* dst, const u64* src) const
 {

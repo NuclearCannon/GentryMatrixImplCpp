@@ -19,33 +19,6 @@ StandardNTTer::StandardNTTer(size_t n, u64 q, u64 qroot):
 
 StandardNTTer::~StandardNTTer() = default;
 
-void StandardNTTer::_ntt_standard_inner(u64* dst, const u64* src, const u64* roots) const
-{
-    assert(src != nullptr && dst != nullptr);
-    assert(src != dst);   // 暂不支持……
-    const auto& rev = get_bit_reverse_table_by_logn(logn_);
-    // dst[i] = a[rev[i]] mod ctx
-    for (size_t i = 0; i < n_; ++i) {
-        dst[i] = src[rev[i]];
-    }
-    size_t m = 1;
-    u64 t = n_>>1;
-    // 恒有m*t == n/2
-    while (t) {
-        for (size_t i = 0; i < n_; i += 2 * m) {
-            size_t end = i+m;
-            for (size_t k=0, j=i; j < end; k+=t, ++j) {
-                u64 w = roots[k];
-                u64 u = dst[j];
-                u64 v = mod_mul(dst[j+m], w, q_);
-                dst[j] = mod_add(u, v, q_);
-                dst[j+m] = mod_sub(u, v, q_);         
-            }
-        }
-        m <<= 1;    // m *= 2
-        t >>= 1;
-    }
-}
 
 void StandardNTTer::_ntt_standard_inner_mont(u64* dst, const u64* src, const u64* roots) const
 {
@@ -73,16 +46,6 @@ void StandardNTTer::_ntt_standard_inner_mont(u64* dst, const u64* src, const u64
         m <<= 1;    // m *= 2
         t >>= 1;
     }
-}
-
-void StandardNTTer::ntt(u64* dst, const u64* src) const
-{
-    _ntt_standard_inner(dst, src, roots_.data());
-}
-void StandardNTTer::intt(u64* dst, const u64* src) const
-{
-    _ntt_standard_inner(dst, src, iroots_.data());
-    for(int i=0;i<n_;i++)dst[i] = mod_mul(dst[i], ninv_, q_);
 }
 
 void StandardNTTer::ntt_mont(u64* dst, const u64* src) const

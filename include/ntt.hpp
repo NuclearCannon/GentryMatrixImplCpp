@@ -36,15 +36,10 @@ private:
     vec64 iroots_mont_;
     u64 ninv_mont_;
 
-
-    
-    void _ntt_standard_inner(u64* dst, const u64* src, const u64* roots) const;
     void _ntt_standard_inner_mont(u64* dst, const u64* src, const u64* roots) const;
 public:
     StandardNTTer(size_t n, u64 q, u64 qroot);
     ~StandardNTTer();
-    void ntt(u64* dst, const u64* src) const;
-    void intt(u64* dst, const u64* src) const;
 
     void ntt_mont(u64* dst, const u64* src) const;
     void intt_mont(u64* dst, const u64* src) const;
@@ -66,16 +61,12 @@ private:
     vec64 b1ntt_mont, b2ntt_mont;
 
     mutable vec64 buf_a_, buf_c_, buf_a_ntt_, buf_c_ntt_;
-    void _rader_inner(u64* dst, const u64* src, const vec64& bntt) const;
     void _rader_inner_mont(u64* dst, const u64* src, const vec64& bntt) const;
 
 public:
     RaderNTTer64(u64 p, u64 q, u64 qroot);
     ~RaderNTTer64();
     
-    void rader(u64* dst, const u64* src) const;
-    void irader(u64* dst, const u64* src) const;
-
     void rader_mont(u64* dst, const u64* src) const;
     void irader_mont(u64* dst, const u64* src) const;
 
