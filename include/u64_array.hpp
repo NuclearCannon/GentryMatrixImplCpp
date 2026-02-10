@@ -65,10 +65,10 @@ public:
 
     ~U64Context();
 
-    void iw_ntt(vec64& dst, const vec64& src, bool m_in=false, bool m_out=false) const;
-    void iw_intt(vec64& dst, const vec64& src, bool m_in=false, bool m_out=false) const;
-    void xy_ntt(vec64& dst, const vec64& src, bool m_in=false, bool m_out=false) const;
-    void xy_intt(vec64& dst, const vec64& src, bool m_in=false, bool m_out=false) const;
+    void iw_ntt(vec64& dst, const vec64& src) const;
+    void iw_intt(vec64& dst, const vec64& src) const;
+    void xy_ntt(vec64& dst, const vec64& src) const;
+    void xy_intt(vec64& dst, const vec64& src) const;
 
     // 逐位加法
     void add(vec64& dst, const vec64& src1, const vec64& src2) const;
@@ -111,10 +111,10 @@ public:
     U64CtxChain(int n, int p, const vec64& mods, const vec64& roots);
     ~U64CtxChain();
 
-    void iw_ntt(vv64& dst, const vv64& src, bool m_in=false, bool m_out=false) const;
-    void iw_intt(vv64& dst, const vv64& src, bool m_in=false, bool m_out=false) const;
-    void xy_ntt(vv64& dst, const vv64& src, bool m_in=false, bool m_out=false) const;
-    void xy_intt(vv64& dst, const vv64& src, bool m_in=false, bool m_out=false) const;
+    void iw_ntt(vv64& dst, const vv64& src) const;
+    void iw_intt(vv64& dst, const vv64& src) const;
+    void xy_ntt(vv64& dst, const vv64& src) const;
+    void xy_intt(vv64& dst, const vv64& src) const;
 
     // 逐位加法
     void add(vv64& dst, const vv64& src1, const vv64& src2) const;
@@ -192,8 +192,8 @@ public:
     CRTArray iw_intt() const;
     CRTArray xy_ntt() const;
     CRTArray xy_intt() const;
-    CRTArray all_ntt(bool m_in=false, bool m_out=false) const;
-    CRTArray all_intt(bool m_in=false, bool m_out=false) const;
+    CRTArray all_ntt() const;
+    CRTArray all_intt() const;
 
     static CRTArray zeros(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray uniform(std::shared_ptr<const U64CtxChain> cc);

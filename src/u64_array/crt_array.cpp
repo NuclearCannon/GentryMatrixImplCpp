@@ -158,18 +158,18 @@ CRTArray CRTArray::xy_intt() const
     cc_->xy_intt(res.data_, data_);
     return res;
 }
-CRTArray CRTArray::all_ntt(bool m_in, bool m_out) const
+CRTArray CRTArray::all_ntt() const
 {
     CRTArray res(cc_);
-    cc_->iw_ntt(res.data_, data_, m_in, true);
-    cc_->xy_ntt(res.data_, res.data_, true, m_out);
+    cc_->iw_ntt(res.data_, data_);
+    cc_->xy_ntt(res.data_, res.data_);
     return res;
 }
-CRTArray CRTArray::all_intt(bool m_in, bool m_out) const
+CRTArray CRTArray::all_intt() const
 {
     CRTArray res(cc_);
-    cc_->xy_intt(res.data_, data_, m_in, true);
-    cc_->iw_intt(res.data_, res.data_, true, m_out);
+    cc_->xy_intt(res.data_, data_);
+    cc_->iw_intt(res.data_, res.data_);
     return res;
 }
 

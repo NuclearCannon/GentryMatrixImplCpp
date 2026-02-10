@@ -70,13 +70,18 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray
         auto& [cta, ctb] = cts_[i];
         // printf("debug 7\n");
         auto a_split_i = CRTArray(a_split_raw[i], cc_hig_);
-        auto ntted = a_split_i.all_ntt(false, true);
+        auto ntted = a_split_i.all_ntt();
+        // ntted.mont_encode_inplace(); // 理论上这一行应该存在，但是和下面抵消了
         // auto montd = ntted.mont_encode();
         a_sum.adde(ntted.mul_mont(cta));
         b_sum.adde(ntted.mul_mont(ctb));
     }
-    CRTArray a_res = a_sum.all_intt(true, false);
-    CRTArray b_res = b_sum.all_intt(true, false);
+    CRTArray a_res = a_sum.all_intt();
+    CRTArray b_res = b_sum.all_intt();
+    // 理论上这两行应该存在，但是和上面抵消了
+    // a_res.mont_decode_inplace();
+    // b_res.mont_decode_inplace();
+
     // 降低模数
     return std::make_pair(
         a_res.mod_reduce(cc_low_),

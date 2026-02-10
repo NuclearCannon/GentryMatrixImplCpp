@@ -39,16 +39,13 @@ U64Context::~U64Context()
     // do nothing
 }
 
-void U64Context::iw_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
+void U64Context::iw_ntt(vec64& dst, const vec64& src) const
 {
-    if(!(m_in || m_out)) m_in = m_out = true;// (false, false)和(true, true等价)
-    if(!m_in)mm_.batch_encode_to(dst, src);
-    else memcpy(dst.data(), src.data(), dst.size()*sizeof(u64));
     // ntt-I
     for(int i=0;i<pnn_;i++)
     {
-        u64 real_i = dst[i];
-        u64 image_I_i = mm_.mul(dst[i+pnn_], I_mont_);
+        u64 real_i = src[i];
+        u64 image_I_i = mm_.mul(src[i+pnn_], I_mont_);
         dst[i] = mod_add(real_i, image_I_i, q_);
         dst[i+pnn_] = mod_sub(real_i, image_I_i, q_);
     }
@@ -70,14 +67,9 @@ void U64Context::iw_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) con
             }
         }
     }
-    if(!m_out)mm_.batch_decode_inplace(dst);
-
 }
-void U64Context::iw_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
+void U64Context::iw_intt(vec64& dst, const vec64& src) const
 {
-    if(!(m_in || m_out)) m_in = m_out = true;// (false, false)和(true, true等价)
-    if(!m_in)mm_.batch_encode_to(dst, src);
-    else memcpy(dst.data(), src.data(), dst.size()*sizeof(u64));
     // W-iNTT
     vec64 buf_p(p_-1);
     for(int i=0;i<2;i++)
@@ -90,7 +82,7 @@ void U64Context::iw_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) co
             for(int y=0;y<n_;y++)
             {
                 size_t base_y = base_x + y;
-                for(int w=0;w<p_-1;w++)buf_p[w] = dst[base_y + w*nn_];
+                for(int w=0;w<p_-1;w++)buf_p[w] = src[base_y + w*nn_];
                 ntter_w->intt_mont(buf_p, buf_p);
                 for(int w=0;w<p_-1;w++)dst[base_y + w*nn_] = buf_p[w];
             }
@@ -108,13 +100,9 @@ void U64Context::iw_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) co
     }
     // 除以2
     for(auto& i:dst)i = mm_.mul(i, inv2_mont);
-    if(!m_out)mm_.batch_decode_inplace(dst);
 }
-void U64Context::xy_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
+void U64Context::xy_ntt(vec64& dst, const vec64& src) const
 {
-    if(!(m_in || m_out)) m_in = m_out = true;// (false, false)和(true, true等价)
-    if(!m_in)mm_.batch_encode_to(dst, src);
-    else memcpy(dst.data(), src.data(), dst.size()*sizeof(u64));
     // x-ntt
     size_t nn = this->nn_;
     vec64 buf_n(n_);
@@ -129,7 +117,7 @@ void U64Context::xy_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) con
             {
                 size_t base_y = base_w + y;
                 // 取出一列
-                for(int x=0;x<n_;x++)buf_n[x] = dst[base_y + x*n_];
+                for(int x=0;x<n_;x++)buf_n[x] = src[base_y + x*n_];
                 if (i == 0)ntter_p->ntt_mont(buf_n, buf_n);
                 else       ntter_n->ntt_mont(buf_n, buf_n);
                 // 写回去
@@ -156,13 +144,9 @@ void U64Context::xy_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) con
             }
         }
     }
-    if(!m_out)mm_.batch_decode_inplace(dst);
 }
-void U64Context::xy_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
+void U64Context::xy_intt(vec64& dst, const vec64& src) const
 {
-    if(!(m_in || m_out)) m_in = m_out = true;// (false, false)和(true, true等价)
-    if(!m_in)mm_.batch_encode_to(dst, src);
-    else memcpy(dst.data(), src.data(), dst.size()*sizeof(u64));
     // x-ntt
     size_t nn = this->nn_;
     vec64 buf_n(n_);
@@ -177,7 +161,7 @@ void U64Context::xy_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) co
             {
                 size_t base_y = base_w + y;
                 // 取出一列
-                for(int x=0;x<n_;x++)buf_n[x] = dst[base_y + x*n_];
+                for(int x=0;x<n_;x++)buf_n[x] = src[base_y + x*n_];
                 if (i == 0)ntter_p->intt_mont(buf_n, buf_n);
                 else       ntter_n->intt_mont(buf_n, buf_n);
                 // 写回去
@@ -203,7 +187,6 @@ void U64Context::xy_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) co
             }
         }
     }
-    if(!m_out)mm_.batch_decode_inplace(dst);
 }
 
 // 逐位加法

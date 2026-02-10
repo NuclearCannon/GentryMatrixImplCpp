@@ -23,40 +23,40 @@ U64CtxChain::~U64CtxChain()
     // do nothing
 }
 
-void U64CtxChain::iw_ntt(vv64& dst, const vv64& src, bool m_in, bool m_out) const
+void U64CtxChain::iw_ntt(vv64& dst, const vv64& src) const
 {
     assert(dst.size() == chain_len_);
     assert(src.size() == chain_len_);
     for(size_t i=0;i<chain_len_;i++)
     {
-        ctxs_[i]->iw_ntt(dst[i], src[i], m_in, m_out);
+        ctxs_[i]->iw_ntt(dst[i], src[i]);
     }
 }
-void U64CtxChain::iw_intt(vv64& dst, const vv64& src, bool m_in, bool m_out) const
+void U64CtxChain::iw_intt(vv64& dst, const vv64& src) const
 {
     assert(dst.size() == chain_len_);
     assert(src.size() == chain_len_);
     for(size_t i=0;i<chain_len_;i++)
     {
-        ctxs_[i]->iw_intt(dst[i], src[i], m_in, m_out);
+        ctxs_[i]->iw_intt(dst[i], src[i]);
     }
 }
-void U64CtxChain::xy_ntt(vv64& dst, const vv64& src, bool m_in, bool m_out) const
+void U64CtxChain::xy_ntt(vv64& dst, const vv64& src) const
 {
     assert(dst.size() == chain_len_);
     assert(src.size() == chain_len_);
     for(size_t i=0;i<chain_len_;i++)
     {
-        ctxs_[i]->xy_ntt(dst[i], src[i], m_in, m_out);
+        ctxs_[i]->xy_ntt(dst[i], src[i]);
     }
 }
-void U64CtxChain::xy_intt(vv64& dst, const vv64& src, bool m_in, bool m_out) const
+void U64CtxChain::xy_intt(vv64& dst, const vv64& src) const
 {
     assert(dst.size() == chain_len_);
     assert(src.size() == chain_len_);
     for(size_t i=0;i<chain_len_;i++)
     {
-        ctxs_[i]->xy_intt(dst[i], src[i], m_in, m_out);
+        ctxs_[i]->xy_intt(dst[i], src[i]);
     }
 }
 
