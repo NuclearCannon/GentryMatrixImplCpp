@@ -58,6 +58,7 @@ public:
 
     vec64 batch_encode(const vec64& src) const;
     void batch_encode_to(vec64& dst, const vec64& src) const;
+    void batch_decode_to(vec64& dst, const vec64& src) const;
     void batch_encode_inplace(vec64& v) const;
     void batch_decode_inplace(vec64& v) const;
 

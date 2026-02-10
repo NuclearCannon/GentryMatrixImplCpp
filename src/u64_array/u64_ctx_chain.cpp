@@ -93,6 +93,16 @@ void U64CtxChain::mul(vv64& dst, const vv64& src1, const vv64& src2) const
         ctxs_[i]->mul(dst[i], src1[i], src2[i]);
     }
 }
+void U64CtxChain::mul_mont(vv64& dst, const vv64& src1, const vv64& src2) const
+{
+    assert(dst.size() == chain_len_);
+    assert(src1.size() == chain_len_);
+    assert(src2.size() == chain_len_);
+    for(size_t i=0;i<chain_len_;i++)
+    {
+        ctxs_[i]->get_multiplier().vec_mul_mont(dst[i], src1[i], src2[i]);
+    }
+}
 // 逐位负
 void U64CtxChain::neg(vv64& dst, const vv64& src1) const
 {
@@ -123,4 +133,23 @@ bool U64CtxChain::eq(const vv64& src1, const vv64& src2) const
         if (!(ctxs_[i]->eq(src1[i], src2[i])))return false;
     }
     return true;
+}
+
+void U64CtxChain::mont_encode(vv64& dst, const vv64& src) const
+{
+    assert(dst.size() == chain_len_);
+    assert(src.size() == chain_len_);
+    for(size_t i=0;i<chain_len_;i++)
+    {
+        ctxs_[i]->get_multiplier().batch_encode_to(dst[i], src[i]);
+    }
+}
+void U64CtxChain::mont_decode(vv64& dst, const vv64& src) const
+{
+    assert(dst.size() == chain_len_);
+    assert(src.size() == chain_len_);
+    for(size_t i=0;i<chain_len_;i++)
+    {
+        ctxs_[i]->get_multiplier().batch_decode_to(dst[i], src[i]);
+    }
 }

@@ -122,12 +122,16 @@ public:
     void sub(vv64& dst, const vv64& src1, const vv64& src2) const;
     // 逐位乘法
     void mul(vv64& dst, const vv64& src1, const vv64& src2) const;
+    void mul_mont(vv64& dst, const vv64& src1, const vv64& src2) const;
     // 逐位负
     void neg(vv64& dst, const vv64& src1) const;
     // 标量乘
     void mul_scalar(vv64& dst, const vv64& src_vec, u64 src_scalar) const;
     // 比较
     bool eq(const vv64& src1, const vv64& src2) const;
+
+    void mont_encode(vv64& dst, const vv64& src) const;
+    void mont_decode(vv64& dst, const vv64& src) const;
 
     inline int get_chain_length() const {return chain_len_; }
     inline int get_n() const {return n_; }
@@ -178,6 +182,7 @@ public:
     CRTArray neg() const;
     CRTArray sub(const CRTArray& other) const;
     CRTArray mul(const CRTArray& other) const;
+    CRTArray mul_mont(const CRTArray& other) const;
     CRTArray mul_scalar(u64 other) const;
     CRTArray mul_poly(const CRTArray& other) const;
 
@@ -187,8 +192,8 @@ public:
     CRTArray iw_intt() const;
     CRTArray xy_ntt() const;
     CRTArray xy_intt() const;
-    CRTArray all_ntt() const;
-    CRTArray all_intt() const;
+    CRTArray all_ntt(bool m_in=false, bool m_out=false) const;
+    CRTArray all_intt(bool m_in=false, bool m_out=false) const;
 
     static CRTArray zeros(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray uniform(std::shared_ptr<const U64CtxChain> cc);
@@ -202,6 +207,11 @@ public:
 
     // 分解为raw形式
     vv64 mod_by_modulo() const;
+
+    CRTArray mont_encode() const;
+    CRTArray mont_decode() const;
+    void mont_encode_inplace();
+    void mont_decode_inplace();
 
     
 

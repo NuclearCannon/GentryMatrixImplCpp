@@ -1,4 +1,5 @@
 #include "u64_array.hpp"
+#include <cstring>
 
 
 U64Context::U64Context(int n, int p, u64 q, u64 root_q):
@@ -40,7 +41,9 @@ U64Context::~U64Context()
 
 void U64Context::iw_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
 {
+    if(!(m_in || m_out)) m_in = m_out = true;// (false, false)和(true, true等价)
     if(!m_in)mm_.batch_encode_to(dst, src);
+    else memcpy(dst.data(), src.data(), dst.size()*sizeof(u64));
     // ntt-I
     for(int i=0;i<pnn_;i++)
     {
@@ -72,7 +75,9 @@ void U64Context::iw_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) con
 }
 void U64Context::iw_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
 {
+    if(!(m_in || m_out)) m_in = m_out = true;// (false, false)和(true, true等价)
     if(!m_in)mm_.batch_encode_to(dst, src);
+    else memcpy(dst.data(), src.data(), dst.size()*sizeof(u64));
     // W-iNTT
     vec64 buf_p(p_-1);
     for(int i=0;i<2;i++)
@@ -107,7 +112,9 @@ void U64Context::iw_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) co
 }
 void U64Context::xy_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
 {
+    if(!(m_in || m_out)) m_in = m_out = true;// (false, false)和(true, true等价)
     if(!m_in)mm_.batch_encode_to(dst, src);
+    else memcpy(dst.data(), src.data(), dst.size()*sizeof(u64));
     // x-ntt
     size_t nn = this->nn_;
     vec64 buf_n(n_);
@@ -153,7 +160,9 @@ void U64Context::xy_ntt(vec64& dst, const vec64& src, bool m_in, bool m_out) con
 }
 void U64Context::xy_intt(vec64& dst, const vec64& src, bool m_in, bool m_out) const
 {
+    if(!(m_in || m_out)) m_in = m_out = true;// (false, false)和(true, true等价)
     if(!m_in)mm_.batch_encode_to(dst, src);
+    else memcpy(dst.data(), src.data(), dst.size()*sizeof(u64));
     // x-ntt
     size_t nn = this->nn_;
     vec64 buf_n(n_);

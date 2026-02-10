@@ -50,6 +50,13 @@ void MontgomeryMultiplier::batch_encode_to(vec64& dst, const vec64& src) const
     for(size_t i=0; i<size; i++)dst[i] = encode(src[i]);
 
 }
+void MontgomeryMultiplier::batch_decode_to(vec64& dst, const vec64& src) const
+{
+    size_t size = dst.size();
+    assert(src.size() == size);
+    for(size_t i=0; i<size; i++)dst[i] = decode(src[i]);
+
+}
 
 void MontgomeryMultiplier::batch_encode_inplace(vec64& v) const
 {

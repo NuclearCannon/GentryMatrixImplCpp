@@ -47,6 +47,11 @@ KeySwitchKey64CRT::KeySwitchKey64CRT(const CRTArray& sk_from, const CRTArray& sk
         // sk_from_qo *= mods[l]
         sk_from_qo_Bi.mul_scalar_e(mods[l]);
     }
+    for(auto &p: cts_)
+    {
+        p.first.mont_encode_inplace();
+        p.second.mont_encode_inplace();
+    }
 
 
 
@@ -65,12 +70,13 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray
         auto& [cta, ctb] = cts_[i];
         // printf("debug 7\n");
         auto a_split_i = CRTArray(a_split_raw[i], cc_hig_);
-        auto ntted = a_split_i.all_ntt();
-        a_sum.adde(ntted.mul(cta));
-        b_sum.adde(ntted.mul(ctb));
+        auto ntted = a_split_i.all_ntt(false, true);
+        // auto montd = ntted.mont_encode();
+        a_sum.adde(ntted.mul_mont(cta));
+        b_sum.adde(ntted.mul_mont(ctb));
     }
-    CRTArray a_res = a_sum.all_intt();
-    CRTArray b_res = b_sum.all_intt();
+    CRTArray a_res = a_sum.all_intt(true, false);
+    CRTArray b_res = b_sum.all_intt(true, false);
     // 降低模数
     return std::make_pair(
         a_res.mod_reduce(cc_low_),

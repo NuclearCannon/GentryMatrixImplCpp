@@ -102,6 +102,12 @@ CRTArray CRTArray::mul(const CRTArray& other) const
     cc_->mul(res.data_, data_, other.data_);
     return res;
 }
+CRTArray CRTArray::mul_mont(const CRTArray& other) const
+{
+    CRTArray res(cc_);
+    cc_->mul_mont(res.data_, data_, other.data_);
+    return res;
+}
 CRTArray CRTArray::mul_scalar(u64 other) const
 {
     CRTArray res(cc_);
@@ -152,11 +158,38 @@ CRTArray CRTArray::xy_intt() const
     cc_->xy_intt(res.data_, data_);
     return res;
 }
-CRTArray CRTArray::all_ntt() const
+CRTArray CRTArray::all_ntt(bool m_in, bool m_out) const
 {
-    return iw_ntt().xy_ntt();
+    CRTArray res(cc_);
+    cc_->iw_ntt(res.data_, data_, m_in, true);
+    cc_->xy_ntt(res.data_, res.data_, true, m_out);
+    return res;
 }
-CRTArray CRTArray::all_intt() const
+CRTArray CRTArray::all_intt(bool m_in, bool m_out) const
 {
-    return xy_intt().iw_intt();
+    CRTArray res(cc_);
+    cc_->xy_intt(res.data_, data_, m_in, true);
+    cc_->iw_intt(res.data_, res.data_, true, m_out);
+    return res;
+}
+
+CRTArray CRTArray::mont_encode() const
+{
+    CRTArray res(cc_);
+    cc_->mont_encode(res.data_, data_);
+    return res;
+}
+CRTArray CRTArray::mont_decode() const
+{
+    CRTArray res(cc_);
+    cc_->mont_decode(res.data_, data_);
+    return res;
+}
+void CRTArray::mont_encode_inplace()
+{
+    cc_->mont_encode(data_, data_);
+}
+void CRTArray::mont_decode_inplace()
+{
+    cc_->mont_decode(data_, data_);
 }
