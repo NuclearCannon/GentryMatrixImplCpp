@@ -15,46 +15,54 @@
 
 */
 
-
-KeySwitchKey64CRT::KeySwitchKey64CRT(const CRTArray& sk_from, const CRTArray& sk_to, u64 qo, u64 qor)
+KeySwitchKey64CRT::KeySwitchKey64CRT(std::shared_ptr<const U64CtxChain> cc_low,std::shared_ptr<const U64CtxChain> cc_hig, std::vector<std::pair<CRTArray, CRTArray>> cts):
+    cc_low_(cc_low),
+    cc_hig_(cc_hig),
+    cts_(std::move(cts))
 {
-    cc_low_ = sk_from.get_cc();
-    assert(sk_to.get_cc().get() == cc_low_.get());
+
+}
+
+KeySwitchKey64CRT KeySwitchKey64CRT::ksk_gen(const CRTArray& sk_from, const CRTArray& sk_to, u64 qo, u64 qor)
+{
+    std::shared_ptr<const U64CtxChain> cc_low = sk_from.get_cc();
+    assert(sk_to.get_cc().get() == cc_low.get());
     // 构造cc high
-    vec64 mods = cc_low_->get_mods();
-    vec64 roots = cc_low_->get_roots();
+    vec64 mods = cc_low->get_mods();
+    vec64 roots = cc_low->get_roots();
     mods.push_back(qo);
     roots.push_back(qor);
-    int n = cc_low_->get_n();
-    int p = cc_low_->get_p();
-    int size = cc_low_->get_size();
-    cc_hig_ = std::make_shared<const U64CtxChain>(n, p, mods, roots);
+    int n = cc_low->get_n();
+    int p = cc_low->get_p();
+    int size = cc_low->get_size();
+    std::shared_ptr<const U64CtxChain> cc_hig = std::make_shared<const U64CtxChain>(n, p, mods, roots);
     // 使用sk_to加密sk_from的各个次幂
     // 先把他们转换为fmpz_vector形式吧
     fmpz_vector sk_from_fmpz = sk_from.to_fmpz_vector_centered();
     fmpz_vector sk_to_fmpz   = sk_to.to_fmpz_vector_centered();
     // 计算sk_to的cc_hig_形式
-    CRTArray sk_to_hig =CRTArray::from_fmpz_vector(sk_to_fmpz, cc_hig_);
+    CRTArray sk_to_hig =CRTArray::from_fmpz_vector(sk_to_fmpz, cc_hig);
     CRTArray sk_to_hig_ntt = sk_to_hig.all_ntt();
     // 计算sk_from * qo
-    CRTArray sk_from_qo_Bi = CRTArray::from_fmpz_vector(sk_from_fmpz, cc_hig_);
+    CRTArray sk_from_qo_Bi = CRTArray::from_fmpz_vector(sk_from_fmpz, cc_hig);
     sk_from_qo_Bi.mul_scalar_e(qo);
     // 生成cts
-    for(int l=0; l<cc_low_->get_chain_length(); l++)
+    std::vector<std::pair<CRTArray, CRTArray>> cts;
+    for(int l=0; l<cc_low->get_chain_length(); l++)
     {
         // 加密sk_from_qo
-        cts_.push_back(encrypt64_CNNN(sk_from_qo_Bi, sk_to_hig_ntt));
+        cts.push_back(encrypt64_CNNN(sk_from_qo_Bi, sk_to_hig_ntt));
         // sk_from_qo *= mods[l]
         sk_from_qo_Bi.mul_scalar_e(mods[l]);
     }
-    for(auto &p: cts_)
+    for(auto &p: cts)
     {
         p.first.mont_encode_inplace();
         p.second.mont_encode_inplace();
     }
-
-
-
+    return KeySwitchKey64CRT(
+        cc_low, cc_hig, std::move(cts)
+    );
 }
 std::pair<CRTArray, CRTArray> KeySwitchKey64CRT::key_switch_big_1(const CRTArray& a) const
 {

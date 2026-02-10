@@ -24,8 +24,13 @@ class KeySwitchKey64CRT
 private:
     std::shared_ptr<const U64CtxChain> cc_low_, cc_hig_;
     std::vector<std::pair<CRTArray, CRTArray>> cts_;
+    KeySwitchKey64CRT(std::shared_ptr<const U64CtxChain> cc_low,std::shared_ptr<const U64CtxChain> cc_hig, std::vector<std::pair<CRTArray, CRTArray>> cts);
 public:
-    KeySwitchKey64CRT(const CRTArray& sk_from, const CRTArray& sk_to, u64 qo, u64 qor);
-    std::pair<CRTArray, CRTArray> key_switch_big_1(const CRTArray& a) const;
+    
+
+    static KeySwitchKey64CRT ksk_gen(const CRTArray& sk_from, const CRTArray& sk_to, u64 qo, u64 qor);
+
+
+    std::pair<CRTArray, CRTArray> key_switch_big_1(const CRTArray &a) const;
     std::pair<CRTArray, CRTArray> key_switch_big_2(const CRTArray& a, const CRTArray& b) const;
 };

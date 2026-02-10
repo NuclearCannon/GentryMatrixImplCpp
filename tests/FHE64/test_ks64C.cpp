@@ -23,7 +23,7 @@ int test_ks64C()
     // 加密（KS测试不考虑加密本身的噪声）
     auto [cta, ctb] = encrypt64_no_e(m, sk);
     // 构造KSK到sk
-    KeySwitchKey64CRT ksk(sk, sk2, qo, qor);
+    KeySwitchKey64CRT ksk = KeySwitchKey64CRT::ksk_gen(sk, sk2, qo, qor);
     auto [cta2, ctb2] = ksk.key_switch_big_2(cta, ctb);
     // 解密
     auto res = decrypt64(cta2, ctb2, sk2);

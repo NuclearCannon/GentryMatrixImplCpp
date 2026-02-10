@@ -44,7 +44,7 @@ int test_ks64(bool test_base, bool test_crt)
     if (test_crt)
     {
         printf("生成kskc\n");
-        KeySwitchKey64CRT kskc(sk, sk2, qo, qor);
+        KeySwitchKey64CRT kskc = KeySwitchKey64CRT::ksk_gen(sk, sk2, qo, qor);
         auto t1 = std::chrono::high_resolution_clock::now();
         ProfilerStart("bench64c.prof");
         auto [cta2, ctb2] = kskc.key_switch_big_2(cta, ctb);
