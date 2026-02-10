@@ -12,7 +12,12 @@ public:
 
     // C = A @ B.T  (mod q)
     void matmul_transpose(fmpz* C, const fmpz* A, const fmpz* B) const;
-    fmpz_vector circledast(const fmpz_vector& A, const fmpz_vector& B, size_t n, size_t p);
+
+    void matmul_transpose_u64(u64* C, const u64* A, const u64* B) const;
+
+    fmpz_vector circledast_fmpz(const fmpz_vector& A, const fmpz_vector& B, size_t n, size_t p);
+
+    void circledast_u64(u64* dst, const u64* A, const u64* B, size_t n, size_t p);
 };
 
-fmpz_vector circledast(const fmpz_vector& A, const fmpz_vector& B, size_t n, size_t p, const MatmulContext& mc);
+

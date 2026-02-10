@@ -231,11 +231,35 @@ void CRTArray::mont_decode_inplace()
     cc_->mont_decode(data_, data_);
 }
 
+constexpr int circledast_impl = 2;
+
 CRTArray CRTArray::circledast(const CRTArray& other) const
 {
-    auto vec1 = this->to_fmpz_vector();
-    auto vec2 = other.to_fmpz_vector();
-    MatmulContext mc(cc_->get_n(), cc_->get_mod_prod());
-    auto vec3 = mc.circledast(vec1, vec2, cc_->get_n(), cc_->get_p());
-    return CRTArray::from_fmpz_vector(vec3, cc_);
+    if constexpr (circledast_impl == 1)
+    {
+        // 先CRT到一个大模数上，然后调用fmpz实现大模数矩阵乘法
+        auto vec1 = this->to_fmpz_vector();
+        auto vec2 = other.to_fmpz_vector();
+        MatmulContext mc(cc_->get_n(), cc_->get_mod_prod());
+        auto vec3 = mc.circledast_fmpz(vec1, vec2, cc_->get_n(), cc_->get_p());
+        return CRTArray::from_fmpz_vector(vec3, cc_);
+    }
+    else if constexpr (circledast_impl == 2)
+    {
+        CRTArray result(cc_);
+        for(int i=0; i<cc_->get_chain_length(); i++)
+        {
+            u64 q = cc_->get_mods()[i];
+            fmpz_scalar q_fmpz(q);
+
+            MatmulContext mc(cc_->get_n(), q_fmpz.raw());
+            mc.circledast_u64(result.data_[i].data(), data_[i].data(), other.data_[i].data(), cc_->get_n(), cc_->get_p());
+        }
+        return result;
+    }
+    else
+    {
+        assert(0);
+    }
+    
 }

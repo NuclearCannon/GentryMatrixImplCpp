@@ -37,8 +37,25 @@ void MatmulContext::matmul_transpose(fmpz* C, const fmpz* A, const fmpz* B) cons
 	}
 }
 
+void MatmulContext::matmul_transpose_u64(u64* C, const u64* A, const u64* B) const
+{
+    // 填充
+	for(int i=0;i<n_;i++)for(int j=0;j<n_;j++)
+	{
+		
+		fmpz_set_ui(fmpz_mod_mat_entry(A_mat, i, j), *(A + i*n_ + j));
+        fmpz_set_ui(fmpz_mod_mat_entry(B_mat, j, i), *(B + i*n_ + j));   // 在这转置！
+	}
+	fmpz_mod_mat_mul(C_mat, A_mat, B_mat);
+    // 写回
+    for(int i=0;i<n_;i++)for(int j=0;j<n_;j++)
+	{
+        *(C + i*n_ + j) = fmpz_get_ui(fmpz_mod_mat_entry(C_mat, i, j));
+	}
+}
 
-fmpz_vector MatmulContext::circledast(const fmpz_vector& A, const fmpz_vector& B, size_t n, size_t p) 
+
+fmpz_vector MatmulContext::circledast_fmpz(const fmpz_vector& A, const fmpz_vector& B, size_t n, size_t p) 
 {
     assert(n == this->n_);
     size_t nn = n*n;
@@ -64,4 +81,30 @@ fmpz_vector MatmulContext::circledast(const fmpz_vector& A, const fmpz_vector& B
         );
     }
     return result;
+}
+
+void MatmulContext::circledast_u64(u64* dst, const u64* A, const u64* B, size_t n, size_t p)
+{
+    assert(n == this->n_);
+    size_t nn = n*n;
+    size_t pnn = (p-1)*nn;
+
+    for(size_t w=0; w<p-1; w++)
+    {
+        size_t base_a = w*nn;
+        size_t base_b = (p-2-w)*nn;
+        size_t base_ap = base_a;
+        size_t base_an = base_a + pnn;
+        size_t base_bp = base_b + pnn;
+        size_t base_bn = base_b;
+        // 做矩阵乘法
+        // rp = ap @ bp.T
+        // rn = an @ bn.T
+        matmul_transpose_u64(
+            dst+base_ap, A + base_ap, B + base_bp
+        );
+        matmul_transpose_u64(
+            dst+base_an, A+base_an, B+base_bn
+        );
+    }
 }
