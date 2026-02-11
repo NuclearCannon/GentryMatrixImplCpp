@@ -45,4 +45,6 @@ public:
 
     ComplexMatrixGroup matmul_ABT(const ComplexMatrixGroup& other) const;
 
+    static ComplexMatrixGroup random(double abs_max, size_t n, size_t p);
+
 };
