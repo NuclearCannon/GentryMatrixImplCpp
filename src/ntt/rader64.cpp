@@ -3,13 +3,13 @@
 
 
 RaderNTTer64::RaderNTTer64(u64 p, u64 q, u64 qroot):
-    p_(p), g_(findPrimitiveRoot(p)), eta_(mod_pow(qroot, (q-1)/p, q)), q_(q), pinv_(mod_inv(p, q)), 
+    p_(p), eta_(mod_pow(qroot, (q-1)/p, q)), q_(q), pinv_(mod_inv(p, q)), 
     gpp(p), gnp(p), b1ntt(p-1), b2ntt(p-1), subntter(p-1, q, qroot), mm(q),
     buf_a_(p-1), buf_c_(p-1), buf_a_ntt_(p-1), buf_c_ntt_(p-1)
 {
-
+    assert(is_power_of_two(p-1));
     // 计算g的各个次幂
-    get_powers(gpp, g_, p, p);
+    get_powers(gpp, 3, p, p);
     assert(gpp[p-1] == 1);
     for(int i=0;i<p;i++)gnp[i] = gpp[p-1-i];
     // 计算eta^{g^i}

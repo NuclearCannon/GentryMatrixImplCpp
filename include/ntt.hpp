@@ -50,7 +50,7 @@ public:
 // Rader NTT
 class RaderNTTer64 {
 private:
-    u64 p_, g_, eta_, q_, pinv_;
+    u64 p_, eta_, q_, pinv_;
     vec64 gpp, gnp;
     vec64 b1ntt, b2ntt;
     StandardNTTer subntter;
