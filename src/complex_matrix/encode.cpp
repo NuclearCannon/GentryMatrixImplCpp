@@ -1,55 +1,92 @@
 #include "complecx_matrix.hpp"
 #include <cassert>
 #include "uint64.hpp"
+#include "ntt.hpp"
 
-// exp(i*pi/2n)。zeta是4n阶本原单位根。
-complex get_zeta_powers(ssize_t n, ssize_t exp)
+
+void dft_standard(complex* dst, const complex* src, size_t n, bool conj)
 {
-    return std::polar<double>(1, M_PI_2 * (exp % (4*n)) / n);
-}
-
-
-void naive_dft_XY_complex(
-    complex* dst,
-    const complex* src,
-    ssize_t n,
-    bool using_conj_zetas
-)
-{
-    assert(dst != src);
-    ssize_t k5 = using_conj_zetas?-1:1;  // k5 = 5^k mod (4n); using_conj_zetas时，通过k5传递“共轭”这一信息
-    for(ssize_t k=0; k<n; k++)
+    assert(src != nullptr && dst != nullptr);
+    assert(src != dst);
+    
+    const auto& rev = get_bit_reverse_table(n);
+    for (size_t i = 0; i < n; ++i) {
+        dst[i] = src[rev[i]];
+    }
+    size_t m = 1;
+    // root = n阶本原单位根
+    complex root = std::polar<double>(1, 2 * M_PI / n);
+    if (conj) root = std::conj(root);
+    while(m<n)
     {
-        complex Xk(0);
-        for (ssize_t j=0; j<n; j++)
+        complex w_m = std::pow(root, n/(2*m));
+        for(size_t i=0; i<n; i+=2*m)
         {
-            Xk += src[j] * get_zeta_powers(n, k5 * j);
+            complex w = 1;
+            for(size_t j=i; j<i+m; j++)
+            {
+                complex u = dst[j], v=dst[j+m]*w;
+                dst[j] = u+v;
+                dst[j+m] = u-v;
+                w *= w_m;
+            }
         }
-        dst[k] = Xk;
-        k5 *= 5;
-        k5 %= 4*n;
+        m*=2;
     }
 }
 
-void naive_idft_XY_complex(
+
+void dft_XY_complex(
     complex* dst,
     const complex* src,
     ssize_t n,
     bool using_conj_zetas
 )
 {
-    assert(dst != src);
-    for(ssize_t j=0; j<n; j++)
+    std::vector<complex> temp(n);
+    std::vector<complex> temp2(n);
+    // let temp = src * zeta_pos_pows
+
+    
+    complex zeta = std::polar<double>(1, M_PI_2 * (using_conj_zetas?-1:1) / n);
+    complex zetai = 1;
+    for(size_t i=0; i<n; i++)
     {
-        complex Xj(0);
-        ssize_t k5 = using_conj_zetas?1:-1;
-        for (ssize_t k=0; k<n; k++)
-        {
-            Xj += src[k] * get_zeta_powers(n, k5 * j);
-            k5 *= 5;
-            k5 %= 4*n;
-        }
-        dst[j] = Xj / ((complex)(n));
+        temp[i] = src[i] * zetai;
+        zetai *= zeta;
+    }
+    // let temp2 = dst_standard(temp)
+    dft_standard(temp2.data(), temp.data(), n, using_conj_zetas);
+    // 考虑对应关系
+    for(size_t k=0, k5=1; k<n; k++, k5=(k5*5)%(4*n))
+    {
+        dst[k] = temp2[k5/4];
+    }
+}
+
+void idft_XY_complex(
+    complex* dst,
+    const complex* src,
+    ssize_t n,
+    bool using_conj_zetas
+)
+{
+    std::vector<complex> temp(n);
+    std::vector<complex> temp2(n);
+    // let temp = src * zeta_pos_pows
+    // 考虑对应关系
+    for(size_t k=0, k5=1; k<n; k++, k5=(k5*5)%(4*n))
+    {
+        temp2[k5/4] = src[k];
+    }
+    // iNTT
+    dft_standard(temp.data(), temp2.data(), n, !using_conj_zetas);
+    complex izeta = std::polar<double>(1, M_PI_2 * (using_conj_zetas?1:-1) / n);
+    complex izetai = 1/((double)n); // 在这除n
+    for(size_t i=0; i<n; i++)
+    {
+        dst[i] = temp[i] * izetai;
+        izetai *= izeta;
     }
 }
 
@@ -142,13 +179,13 @@ void encode3d(
         for(int x=0; x<n; x++)
         {
             for(int y=0; y<n; y++)buf1[y] = dst[w*n*n + x*n + y];
-            naive_idft_XY_complex(buf2.data(), buf1.data(), n, true);
+            idft_XY_complex(buf2.data(), buf1.data(), n, true);
             for(int y=0; y<n; y++)dst[w*n*n + x*n + y] = buf2[y];
         }
         for(int y=0; y<n; y++)
         {
             for(int x=0; x<n; x++)buf1[x] = dst[w*n*n + x*n + y];
-            naive_idft_XY_complex(buf2.data(), buf1.data(), n, false);
+            idft_XY_complex(buf2.data(), buf1.data(), n, false);
             for(int x=0; x<n; x++)dst[w*n*n + x*n + y] = buf2[x];
         }
     }
@@ -174,13 +211,13 @@ void decode3d(
         for(int y=0; y<n; y++)
         {
             for(int x=0; x<n; x++)buf1[x] = src[w*n*n + x*n + y];
-            naive_dft_XY_complex(buf2.data(), buf1.data(), n, false);
+            dft_XY_complex(buf2.data(), buf1.data(), n, false);
             for(int x=0; x<n; x++)dst[w*n*n + x*n + y] = buf2[x];
         }
         for(int x=0; x<n; x++)
         {
             for(int y=0; y<n; y++)buf1[y] = dst[w*n*n + x*n + y];
-            naive_dft_XY_complex(buf2.data(), buf1.data(), n, true);
+            dft_XY_complex(buf2.data(), buf1.data(), n, true);
             for(int y=0; y<n; y++)dst[w*n*n + x*n + y] = buf2[y];
         }
         
