@@ -43,5 +43,6 @@ public:
 
     static ComplexMatrixGroup from_fmpz_vector(const fmpz_vector& src, double delta, size_t n, size_t p);
 
+    ComplexMatrixGroup matmul_ABT(const ComplexMatrixGroup& other) const;
 
 };
