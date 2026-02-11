@@ -2,6 +2,8 @@
 #include <cstddef>
 #include <complex>
 #include <vector>
+#include "flints.hpp"
+
 
 using complex = std::complex<double>;
 
@@ -36,6 +38,10 @@ public:
 
     ComplexMatrixGroup encode() const;
     ComplexMatrixGroup decode() const;
+
+    fmpz_vector to_fmpz_vector(double delta) const;
+
+    static ComplexMatrixGroup from_fmpz_vector(const fmpz_vector& src, double delta, size_t n, size_t p);
 
 
 };
