@@ -47,4 +47,10 @@ public:
 
     static ComplexMatrixGroup random(double abs_max, size_t n, size_t p);
 
+    // 单位矩阵（调试用）
+    static ComplexMatrixGroup eye(size_t n, size_t p);
+
+    // mat[w,x,y] = x+yi
+    static ComplexMatrixGroup example_matrix(size_t n, size_t p);
+
 };

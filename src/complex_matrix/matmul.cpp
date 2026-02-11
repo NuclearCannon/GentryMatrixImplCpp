@@ -1,7 +1,7 @@
 #include "complecx_matrix.hpp"
 
 
-// let C = A @ B.T
+// let C = A @ B.conj().T
 // 矩阵行优先编码，边长为n
 // using complex = std::complex<double>;
 void matmul_ABT_core(complex* C, const complex* A, const complex* B, size_t n)
@@ -10,7 +10,7 @@ void matmul_ABT_core(complex* C, const complex* A, const complex* B, size_t n)
         for (size_t j = 0; j < n; ++j) {
             complex sum = 0;
             for (size_t k = 0; k < n; ++k) {
-                sum += A[i * n + k] * B[j * n + k];
+                sum += A[i * n + k] * std::conj(B[j * n + k]);
             }
             C[i * n + j] = sum;
         }
