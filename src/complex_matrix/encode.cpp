@@ -2,24 +2,41 @@
 #include <cassert>
 #include "uint64.hpp"
 #include "ntt.hpp"
+#include <cstring>
+#include <memory>
+
+const std::vector<complex>& get_roots(size_t logn, bool conj)
+{
+    assert(logn < 20);
+    int conj_int = conj?1:0;
+
+    static std::unique_ptr<std::vector<complex>> backups[20][2];
+    std::unique_ptr<std::vector<complex>>& pos = backups[logn][conj_int];
+    if(pos.get())return *pos;
+    size_t n = 1<<logn;
+    std::vector<complex> roots(logn);
+    if (conj) for(int i=0; i<logn; i++)roots[i] = std::polar<double>(1, - 2 * M_PI / double(n>>i));
+    else      for(int i=0; i<logn; i++)roots[i] = std::polar<double>(1, + 2 * M_PI / double(n>>i));
+    pos = std::make_unique<std::vector<complex>>(std::move(roots));
+    return *pos;
+}
 
 
 void dft_standard(complex* dst, const complex* src, size_t n, bool conj)
 {
     assert(src != nullptr && dst != nullptr);
     assert(src != dst);
-    
+    size_t logn = Log2(n);
     const auto& rev = get_bit_reverse_table(n);
     for (size_t i = 0; i < n; ++i) {
         dst[i] = src[rev[i]];
     }
     size_t m = 1;
-    // root = n阶本原单位根
-    complex root = std::polar<double>(1, 2 * M_PI / n);
-    if (conj) root = std::conj(root);
+    const std::vector<complex>& roots = get_roots(logn, conj);
+    size_t log_n_div_2m = logn-1;
     while(m<n)
     {
-        complex w_m = std::pow(root, n/(2*m));
+        complex w_m = roots[log_n_div_2m];
         for(size_t i=0; i<n; i+=2*m)
         {
             complex w = 1;
@@ -31,7 +48,8 @@ void dft_standard(complex* dst, const complex* src, size_t n, bool conj)
                 w *= w_m;
             }
         }
-        m*=2;
+        m<<=1;
+        log_n_div_2m --;
     }
 }
 
@@ -100,6 +118,14 @@ std::vector<complex> get_eta_powers(ssize_t p)
     }
     return result;
 }
+
+/*
+
+请不要试图使用Rader来加速W轴的DFT
+RaderDFT的数值稳定性太差，而且并不快到哪去！
+
+*/
+
 
 void naive_dft_W_complex(
     complex* dst,

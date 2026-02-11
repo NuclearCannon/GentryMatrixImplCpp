@@ -7,7 +7,7 @@
 std::shared_ptr<std::vector<size_t>> bitrev_cache[64];
 
 const std::vector<size_t>& get_bit_reverse_table(size_t n) {
-    int log2n = log2(n);
+    int log2n = Log2(n);
     return get_bit_reverse_table_by_logn(log2n);
 }
 

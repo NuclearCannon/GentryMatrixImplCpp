@@ -5,7 +5,7 @@
 StandardNTTer::StandardNTTer(size_t n, u64 q, u64 qroot):
     n_(n), q_(q), mm(q)
 {
-    logn_ = log2(n);
+    logn_ = Log2(n);
     assert(q%n==1);
     u64 nroot = mod_pow(qroot, (q-1)/n, q);
     roots_ = get_powers(nroot, n/2, q);

@@ -8,7 +8,7 @@
 const std::vector<size_t>& get_bit_reverse_table(size_t n);
 const std::vector<size_t>& get_bit_reverse_table_by_logn(size_t log2n);
 
-constexpr int log2(int x)
+constexpr int Log2(int x)
 {
     assert((x & (x - 1)) == 0 && x >= 1);
     int i=-1;
