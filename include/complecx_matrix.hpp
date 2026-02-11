@@ -1,0 +1,41 @@
+#pragma once
+#include <cstddef>
+#include <complex>
+#include <vector>
+
+using complex = std::complex<double>;
+
+// 一个(p-1, n, n)数组
+// 在朴素形式下，其[w, x, y]位置是第w个矩阵的[x,y]位置
+class ComplexMatrixGroup
+{
+private:
+    size_t p_, n_;
+
+    std::vector<complex> data_;
+    // 私有构造函数，从内容中直接构造
+    ComplexMatrixGroup(size_t n, size_t p, std::vector<complex> data);
+public:
+    ComplexMatrixGroup(size_t n, size_t p); // 0矩阵
+
+    ComplexMatrixGroup(const ComplexMatrixGroup&) = default;
+    ComplexMatrixGroup(ComplexMatrixGroup&&) = default;
+    ~ComplexMatrixGroup() = default;
+
+    ComplexMatrixGroup& operator=(const ComplexMatrixGroup&) = delete;
+    ComplexMatrixGroup& operator=(ComplexMatrixGroup&&) = delete;
+
+    inline complex& at(size_t w, size_t x, size_t y)
+    {
+        return data_.at((w*n_ + x)*n_ + y);
+    }
+    const complex& at(size_t w, size_t x, size_t y) const 
+    {
+        return data_.at((w*n_ + x)*n_ + y);
+    }
+
+    ComplexMatrixGroup encode() const;
+    ComplexMatrixGroup decode() const;
+
+
+};
