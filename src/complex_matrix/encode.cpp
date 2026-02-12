@@ -112,12 +112,27 @@ void idft_XY_complex(
 std::vector<complex> get_eta_powers(ssize_t p)
 {
     std::vector<complex> result(p);
-    for(int i=0; i<p; i++)
+    int gi = 1;
+    for(int i=0; i<p-1; i++, gi=(gi*3)%p)
     {
-        result[i] = std::polar<double>(1, M_PI * 2 * i / p);
+        result[i] = std::polar<double>(1, M_PI * 2 * gi / p);
     }
+    assert(gi==1);
     return result;
 }
+
+std::vector<complex> get_ieta_powers(ssize_t p)
+{
+    std::vector<complex> result(p);
+    int gi = 1;
+    for(int i=0; i<p-1; i++, gi=(gi*3)%p)
+    {
+        result[i] = std::polar<double>(1, - M_PI * 2 * gi / p);
+    }
+    assert(gi==1);
+    return result;
+}
+
 
 /*
 
@@ -137,50 +152,42 @@ void naive_dft_W_complex(
     assert(dst != src);
     ssize_t n = p-1;
     assert(is_power_of_two(n) && n>=4);
-    // 那么3是一个原根
-    constexpr ssize_t gamma = 3;
-
-    ssize_t gamma_k = gamma;
-    for(ssize_t k=1; k<p; k++)
+    for(int u=0; u<p-1; u++)
     {
-        complex Xk = 0;
-        for(ssize_t j=0; j<p-1; j++)
+        complex Gu = 0;
+        for(int v=0; v<p-1; v++)
         {
-            Xk += src[j] * etas[j*gamma_k%p];
+            Gu += src[v] * etas[(u-v+p-1)%(p-1)];
         }
-        dst[k-1] = Xk;
-        gamma_k = (gamma_k * gamma) % p;
+        dst[u] = Gu;
     }
+
 }
 
 void naive_idft_W_complex(
     complex* dst,
     const complex* src,
     ssize_t p,
-    const std::vector<complex>& etas
+    const std::vector<complex>& ietas
 )
 {
     assert(dst != src);
     ssize_t n = p-1;
     assert(is_power_of_two(n) && n>=4);
-    // 那么3是一个原根
-    constexpr ssize_t gamma = 3;
-    complex sum = 0;
-    for(ssize_t j=0; j<p-1; j++)
+    complex T = 0;
+    for(int v=0; v<p-1; v++)
     {
-        complex Xj = 0;
-        ssize_t gamma_k = p-gamma;
-        for(ssize_t k=1; k<p; k++)
+        complex gv = 0;
+        for(int u=0; u<p-1; u++)
         {
-            Xj += src[k-1] * etas[j*gamma_k%p];
-            gamma_k = (gamma_k * gamma) % p;
+            gv += src[u] * ietas[(u-v+p-1)%(p-1)];
         }
-        dst[j] = Xj;
-        sum += Xj;
+        dst[v] = gv;
+        T+=gv;
     }
-    for(int i=0; i<n; i++)
-    {
-        dst[i] = (dst[i]+sum)/((complex)p);
+    for(int i=0; i<p-1; i++){
+        dst[i] += T;
+        dst[i] /= p;
     }
 }
 
@@ -194,14 +201,14 @@ void encode3d(
     ssize_t buflen = (p-1)<n?n:p-1;
     std::vector<complex> buf1(buflen);
     std::vector<complex> buf2(buflen);
-    auto etas = get_eta_powers(p);
+    auto ietas = get_ieta_powers(p);
     // W-iDFT
     for(int x=0; x<n; x++)
     {
         for(int y=0; y<n; y++)
         {
             for(int w=0; w<p-1; w++)buf1[w] = src[w*n*n + x*n + y];
-            naive_idft_W_complex(buf2.data(), buf1.data(), p, etas);
+            naive_idft_W_complex(buf2.data(), buf1.data(), p, ietas);
             for(int w=0; w<p-1; w++)dst[w*n*n + x*n + y] = buf2[w];
         }
     }
