@@ -1,6 +1,7 @@
 
 
 #include "montgomery.hpp"
+#include "math_utils.hpp"
 
 MontgomeryMultiplier::MontgomeryMultiplier(uint64_t M)
 {

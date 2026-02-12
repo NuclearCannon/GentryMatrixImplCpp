@@ -3,24 +3,6 @@
 #include "modops.hpp"
 #include "vec64.hpp"
 
-// 一个数在模2^64意义下的乘法逆元
-constexpr uint64_t modinv64(uint64_t a) {
-    // 要求 a 是奇数，否则无逆元
-    if ((a & 1) == 0) {
-        return 0; 
-    }
-
-    uint64_t x = 1; // a ≡ 1 (mod 2), so inverse is 1 mod 2
-    // 牛顿迭代：每次加倍精度
-    x = x * (2 - a * x); // 2 bits
-    x = x * (2 - a * x); // 4 bits
-    x = x * (2 - a * x); // 8 bits
-    x = x * (2 - a * x); // 16 bits
-    x = x * (2 - a * x); // 32 bits
-    x = x * (2 - a * x); // 64 bits
-
-    return x;
-}
 
 
 // Montgomery乘法器

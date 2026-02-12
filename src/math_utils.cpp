@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstddef>
+#include "math_utils.hpp"
 
 
 bool is_power_of_two(size_t x) noexcept {
@@ -16,4 +17,22 @@ size_t Log2(size_t x)
         i++;
     }
     return i;
+}
+
+uint64_t modinv64(uint64_t a) {
+    // 要求 a 是奇数，否则无逆元
+    if ((a & 1) == 0) {
+        return 0; 
+    }
+
+    uint64_t x = 1; // a ≡ 1 (mod 2), so inverse is 1 mod 2
+    // 牛顿迭代：每次加倍精度
+    x = x * (2 - a * x); // 2 bits
+    x = x * (2 - a * x); // 4 bits
+    x = x * (2 - a * x); // 8 bits
+    x = x * (2 - a * x); // 16 bits
+    x = x * (2 - a * x); // 32 bits
+    x = x * (2 - a * x); // 64 bits
+
+    return x;
 }

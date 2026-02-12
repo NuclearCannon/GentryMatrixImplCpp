@@ -1,3 +1,4 @@
+#pragma once
 #include "key_switch_64.hpp"
 
 std::pair<CRTArray, CRTArray> circledast_ct(

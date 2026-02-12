@@ -28,7 +28,7 @@ void dft_standard(complex* dst, const complex* src, size_t n, bool conj)
     assert(src != nullptr && dst != nullptr);
     assert(src != dst);
     size_t logn = Log2(n);
-    const auto& rev = get_bit_reverse_table(n);
+    const auto& rev = get_bit_reverse_table_by_logn(logn);
     for (size_t i = 0; i < n; ++i) {
         dst[i] = src[rev[i]];
     }

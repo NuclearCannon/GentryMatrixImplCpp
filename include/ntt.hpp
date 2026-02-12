@@ -1,11 +1,9 @@
 #pragma once
 #include <vector>
-#include <unordered_map>
 #include "flints.hpp"
 
 #include "montgomery.hpp"
 
-const std::vector<size_t>& get_bit_reverse_table(size_t n);
 const std::vector<size_t>& get_bit_reverse_table_by_logn(size_t log2n);
 
 
