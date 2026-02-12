@@ -5,20 +5,13 @@
 
 TwistedNtterW64::TwistedNtterW64(int p , u64 q, u64 qroot):
     p_(p), q_(q), 
-    gpp(p), gnp(p),
     subntter(p-1, q, qroot),
     mm(q),
     buf1(p-1), 
     buf2(p-1),
     b_(p-1), binv_(p-1)
 {
-    // 生成gpp
-    gpp[0] = 1;
-    for(int i=1; i<p; i++)gpp[i] = (gpp[i-1]*3)%p;
-    assert(gpp[p-1] == 1);
-    // 生成gnp
-    for(int i=0; i<p; i++)gnp[i] = gpp[p-1-i];
-
+    vec64 gpp = get_powers(3, p-1, p);
     // 生成etas_
     u64 eta = mod_pow(qroot, (q-1)/p, q);
     vec64 etas(p-1);

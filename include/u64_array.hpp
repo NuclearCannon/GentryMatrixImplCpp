@@ -39,12 +39,6 @@ private:
     StandardNTTer subntter;
     MontgomeryMultiplier mm;
 
-    // gpp[i] = gamma^i
-    vec64 gpp;
-    
-    // gnp[i] = gamma^{-i} = gamma^{p-1-i}
-    vec64 gnp; 
-
     // b_[i] = eta^{gamma^i}（蒙哥马利形式）
     vec64 b_;
 
