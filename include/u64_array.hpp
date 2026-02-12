@@ -36,8 +36,21 @@ class TwistedNtterW64
 private:
     u64 p_;
     u64 q_;
-    RaderNTTer64 rader;
+    StandardNTTer subntter;
     MontgomeryMultiplier mm;
+
+    // gpp[i] = gamma^i
+    vec64 gpp;
+    
+    // gnp[i] = gamma^{-i} = gamma^{p-1-i}
+    vec64 gnp; 
+
+    // b_[i] = eta^{gamma^i}（蒙哥马利形式）
+    vec64 b_;
+
+    // binv_[i] = inv(etas[i])（蒙哥马利形式）
+    vec64 binv_;
+    
     mutable vec64 buf1, buf2;
 public:
     TwistedNtterW64(int p , u64 q, u64 qroot);
