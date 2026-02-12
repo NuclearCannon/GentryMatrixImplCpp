@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
-#include "uint64.hpp"
+#include "modops.hpp"
+#include "vec64.hpp"
 
 // 一个数在模2^64意义下的乘法逆元
 constexpr uint64_t modinv64(uint64_t a) {

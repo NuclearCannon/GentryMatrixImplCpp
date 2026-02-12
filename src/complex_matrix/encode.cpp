@@ -1,9 +1,10 @@
 #include "complecx_matrix.hpp"
 #include <cassert>
-#include "uint64.hpp"
+
 #include "ntt.hpp"
 #include <cstring>
 #include <memory>
+#include "math_utils.hpp"
 
 const std::vector<complex>& get_roots(size_t logn, bool conj)
 {

@@ -1,6 +1,6 @@
 #include "FHE/key_switch_64.hpp"
 
-std::pair<KeySwitchKey64CRT, KeySwitchKey64CRT> create_ksks_for_circledast_ct(const CRTArray& sk, u64 qo, u64 qor)
+std::pair<KeySwitchKey64CRT, KeySwitchKey64CRT> create_ksks_for_circledast_ct(const CRTArray& sk, uint64_t qo, uint64_t qor)
 {
     CRTArray sk1 = sk.transpose().conj().w_inv();
     CRTArray sk2 = sk1.mul_poly(sk);

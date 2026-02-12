@@ -114,7 +114,7 @@ void U64CtxChain::neg(vv64& dst, const vv64& src1) const
     }
 }
 // 标量乘
-void U64CtxChain::mul_scalar(vv64& dst, const vv64& src_vec, u64 src_scalar) const
+void U64CtxChain::mul_scalar(vv64& dst, const vv64& src_vec, uint64_t src_scalar) const
 {
     assert(dst.size() == chain_len_);
     assert(src_vec.size() == chain_len_);

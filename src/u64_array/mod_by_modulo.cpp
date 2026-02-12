@@ -22,7 +22,7 @@ vv64 CRTArray::mod_by_modulo() const
         // 令剩余部分除以mod[i]
         for(int j=i+1; j<chain_len; j++)
         {
-            u64 inv = mod_inv(mods[i], mods[j]);
+            uint64_t inv = mod_inv(mods[i], mods[j]);
             ctxs[j]->mul_scalar(data[j], data[j], inv);
         }
         // push

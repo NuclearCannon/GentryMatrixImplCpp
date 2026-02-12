@@ -8,10 +8,10 @@ class KeySwitchKey64Base
 {
 private:
     std::shared_ptr<const U64CtxChain> cc_low_, cc_hig_;
-    u64 B_,L_;
+    uint64_t B_,L_;
     std::vector<std::pair<CRTArray, CRTArray>> cts_;
 public:
-    KeySwitchKey64Base(const CRTArray& sk_from, const CRTArray& sk_to, u64 B, u64 L, u64 qo, u64 qor);
+    KeySwitchKey64Base(const CRTArray& sk_from, const CRTArray& sk_to, uint64_t B, uint64_t L, uint64_t qo, uint64_t qor);
     std::pair<CRTArray, CRTArray> key_switch_big_1(const CRTArray& a) const;
     std::pair<CRTArray, CRTArray> key_switch_big_2(const CRTArray& a, const CRTArray& b) const;
 };
@@ -38,11 +38,11 @@ private:
 public:
     
 
-    static KeySwitchKey64CRT ksk_gen(const CRTArray& sk_from, const CRTArray& sk_to, u64 qo, u64 qor);
+    static KeySwitchKey64CRT ksk_gen(const CRTArray& sk_from, const CRTArray& sk_to, uint64_t qo, uint64_t qor);
 
 
     std::pair<CRTArray, CRTArray> key_switch_big_1(const CRTArray &a) const;
     std::pair<CRTArray, CRTArray> key_switch_big_2(const CRTArray& a, const CRTArray& b) const;
 };
 
-std::pair<KeySwitchKey64CRT, KeySwitchKey64CRT> create_ksks_for_circledast_ct(const CRTArray& sk, u64 qo, u64 qor);
+std::pair<KeySwitchKey64CRT, KeySwitchKey64CRT> create_ksks_for_circledast_ct(const CRTArray& sk, uint64_t qo, uint64_t qor);

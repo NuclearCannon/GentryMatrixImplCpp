@@ -2,7 +2,7 @@
 #include <cassert>
 #include "ntt.hpp"
 #include <memory>
-
+#include "math_utils.hpp"
 // Cache for bit-reversal tables: key = n (must be power of two)
 std::shared_ptr<std::vector<size_t>> bitrev_cache[64];
 

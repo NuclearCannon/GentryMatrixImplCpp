@@ -2,7 +2,7 @@
 #include <cstring>
 
 
-U64Context::U64Context(int n, int p, u64 q, u64 root_q):
+U64Context::U64Context(int n, int p, uint64_t q, uint64_t root_q):
     n_(n),
     p_(p),
     nn_(n*n),
@@ -14,9 +14,9 @@ U64Context::U64Context(int n, int p, u64 q, u64 root_q):
     bufn_(n)
 {
     // 计算zeta. zeta是4n阶本原单位根
-    assert((q-1)%((u64)(4*n)) == 0);;
+    assert((q-1)%((uint64_t)(4*n)) == 0);;
     // 计算eta. eta是p阶本原单位根
-    assert((q-1)%((u64)p) == 0);
+    assert((q-1)%((uint64_t)p) == 0);
     // 生成各ntter对象
     ntter_p = std::make_unique<TwistedNtterXY64>(n,q,root_q);
     ntter_n = std::make_unique<TwistedNtterXY64>(n,q,mod_inv(root_q, q));
@@ -46,8 +46,8 @@ void U64Context::iw_ntt(vec64& dst, const vec64& src) const
     // ntt-I
     for(int i=0;i<pnn_;i++)
     {
-        u64 real_i = src[i];
-        u64 image_I_i = mm_.mul(src[i+pnn_], I_mont_);
+        uint64_t real_i = src[i];
+        uint64_t image_I_i = mm_.mul(src[i+pnn_], I_mont_);
         dst[i] = mod_add(real_i, image_I_i, q_);
         dst[i+pnn_] = mod_sub(real_i, image_I_i, q_);
     }
@@ -93,7 +93,7 @@ void U64Context::iw_intt(vec64& dst, const vec64& src) const
     // I-iNTT
     for(int i=0;i<pnn_;i++)
     {
-        u64 Pi = dst[i], Ni = dst[i+pnn_];
+        uint64_t Pi = dst[i], Ni = dst[i+pnn_];
         dst[i] = mod_add(Pi, Ni, q_);
         dst[i+pnn_] = mm_.mul(
             mod_sub(Pi, Ni, q_),
@@ -231,9 +231,9 @@ void U64Context::neg(vec64& dst, const vec64& src1) const
     }
 }
 // 标量乘
-void U64Context::mul_scalar(vec64& dst, const vec64& src_vec, u64 src_scalar) const
+void U64Context::mul_scalar(vec64& dst, const vec64& src_vec, uint64_t src_scalar) const
 {
-    u64 encoded_scalar = mm_.encode(src_scalar);
+    uint64_t encoded_scalar = mm_.encode(src_scalar);
     size_t size = dst.size();
     assert(src_vec.size() == size);
     for(int i=0; i<size; i++)dst[i] = mm_.mul(src_vec[i], encoded_scalar);

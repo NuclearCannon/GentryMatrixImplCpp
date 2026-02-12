@@ -20,15 +20,15 @@ int randint(int a, int b) {
     return dist(rng);
 }
 
-u64 randu64(u64 a, u64 b)
+uint64_t randu64(uint64_t a, uint64_t b)
 {
-    std::uniform_int_distribution<u64> dist(a, b);
+    std::uniform_int_distribution<uint64_t> dist(a, b);
     return dist(rng);
 }
 
-i64 randi64(i64 a, i64 b)
+int64_t randi64(int64_t a, int64_t b)
 {
-    std::uniform_int_distribution<i64> dist(a, b);
+    std::uniform_int_distribution<int64_t> dist(a, b);
     return dist(rng);
 }
 

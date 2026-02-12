@@ -22,14 +22,14 @@ CRTArray CRTArray::mod_reduce(std::shared_ptr<const U64CtxChain> cc2) const
         ctxs[i]->sub_unsafe(data[i], data[i], remainder);
     }
     // 然后，乘以额外模数的乘法逆元
-    u64 qo = cc_->get_mods().back();
+    uint64_t qo = cc_->get_mods().back();
     for(int i=0;i<cc2->get_chain_length(); i++)
     {
-        u64 qo_inv = mod_inv(qo, mods[i]);
+        uint64_t qo_inv = mod_inv(qo, mods[i]);
         ctxs[i]->mul_scalar(data[i], data[i], qo_inv);
     }
     // 对于余数大于一半的位，+1
-    u64 half = qo/2;
+    uint64_t half = qo/2;
     for(int i=0; i<cc2->get_size(); i++)
     {
         if(remainder[i]>half)

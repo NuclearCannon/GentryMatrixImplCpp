@@ -1,4 +1,5 @@
 #include "matmul.hpp"
+#include "vec64.hpp"
 
 
 
@@ -37,7 +38,7 @@ void MatmulContext::matmul_transpose(fmpz* C, const fmpz* A, const fmpz* B) cons
 	}
 }
 
-void MatmulContext::matmul_transpose_u64(u64* C, const u64* A, const u64* B) const
+void MatmulContext::matmul_transpose_u64(uint64_t* C, const uint64_t* A, const uint64_t* B) const
 {
     // 填充
 	for(int i=0;i<n_;i++)for(int j=0;j<n_;j++)
@@ -91,7 +92,7 @@ fmpz_vector MatmulContext::circledast_fmpz(const fmpz_vector& A, const fmpz_vect
     return result;
 }
 
-void MatmulContext::circledast_u64(u64* dst, const u64* A, const u64* B, size_t n, size_t p)
+void MatmulContext::circledast_u64(uint64_t* dst, const uint64_t* A, const uint64_t* B, size_t n, size_t p)
 {
     assert(n == this->n_);
     size_t nn = n*n;

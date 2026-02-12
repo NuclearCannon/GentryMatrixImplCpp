@@ -1,7 +1,8 @@
 
 #include "flints.hpp"
 #include "random.hpp"
-#include "uint64.hpp"
+#include <cstdint>
+
 
 
 std::string fmpz_to_string(fmpz_t x)
@@ -71,7 +72,7 @@ fmpz_vector::fmpz_vector(const std::vector<std::string>& lst_str)
     }
 }
 
-fmpz_vector::fmpz_vector(const std::vector<u64>& src)
+fmpz_vector::fmpz_vector(const std::vector<uint64_t>& src)
 {
     int len = src.size();
     fmpz *vec = _fmpz_vec_init(len);
@@ -162,11 +163,11 @@ fmpz_vector fmpz_vector::mod_centered(const fmpz_t q) const
 
 
 // 返回逐位绝对值的最大值，若超出int范围返回-1
-long fmpz_vector::max_abs() const
+int64_t fmpz_vector::max_abs() const
 {
     fmpz_t tmp;
     fmpz_init(tmp);
-    long max_val = 0;
+    int64_t max_val = 0;
     for (int i = 0; i < len_; ++i) {
         fmpz_abs(tmp, data_ + i);
         if (fmpz_cmp_si(tmp, max_val) > 0) {
@@ -182,10 +183,10 @@ long fmpz_vector::max_abs() const
 }
 
 
-std::vector<u64> fmpz_vector::to_uint64() const
+std::vector<uint64_t> fmpz_vector::to_uint64() const
 {
-    std::vector<u64> result(len_);
-    static_assert(std::is_same_v<mp_limb_t, u64>);
+    std::vector<uint64_t> result(len_);
+    static_assert(std::is_same_v<mp_limb_t, uint64_t>);
     for (int i = 0; i < len_; ++i) {
         if (!fmpz_abs_fits_ui(data_+i))
         {

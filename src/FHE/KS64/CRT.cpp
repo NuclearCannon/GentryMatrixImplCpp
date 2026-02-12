@@ -30,7 +30,7 @@ KeySwitchKey64CRT::KeySwitchKey64CRT(std::shared_ptr<const U64CtxChain> cc_low,s
 
 }
 
-KeySwitchKey64CRT KeySwitchKey64CRT::ksk_gen(const CRTArray& sk_from, const CRTArray& sk_to, u64 qo, u64 qor)
+KeySwitchKey64CRT KeySwitchKey64CRT::ksk_gen(const CRTArray& sk_from, const CRTArray& sk_to, uint64_t qo, uint64_t qor)
 {
     std::shared_ptr<const U64CtxChain> cc_low = sk_from.get_cc();
     assert(sk_to.get_cc().get() == cc_low.get());

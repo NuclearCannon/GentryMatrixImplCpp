@@ -14,8 +14,8 @@ int test_ct_circledast()
     vec64 mods = {70368747120641, 70368747294721, 70368748426241};
     // 原根链
     vec64 roots = {6, 11, 6};
-    u64 qo = 576460752303421441;
-    u64 qor = 19;
+    uint64_t qo = 576460752303421441;
+    uint64_t qor = 19;
     std::shared_ptr<U64CtxChain> cc = std::make_shared<U64CtxChain>(n, p, mods, roots);
     printf("构造明文\n");
     auto u = CRTArray::randint(cc, 1000, 2000);

@@ -1,5 +1,5 @@
 #include "CRT.hpp"
-#include "uint64.hpp"
+
 
 
 // CRT分解
@@ -8,7 +8,7 @@ vv64 crt(const fmpz_vector& src, const vec64& mods)
     vv64 result;
     int len = src.len();
     fmpz_vector buf(len);
-    for(u64 mod : mods)
+    for(uint64_t mod : mods)
     {
         fmpz_scalar mod_mpz = fmpz_scalar::from_ui(mod);
         _fmpz_vec_scalar_mod_fmpz(buf.raw(), src.raw(), len, mod_mpz.raw());
@@ -42,7 +42,7 @@ void icrt(fmpz_vector& dst, const vv64& src, const vec64& mods)
 
     // 逐个合并后续模数
     for (int i = 1; i < mod_len; ++i) {
-        u64 mi = mods[i];
+        uint64_t mi = mods[i];
         fmpz_set_ui(m2, mi);          // m2 = mods[i]
         fmpz_set(m1, M.raw());        // m1 = 当前累积模数 M
 

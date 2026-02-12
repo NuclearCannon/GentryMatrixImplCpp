@@ -12,7 +12,7 @@ CRTArray CRTArray::uniform(std::shared_ptr<const U64CtxChain> cc)
     vv64 data;
     const vec64& mods = cc->get_mods();
     int size = cc->get_size();
-    for(u64 mod : mods)
+    for(uint64_t mod : mods)
     {
         vec64 data_i(size);
         for(int j=0;j<size;j++)data_i[j] = ramdom_generators::randu64(0, mod-1);
@@ -28,14 +28,14 @@ CRTArray CRTArray::dg(std::shared_ptr<const U64CtxChain> cc)
     for(int i=0;i<size;i++)
     {
         // 生成第i个随机数
-        i64 t = ramdom_generators::dg(5);
+        int64_t t = ramdom_generators::dg(5);
         // 取余
         for(int j=0;j<mods.size();j++)
         {
-            u64 mod = mods[j];
-            i64 t2 = t % (i64)mod;
+            uint64_t mod = mods[j];
+            int64_t t2 = t % (int64_t)mod;
             while(t2<0)t2+=mod;
-            u64 t3 = t2;
+            uint64_t t3 = t2;
             data[j][i] = t3 % mod;
         }
     }
@@ -51,14 +51,14 @@ CRTArray CRTArray::sk(std::shared_ptr<const U64CtxChain> cc)
     for(int i=0;i<size;i+=n)
     {
         // 生成第i个随机数
-        i64 t = ramdom_generators::dg(5);
+        int64_t t = ramdom_generators::dg(5);
         // 取余
         for(int j=0;j<mods.size();j++)
         {
-            u64 mod = mods[j];
-            i64 t2 = t % (i64)mod;
+            uint64_t mod = mods[j];
+            int64_t t2 = t % (int64_t)mod;
             while(t2<0)t2+=mod;
-            u64 t3 = t2;
+            uint64_t t3 = t2;
             data[j][i] = t3 % mod;
         }
     }
@@ -66,7 +66,7 @@ CRTArray CRTArray::sk(std::shared_ptr<const U64CtxChain> cc)
 }
 
 
-CRTArray CRTArray::randint(std::shared_ptr<const U64CtxChain> cc, i64 start, i64 end)
+CRTArray CRTArray::randint(std::shared_ptr<const U64CtxChain> cc, int64_t start, int64_t end)
 {
     
     const vec64& mods = cc->get_mods();
@@ -75,14 +75,14 @@ CRTArray CRTArray::randint(std::shared_ptr<const U64CtxChain> cc, i64 start, i64
     for(int i=0;i<size;i++)
     {
         // 生成第i个随机数
-        i64 t = ramdom_generators::randi64(start, end);
+        int64_t t = ramdom_generators::randi64(start, end);
         // 取余
         for(int j=0;j<mods.size();j++)
         {
-            u64 mod = mods[j];
-            i64 t2 = t % (i64)mod;
+            uint64_t mod = mods[j];
+            int64_t t2 = t % (int64_t)mod;
             while(t2<0)t2+=mod;
-            u64 t3 = t2;
+            uint64_t t3 = t2;
             data[j][i] = t3 % mod;
         }
     }

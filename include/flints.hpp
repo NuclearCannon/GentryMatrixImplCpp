@@ -12,7 +12,8 @@
 #include <cassert>
 #include <stdexcept>
 #include <ctype.h>
-#include "uint64.hpp"
+#include <cstdint>
+
 // 各类转化函数
 
 std::string fmpz_to_string(fmpz_t x);
@@ -95,7 +96,7 @@ public:
 
     fmpz_vector(int len);
     fmpz_vector(const std::vector<std::string>&);
-    fmpz_vector(const std::vector<u64>&);
+    fmpz_vector(const std::vector<uint64_t>&);
 
     ~fmpz_vector();
 
@@ -157,8 +158,8 @@ public:
     fmpz_vector mod_centered(const fmpz_t q) const;
 
     // 绝对值的最大值
-    long max_abs() const;
-    std::vector<u64> to_uint64() const;
+    int64_t max_abs() const;
+    std::vector<uint64_t> to_uint64() const;
 
 };
 

@@ -1,8 +1,8 @@
 #include "u64_array.hpp"
 #include "ntt.hpp"
+#include "math_utils.hpp"
 
-
-TwistedNtterXY64::TwistedNtterXY64(int n, u64 q, u64 qroot):
+TwistedNtterXY64::TwistedNtterXY64(int n, uint64_t q, uint64_t qroot):
     n_(n), q_(q),
     zeta_pos_pows_(n),
     zeta_neg_pows_(n),
@@ -13,15 +13,15 @@ TwistedNtterXY64::TwistedNtterXY64(int n, u64 q, u64 qroot):
     // 检查n：必须是power of 2
     assert(is_power_of_two(n));
     assert(q%(4*n)==1);
-    u64 zeta = mod_pow(qroot, (q-1)/(4*n), q);
+    uint64_t zeta = mod_pow(qroot, (q-1)/(4*n), q);
     // 检查zeta合法性
-    u64 t = mod_pow(zeta, n*2, q);  // 理论上应该是-1
+    uint64_t t = mod_pow(zeta, n*2, q);  // 理论上应该是-1
     assert(t+1==q);
     // zeta合法
     // 生成 zeta_pos_pows_
     get_powers(zeta_pos_pows_, zeta, n, q);
     // 生成 zeta_neg_pows_ninv_
-    u64 zeta_inv = mod_inv(zeta, q);
+    uint64_t zeta_inv = mod_inv(zeta, q);
     get_powers(zeta_neg_pows_, zeta_inv, n, q);
 
     zeta_pos_pows_mont_ = mm.batch_encode(zeta_pos_pows_);

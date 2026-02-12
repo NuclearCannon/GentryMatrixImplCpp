@@ -1,7 +1,8 @@
 #pragma once
 #include "flints.hpp"
 #include <vector>
-#include "uint64.hpp"
+#include "vec64.hpp"
+
 
 // CRT分解
 vv64 crt(const fmpz_vector& src, const vec64& mods);

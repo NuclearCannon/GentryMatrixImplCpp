@@ -1,11 +1,13 @@
-#include "uint64.hpp"
+
 #include <cassert>
+#include <cstdint>
+#include "modops.hpp"
+#include "vec64.hpp"
 
 
-
-u64 mod_pow(u64 base, u64 e, u64 mod)
+uint64_t mod_pow(uint64_t base, uint64_t e, uint64_t mod)
 {
-    u64 result = 1;
+    uint64_t result = 1;
     base = base % mod;
     while (e > 0) {
         if (e & 1) {
@@ -17,13 +19,13 @@ u64 mod_pow(u64 base, u64 e, u64 mod)
     return result;
 }
 
-u64 mod_inv(u64 x, u64 mod)
+uint64_t mod_inv(uint64_t x, uint64_t mod)
 {
     return mod_pow(x, mod-2, mod);
 }
 
 
-void get_powers(vec64& dst, u64 x, size_t len, u64 mod)
+void get_powers(vec64& dst, uint64_t x, size_t len, uint64_t mod)
 {
     assert(dst.size() == len);
     dst[0] = 1;
@@ -34,7 +36,7 @@ void get_powers(vec64& dst, u64 x, size_t len, u64 mod)
     }
 }
 
-vec64 get_powers(u64 x, size_t len, u64 mod)
+vec64 get_powers(uint64_t x, size_t len, uint64_t mod)
 {
     vec64 result(len);
     get_powers(result, x, len, mod);

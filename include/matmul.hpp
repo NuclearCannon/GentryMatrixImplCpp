@@ -1,6 +1,7 @@
 #pragma once
 #include "flints.hpp"
-#include "uint64.hpp"
+#include <cstdint>
+
 
 class MatmulContext {
     int n_;
@@ -13,11 +14,11 @@ public:
     // C = A @ B.T  (mod q)
     void matmul_transpose(fmpz* C, const fmpz* A, const fmpz* B) const;
 
-    void matmul_transpose_u64(u64* C, const u64* A, const u64* B) const;
+    void matmul_transpose_u64(uint64_t* C, const uint64_t* A, const uint64_t* B) const;
 
     fmpz_vector circledast_fmpz(const fmpz_vector& A, const fmpz_vector& B, size_t n, size_t p);
 
-    void circledast_u64(u64* dst, const u64* A, const u64* B, size_t n, size_t p);
+    void circledast_u64(uint64_t* dst, const uint64_t* A, const uint64_t* B, size_t n, size_t p);
 };
 
 

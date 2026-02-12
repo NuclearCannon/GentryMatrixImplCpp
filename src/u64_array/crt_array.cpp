@@ -36,7 +36,7 @@ CRTArray::CRTArray(const vec64& data, std::shared_ptr<const U64CtxChain> cc):
     int size = cc_->get_size();
     for(int i=0; i<cc_->get_chain_length(); i++)
     {
-        u64 mod = cc_->get_mods()[i];
+        uint64_t mod = cc_->get_mods()[i];
         vec64& row = data_[i];
         for(int j=0; j<size; j++)row[j] %= mod;
     }
@@ -47,7 +47,7 @@ void CRTArray::set_from_raw(const vec64& data)
     int size = cc_->get_size();
     for(int i=0; i<cc_->get_chain_length(); i++)
     {
-        u64 mod = cc_->get_mods()[i];
+        uint64_t mod = cc_->get_mods()[i];
         vec64& row = data_[i];
         for(int j=0; j<size; j++)row[j] = data[j] % mod;
     }
@@ -59,7 +59,7 @@ void CRTArray::set_to_zero()
     for(int i=0; i<cc_->get_chain_length(); i++)
     {
         vec64& row = data_[i];
-        memset(row.data(), 0, row.size()*sizeof(u64));
+        memset(row.data(), 0, row.size()*sizeof(uint64_t));
     }
 }
 
@@ -102,7 +102,7 @@ void CRTArray::adde(const CRTArray& other)
 {
     cc_->add(data_, data_, other.data_);
 }
-void CRTArray::mul_scalar_e(u64 other)
+void CRTArray::mul_scalar_e(uint64_t other)
 {
     cc_->mul_scalar(data_, data_, other);
 }
@@ -136,7 +136,7 @@ void CRTArray::mul_mont3(CRTArray& dst, const CRTArray& src1, const CRTArray& sr
     assert(dst.get_cc().get() == src2.get_cc().get());
     dst.get_cc()->mul_mont(dst.data_, src1.data_, src2.data_);
 }
-CRTArray CRTArray::mul_scalar(u64 other) const
+CRTArray CRTArray::mul_scalar(uint64_t other) const
 {
     CRTArray res(cc_);
     cc_->mul_scalar(res.data_, data_, other);
@@ -249,7 +249,7 @@ CRTArray CRTArray::circledast(const CRTArray& other) const
         CRTArray result(cc_);
         for(int i=0; i<cc_->get_chain_length(); i++)
         {
-            u64 q = cc_->get_mods()[i];
+            uint64_t q = cc_->get_mods()[i];
             fmpz_scalar q_fmpz = fmpz_scalar::from_ui(q);
 
             MatmulContext mc(cc_->get_n(), q_fmpz.raw());

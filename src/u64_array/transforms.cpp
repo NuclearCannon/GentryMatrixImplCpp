@@ -41,7 +41,7 @@ void U64Context::conj(vec64& dst, const vec64& src) const
 void U64Context::w_inv(vec64& dst, const vec64& src) const
 {
     assert(&src != &dst);
-    memset(dst.data(), 0, dst.size()*sizeof(u64));
+    memset(dst.data(), 0, dst.size()*sizeof(uint64_t));
 
     vec64 gpp = get_powers(3,p_-1,p_), gpp_backward(p_);
     for(int i=0; i<p_-1; i++)gpp_backward[gpp[i]] = i;
@@ -57,8 +57,8 @@ void U64Context::w_inv(vec64& dst, const vec64& src) const
             {        
                 // 迁移src[:,w,:,:]到dst[:,(p-w)%p,:,:]
                 // src[:,w,:,:] 是关于 W^{gamma^w}的系数。现在需要变成W^{-{gamma^w}} = W^{p-{gamma^w}}
-                const u64& s = src[i*pnn_ + w*nn + xy];
-                u64& d = dst[i*pnn_ + w2*nn + xy];
+                const uint64_t& s = src[i*pnn_ + w*nn + xy];
+                uint64_t& d = dst[i*pnn_ + w2*nn + xy];
                 d = mod_add(d, s, q_);
                     
             }

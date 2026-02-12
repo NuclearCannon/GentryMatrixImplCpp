@@ -3,7 +3,7 @@
 #include <cstring>
 
 
-TwistedNtterW64::TwistedNtterW64(int p , u64 q, u64 qroot):
+TwistedNtterW64::TwistedNtterW64(int p , uint64_t q, uint64_t qroot):
     p_(p), q_(q), 
     subntter(p-1, q, qroot),
     mm(q),
@@ -13,7 +13,7 @@ TwistedNtterW64::TwistedNtterW64(int p , u64 q, u64 qroot):
 {
     vec64 gpp = get_powers(3, p-1, p);
     // 生成etas_
-    u64 eta = mod_pow(qroot, (q-1)/p, q);
+    uint64_t eta = mod_pow(qroot, (q-1)/p, q);
     vec64 etas(p-1);
     for(int i=0; i<p-1; i++)etas[i] = mod_pow(eta, gpp[i], q);
     subntter.ntt_mont(b_.data(), etas.data());
