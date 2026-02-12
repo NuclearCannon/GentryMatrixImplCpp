@@ -62,10 +62,21 @@ fmpz_vector MatmulContext::circledast_fmpz(const fmpz_vector& A, const fmpz_vect
     size_t pnn = (p-1)*nn;
 
     fmpz_vector result(2*pnn);
+
+    std::vector<size_t> gpp(p-1), gpp_backward(p);
+    gpp[0]=1;
+    for(int i=1; i<p-1; i++)gpp[i] = (gpp[i-1]*3)%p;
+    assert(gpp[p-2]*3%p == 1);
+    for(int i=0; i<p-1; i++)gpp_backward[gpp[i]] = i;
+
+    // [w]位置是多项式在(eta^{3^w})上的取值
+    // 它需要和(eta^{p-3^w})的那一份相乘
+
     for(size_t w=0; w<p-1; w++)
     {
+        size_t w2 = gpp_backward[p-gpp[w]];
         size_t base_a = w*nn;
-        size_t base_b = (p-2-w)*nn;
+        size_t base_b = w2*nn;
         size_t base_ap = base_a;
         size_t base_an = base_a + pnn;
         size_t base_bp = base_b + pnn;
@@ -89,10 +100,20 @@ void MatmulContext::circledast_u64(u64* dst, const u64* A, const u64* B, size_t 
     size_t nn = n*n;
     size_t pnn = (p-1)*nn;
 
+    std::vector<size_t> gpp(p-1), gpp_backward(p);
+    gpp[0]=1;
+    for(int i=1; i<p-1; i++)gpp[i] = (gpp[i-1]*3)%p;
+    assert(gpp[p-2]*3%p == 1);
+    for(int i=0; i<p-1; i++)gpp_backward[gpp[i]] = i;
+
+    // [w]位置是多项式在(eta^{3^w})上的取值
+    // 它需要和(eta^{p-3^w})的那一份相乘
+
     for(size_t w=0; w<p-1; w++)
     {
+        size_t w2 = gpp_backward[p-gpp[w]];
         size_t base_a = w*nn;
-        size_t base_b = (p-2-w)*nn;
+        size_t base_b = w2*nn;
         size_t base_ap = base_a;
         size_t base_an = base_a + pnn;
         size_t base_bp = base_b + pnn;

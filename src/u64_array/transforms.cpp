@@ -42,6 +42,14 @@ void U64Context::w_inv(vec64& dst, const vec64& src) const
 {
     assert(&src != &dst);
     memset(dst.data(), 0, dst.size()*sizeof(u64));
+
+    std::vector<size_t> gpp(p_-1), gpp_backward(p_);
+    gpp[0]=1;
+    for(int i=1; i<p_-1; i++)gpp[i] = (gpp[i-1]*3)%p_;
+    assert(gpp[p_-2]*3%p_ == 1);
+    for(int i=0; i<p_-1; i++)gpp_backward[gpp[i]] = i;
+    // gpp_backward[0]是无意义的
+
     for(int i=0; i<2; i++)
     {
         for(int x=0; x<n_; x++)
@@ -51,22 +59,15 @@ void U64Context::w_inv(vec64& dst, const vec64& src) const
                 for(int w=0; w<p_-1; w++)
                 {
                     // 迁移src[:,w,:,:]到dst[:,(p-w)%p,:,:]
+                    // src[:,w,:,:] 是关于 W^{gamma^w}的系数。现在需要变成W^{-{gamma^w}} = W^{p-{gamma^w}}
                     const u64& s = src[i*pnn_ + w*nn_ + x*n_ + y];
-
-                    int w2 = (p_-w)%p_;
-                    if (w2 == p_-1)
-                    {
-                        for(int w3 = 0; w3<p_-1; w3++)
-                        {
-                            u64& d = dst[i*pnn_ + w3*nn_ + x*n_ + y];
-                            d = mod_sub(d, s, q_);
-                        }
-                    }
-                    else
-                    {
-                        u64& d = dst[i*pnn_ + w2*nn_ + x*n_ + y];
-                        d = mod_add(d, s, q_);
-                    }
+                    size_t gamma_w = gpp[w];
+                    assert(gamma_w >= 1);
+                    assert(gamma_w < p_);
+                    // 那么，p-gamma^w也应该属于[1,p)
+                    size_t w2 = gpp_backward[p_-gamma_w];
+                    u64& d = dst[i*pnn_ + w2*nn_ + x*n_ + y];
+                    d = mod_add(d, s, q_);
                 }
             }
         }
