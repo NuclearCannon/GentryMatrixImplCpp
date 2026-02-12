@@ -46,7 +46,7 @@ std::pair<CRTArray, CRTArray> KeySwitchKey64Base::key_switch_big_1(const CRTArra
     int len = a2.len();
 
     std::vector<CRTArray> a_split;
-    fmpz_scalar B(B_);
+    fmpz_scalar B = fmpz_scalar::from_ui(B_);
     while(1)
     {
         // 检查a是不是还有0？

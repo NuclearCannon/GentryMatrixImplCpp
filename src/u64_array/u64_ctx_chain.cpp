@@ -3,7 +3,7 @@
 
 
 U64CtxChain::U64CtxChain(int n, int p, const vec64& mods, const vec64& roots):
-    n_(n), p_(p), mods_(mods), roots_(roots), mod_prod_(1)
+    n_(n), p_(p), mods_(mods), roots_(roots), mod_prod_(fmpz_scalar::from_ui(1))
 {
     chain_len_ = mods.size();
     assert(chain_len_ == roots.size());

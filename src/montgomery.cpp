@@ -15,26 +15,6 @@ MontgomeryMultiplier::MontgomeryMultiplier(uint64_t M)
 }
 
 
-uint64_t MontgomeryMultiplier::pow(uint64_t base, size_t e) const
-{
-    u64 result = 1;
-    while (e > 0) {
-        if (e & 1) {
-            result = mul(result, base);
-        }
-        base = mul(base, base);
-        e >>= 1;
-    }
-    return result;
-}
-
-vec64 MontgomeryMultiplier::get_powers(uint64_t x, size_t len) const
-{
-    vec64 res(len);
-    res[0] = encode(1);
-    for(int i=1; i<len; i++)res[i] = mul(res[i-1], x);
-    return res;
-}
 
 vec64 MontgomeryMultiplier::batch_encode(const vec64& src) const
 {
@@ -74,15 +54,4 @@ void MontgomeryMultiplier::vec_mul_mont(vec64& dst, const vec64& src1, const vec
     assert(src1.size() == size);
     assert(src2.size() == size);
     for(size_t i=0; i<size; i++)dst[i] = mul(src1[i], src2[i]);
-}
-void MontgomeryMultiplier::vec_scalar_mul_mont_ptr(u64* dst, const u64* src1, size_t len, u64 src2) const
-{
-    src2 = encode(src2);
-    for(size_t i=0; i<len; i++)dst[i] = mul(src1[i], src2);
-}
-void MontgomeryMultiplier::vec_scalar_mul_mont_vector(vec64& dst, const vec64& src1, u64 src2) const
-{
-    size_t size = dst.size();
-    assert(src1.size() == size);
-    vec_scalar_mul_mont_ptr(dst.data(), src1.data(), size, src2);
 }

@@ -22,18 +22,6 @@ u64 mod_inv(u64 x, u64 mod)
     return mod_pow(x, mod-2, mod);
 }
 
-void vec_mul(vec64& dst, const vec64& src1, const vec64& src2, u64 mod)
-{
-    std::size_t len = dst.size();
-    assert(src1.size() == len);
-    assert(src2.size() == len);
-    assert(mod);
-    for(std::size_t i=0;i<len;i++)
-    {
-        dst[i] = mod_mul(src1[i], src2[i], mod);
-    }
-}
-
 
 void get_powers(vec64& dst, u64 x, size_t len, u64 mod)
 {

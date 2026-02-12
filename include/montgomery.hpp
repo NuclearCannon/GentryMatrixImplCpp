@@ -52,10 +52,6 @@ public:
         return montgomery_reduce(x);
     }
 
-    uint64_t pow(uint64_t base, size_t e) const;
-
-    vec64 get_powers(uint64_t x, size_t len) const;
-
     vec64 batch_encode(const vec64& src) const;
     void batch_encode_to(vec64& dst, const vec64& src) const;
     void batch_decode_to(vec64& dst, const vec64& src) const;
@@ -63,7 +59,5 @@ public:
     void batch_decode_inplace(vec64& v) const;
 
     void vec_mul_mont(vec64& dst, const vec64& src1, const vec64& src2) const;
-    void vec_scalar_mul_mont_ptr(u64* dst, const u64* src1, size_t len, u64 src2) const;
-    void vec_scalar_mul_mont_vector(vec64& dst, const vec64& src1, u64 src2) const;
     
 };

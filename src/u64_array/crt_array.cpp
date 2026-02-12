@@ -250,7 +250,7 @@ CRTArray CRTArray::circledast(const CRTArray& other) const
         for(int i=0; i<cc_->get_chain_length(); i++)
         {
             u64 q = cc_->get_mods()[i];
-            fmpz_scalar q_fmpz(q);
+            fmpz_scalar q_fmpz = fmpz_scalar::from_ui(q);
 
             MatmulContext mc(cc_->get_n(), q_fmpz.raw());
             mc.circledast_u64(result.data_[i].data(), data_[i].data(), other.data_[i].data(), cc_->get_n(), cc_->get_p());

@@ -217,7 +217,10 @@ void U64Context::sub_unsafe(vec64& dst, const vec64& src1, const vec64& src2) co
 // 逐位乘法
 void U64Context::mul(vec64& dst, const vec64& src1, const vec64& src2) const
 {
-    vec_mul(dst, src1, src2, q_);
+    for(int i=0;i<size_;i++)
+    {
+        dst[i] = mod_mul(src1[i], src2[i], q_);
+    }
 }
 // 逐位负
 void U64Context::neg(vec64& dst, const vec64& src1) const
@@ -230,7 +233,10 @@ void U64Context::neg(vec64& dst, const vec64& src1) const
 // 标量乘
 void U64Context::mul_scalar(vec64& dst, const vec64& src_vec, u64 src_scalar) const
 {
-    mm_.vec_scalar_mul_mont_vector(dst, src_vec, src_scalar);
+    u64 encoded_scalar = mm_.encode(src_scalar);
+    size_t size = dst.size();
+    assert(src_vec.size() == size);
+    for(int i=0; i<size; i++)dst[i] = mm_.mul(src_vec[i], encoded_scalar);
 }
 // 比较
 bool U64Context::eq(const vec64& src1, const vec64& src2) const

@@ -10,7 +10,7 @@ vv64 crt(const fmpz_vector& src, const vec64& mods)
     fmpz_vector buf(len);
     for(u64 mod : mods)
     {
-        fmpz_scalar mod_mpz(mod);
+        fmpz_scalar mod_mpz = fmpz_scalar::from_ui(mod);
         _fmpz_vec_scalar_mod_fmpz(buf.raw(), src.raw(), len, mod_mpz.raw());
         result.push_back(buf.to_uint64());
     }
