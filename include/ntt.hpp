@@ -46,28 +46,3 @@ public:
 
 };
 
-
-// Rader NTT
-class RaderNTTer64 {
-private:
-    u64 p_, eta_, q_, pinv_;
-    vec64 gpp, gnp;
-    vec64 b1ntt, b2ntt;
-    StandardNTTer subntter;
-    
-
-    // 蒙哥马利约简部分
-    MontgomeryMultiplier mm;
-    vec64 b1ntt_mont, b2ntt_mont;
-
-    mutable vec64 buf_a_, buf_c_, buf_a_ntt_, buf_c_ntt_;
-    void _rader_inner_mont(u64* dst, const u64* src, const vec64& bntt) const;
-
-public:
-    RaderNTTer64(u64 p, u64 q, u64 qroot);
-    ~RaderNTTer64();
-    
-    void rader_mont(u64* dst, const u64* src) const;
-    void irader_mont(u64* dst, const u64* src) const;
-
-};
