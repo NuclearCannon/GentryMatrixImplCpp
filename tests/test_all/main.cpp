@@ -46,6 +46,7 @@ int main()
         w.to_fmpz_vector_centered(), delta*delta, n, p
     ).decode();
     double maxr = 0;
+    double maxd = 0;
     for(int w=0; w<p-1; w++)
     {
         for(int x=0; x<n; x++)
@@ -54,11 +55,14 @@ int main()
             {
                 // 我们称之为偏差率
                 double r = std::abs((W.at(w,x,y) / UV.at(w,x,y))-complex(1));
+                double d = std::abs((W.at(w,x,y) - UV.at(w,x,y)));
                 if (r > maxr)maxr = r;
+                if (d > maxd)maxd = d;
             }
         }
     }
     std::cout << "maxr=" <<maxr << std::endl;
+    std::cout << "maxd=" <<maxd << std::endl;
     return 0;
 
 }
