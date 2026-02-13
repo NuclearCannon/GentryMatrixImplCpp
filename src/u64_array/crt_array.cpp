@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstring>
 #include "matmul.hpp"
+#include "GPU/cuda_matmul.hpp"
 
 
 
@@ -231,7 +232,7 @@ void CRTArray::mont_decode_inplace()
     cc_->mont_decode(data_, data_);
 }
 
-constexpr int circledast_impl = 2;
+constexpr int circledast_impl = 3;
 
 CRTArray CRTArray::circledast(const CRTArray& other) const
 {
@@ -254,6 +255,19 @@ CRTArray CRTArray::circledast(const CRTArray& other) const
 
             MatmulContext mc(cc_->get_n(), q_fmpz.raw());
             mc.circledast_u64(result.data_[i].data(), data_[i].data(), other.data_[i].data(), cc_->get_n(), cc_->get_p());
+        }
+        return result;
+    }
+    else if constexpr (circledast_impl == 3)
+    {
+        // cuda实现
+        CRTArray result(cc_);
+        for(int i=0; i<cc_->get_chain_length(); i++)
+        {
+            uint64_t q = cc_->get_mods()[i];
+            const MontgomeryMultiplier& mm = cc_->get_ctx()[i]->get_multiplier();
+            circledast_u64_gpu(result.data_[i].data(), data_[i].data(), other.data_[i].data(), cc_->get_n(), cc_->get_p(), mm);
+            mm.batch_encode_inplace(result.data_[i]);
         }
         return result;
     }

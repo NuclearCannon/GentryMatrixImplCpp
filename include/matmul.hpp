@@ -1,6 +1,7 @@
 #pragma once
 #include "flints.hpp"
 #include <cstdint>
+#include "montgomery.hpp"
 
 
 class MatmulContext {
@@ -22,3 +23,5 @@ public:
 };
 
 
+
+void circledast_u64_gpu(uint64_t* dst, const uint64_t* A, const uint64_t* B, size_t n, size_t p, const MontgomeryMultiplier& mm);

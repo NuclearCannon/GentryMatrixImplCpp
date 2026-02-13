@@ -13,6 +13,7 @@ public:
     MontgomeryMultiplier(uint64_t M);
 
     inline uint64_t getM() const {return M_;}
+    inline uint64_t getN1() const {return N1_;}
 
     // 相当于return t*Rinv mod M
     inline __attribute__((always_inline)) uint64_t montgomery_reduce(__uint128_t t) const {

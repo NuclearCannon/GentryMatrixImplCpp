@@ -1,5 +1,7 @@
 #include "matmul.hpp"
 #include "vec64.hpp"
+#include "montgomery.hpp"
+#include "GPU/cuda_matmul.hpp"
 
 
 
@@ -122,5 +124,40 @@ void MatmulContext::circledast_u64(uint64_t* dst, const uint64_t* A, const uint6
         matmul_transpose_u64(
             dst+base_an, A+base_an, B+base_bn
         );
+    }
+}
+
+void circledast_u64_gpu(uint64_t* dst, const uint64_t* A, const uint64_t* B, size_t n, size_t p, const MontgomeryMultiplier& mm)
+{
+    size_t nn = n*n;
+    size_t pnn = (p-1)*nn;
+    std::vector<size_t> gpp = get_powers(3,p-1,p), gpp_backward(p);
+    for(int i=0; i<p-1; i++)gpp_backward[gpp[i]] = i;
+
+    // [w]位置是多项式在(eta^{3^w})上的取值
+    // 它需要和(eta^{p-3^w})的那一份相乘
+
+    CudaBuffer Abuf(nn*sizeof(uint64_t)), Bbuf(nn*sizeof(uint64_t)), Cbuf(nn*sizeof(uint64_t));
+    for(size_t w=0; w<p-1; w++)
+    {
+        size_t w2 = gpp_backward[p-gpp[w]];
+        size_t base_a = w*nn;
+        size_t base_b = w2*nn;
+        size_t base_ap = base_a;
+        size_t base_an = base_a + pnn;
+        size_t base_bp = base_b + pnn;
+        size_t base_bn = base_b;
+        // 做矩阵乘法
+        // rp = ap @ bp.T
+        Abuf.copy_from_host(A+base_ap);
+        Bbuf.copy_from_host(B+base_bp);
+        matmul_gpu(Cbuf, Abuf, Bbuf, n, mm);
+        Cbuf.copy_to_host(dst+base_ap);
+        // rn = an @ bn.T
+        Abuf.copy_from_host(A+base_an);
+        Bbuf.copy_from_host(B+base_bn);
+        matmul_gpu(Cbuf, Abuf, Bbuf, n, mm);
+        Cbuf.copy_to_host(dst+base_an);
+        
     }
 }
