@@ -40,7 +40,6 @@ static double dg_p(int x, double sigma)
     return std::exp(-(x_f*x_f)/(2*sigma*sigma));
 }
 
-// 简单起见，我们使用离散高斯分布实现所有的噪声和私钥
 int dg(int bound, double sigma)
 {
     while(1)

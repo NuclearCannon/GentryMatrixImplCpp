@@ -218,6 +218,8 @@ public:
     static CRTArray zeros(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray uniform(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray dg(std::shared_ptr<const U64CtxChain> cc);
+
+    // Y^0分量上均匀三元，其余为0
     static CRTArray sk(std::shared_ptr<const U64CtxChain> cc);
     static CRTArray randint(std::shared_ptr<const U64CtxChain> cc, int64_t start, int64_t end);
     inline std::shared_ptr<const U64CtxChain> get_cc() const { return cc_; }

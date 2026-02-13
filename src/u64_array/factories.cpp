@@ -51,7 +51,7 @@ CRTArray CRTArray::sk(std::shared_ptr<const U64CtxChain> cc)
     for(int i=0;i<size;i+=n)
     {
         // 生成第i个随机数
-        int64_t t = ramdom_generators::dg(5);
+        int64_t t = ramdom_generators::randint(-1, 1);
         // 取余
         for(int j=0;j<mods.size();j++)
         {
