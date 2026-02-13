@@ -33,11 +33,11 @@ int test_all()
     printf("执行运算\n");
 
 
-    auto t1 = std::chrono::high_resolution_clock::now();
+    auto t1 = std::chrono::steady_clock::now();
     ProfilerStart("all.prof");
     auto [wa, wb] = circledast_ct(ua, ub, va, vb, ksk1, ksk2);
     ProfilerStop();
-    auto t2 = std::chrono::high_resolution_clock::now();
+    auto t2 = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     printf("all: %ld us\n", duration);
 
