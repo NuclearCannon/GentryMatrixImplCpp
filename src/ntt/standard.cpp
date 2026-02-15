@@ -1,5 +1,6 @@
 #include "ntt.hpp"
 #include "math_utils.hpp"
+#include <cstring>
 
 
 StandardNTTer::StandardNTTer(size_t n, uint64_t q, uint64_t qroot):
@@ -8,8 +9,8 @@ StandardNTTer::StandardNTTer(size_t n, uint64_t q, uint64_t qroot):
     logn_ = Log2(n);
     assert(q%n==1);
     uint64_t nroot = mod_pow(qroot, (q-1)/n, q);
-    roots_ = get_powers(nroot, n/2, q);
-    iroots_ = get_powers(mod_inv(nroot, q), n/2, q);
+    roots_ = get_powers(nroot, n, q);
+    iroots_ = get_powers(mod_inv(nroot, q), n, q);
     ninv_ = mod_inv(n, q);
 
     roots_mont_ = mm.batch_encode(roots_);
@@ -66,7 +67,7 @@ static void _butterfly_dec_mont(
     // 恒有m*t == n/2
     while (m>1) {
         size_t m_half = m>>1;
-        for(size_t k=0; k<n; k++)
+        for(size_t k=0; k<n; k+=m)
         {
             for(size_t j=k; j<k+m_half; j++)
             {
@@ -83,24 +84,16 @@ static void _butterfly_dec_mont(
         t++;
     }
 }
-void StandardNTTer::_ntt_standard_inner_mont(uint64_t* dst, const uint64_t* src, const uint64_t* roots) const
-{
-    assert(src != nullptr && dst != nullptr);
-    assert(src != dst);   // 暂不支持……
-    const auto& rev = get_bit_reverse_table_by_logn(logn_);
-    // dst[i] = a[rev[i]] mod ctx
-    for (size_t i = 0; i < n_; ++i) {
-        dst[i] = src[rev[i]];
-    }
-    _butterfly_inc_mont(dst, roots, logn_, mm);
-}
+
 
 void StandardNTTer::ntt_mont(uint64_t* dst, const uint64_t* src) const
 {
-    _ntt_standard_inner_mont(dst, src, roots_mont_.data());
+    if(dst!=src)memcpy(dst, src, n_*sizeof(uint64_t));
+    _butterfly_dec_mont(dst, roots_mont_.data(), logn_, mm);
 }
 void StandardNTTer::intt_mont(uint64_t* dst, const uint64_t* src) const
 {
-    _ntt_standard_inner_mont(dst, src, iroots_mont_.data());
+    if(dst!=src)memcpy(dst, src, n_*sizeof(uint64_t));
+    _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm);
     for(int i=0;i<n_;i++)dst[i] = mm.mul(dst[i], ninv_mont_);
 }

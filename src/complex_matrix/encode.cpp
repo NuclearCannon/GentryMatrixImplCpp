@@ -1,7 +1,5 @@
 #include "complecx_matrix.hpp"
 #include <cassert>
-
-#include "ntt.hpp"
 #include <cstring>
 #include <memory>
 #include "math_utils.hpp"

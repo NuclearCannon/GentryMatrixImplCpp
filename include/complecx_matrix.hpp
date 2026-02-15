@@ -54,3 +54,6 @@ public:
     static ComplexMatrixGroup example_matrix(size_t n, size_t p);
 
 };
+
+
+const std::vector<size_t>& get_bit_reverse_table_by_logn(size_t log2n);

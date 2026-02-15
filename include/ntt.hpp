@@ -4,7 +4,6 @@
 
 #include "montgomery.hpp"
 
-const std::vector<size_t>& get_bit_reverse_table_by_logn(size_t log2n);
 
 
 
@@ -23,7 +22,6 @@ private:
     vec64 iroots_mont_;
     uint64_t ninv_mont_;
 
-    void _ntt_standard_inner_mont(uint64_t* dst, const uint64_t* src, const uint64_t* roots) const;
 public:
     StandardNTTer(size_t n, uint64_t q, uint64_t qroot);
     ~StandardNTTer();
