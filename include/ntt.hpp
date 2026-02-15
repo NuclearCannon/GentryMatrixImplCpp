@@ -26,8 +26,8 @@ public:
     StandardNTTer(size_t n, uint64_t q, uint64_t qroot);
     ~StandardNTTer();
 
-    void ntt_mont(uint64_t* dst, const uint64_t* src) const;
-    void intt_mont(uint64_t* dst, const uint64_t* src) const;
+    void ntt(uint64_t* dst) const;
+    void intt(uint64_t* dst) const;
 
 };
 

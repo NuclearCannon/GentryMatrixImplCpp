@@ -86,14 +86,12 @@ static void _butterfly_dec_mont(
 }
 
 
-void StandardNTTer::ntt_mont(uint64_t* dst, const uint64_t* src) const
+void StandardNTTer::ntt(uint64_t* dst) const
 {
-    if(dst!=src)memcpy(dst, src, n_*sizeof(uint64_t));
     _butterfly_dec_mont(dst, roots_mont_.data(), logn_, mm);
 }
-void StandardNTTer::intt_mont(uint64_t* dst, const uint64_t* src) const
+void StandardNTTer::intt(uint64_t* dst) const
 {
-    if(dst!=src)memcpy(dst, src, n_*sizeof(uint64_t));
     _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm);
     for(int i=0;i<n_;i++)dst[i] = mm.mul(dst[i], ninv_mont_);
 }

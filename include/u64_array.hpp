@@ -19,8 +19,6 @@ private:
     StandardNTTer std_ntter;
     MontgomeryMultiplier mm;
 
-    mutable vec64 buf_n_;
-
 public:
     TwistedNtterXY64(int n, uint64_t q, uint64_t qroot);
     ~TwistedNtterXY64();
@@ -45,7 +43,7 @@ private:
     // binv_[i] = inv(etas[i])（蒙哥马利形式）
     vec64 binv_;
     
-    mutable vec64 buf1, buf2;
+    mutable vec64 buf1;
 public:
     TwistedNtterW64(int p , uint64_t q, uint64_t qroot);
     ~TwistedNtterW64();

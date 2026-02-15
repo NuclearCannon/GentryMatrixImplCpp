@@ -1,14 +1,14 @@
 #include "u64_array.hpp"
 #include "ntt.hpp"
 #include "math_utils.hpp"
+#include <cstring>
 
 TwistedNtterXY64::TwistedNtterXY64(int n, uint64_t q, uint64_t qroot):
     n_(n), q_(q),
     zeta_pos_pows_(n),
     zeta_neg_pows_(n),
     std_ntter(n, q, qroot),
-    mm(q),
-    buf_n_(n)
+    mm(q)
 {
     // 检查n：必须是power of 2
     assert(is_power_of_two(n));
@@ -36,12 +36,13 @@ TwistedNtterXY64::~TwistedNtterXY64()
 
 void TwistedNtterXY64::ntt_mont(vec64& dst, const vec64& src) const
 {
-    mm.vec_mul_mont(buf_n_, src, zeta_pos_pows_mont_);
-    std_ntter.ntt_mont(dst.data(), buf_n_.data());
+    mm.vec_mul_mont(dst, src, zeta_pos_pows_mont_);
+    std_ntter.ntt(dst.data());
 }
 void TwistedNtterXY64::intt_mont(vec64& dst, const vec64& src) const
 {
-    std_ntter.intt_mont(buf_n_.data(), src.data());
+    if(&src != &dst)memcpy(dst.data(), src.data(), n_*sizeof(uint64_t));
+    std_ntter.intt(dst.data());
     // let dst = buffer 逐位乘 zeta_neg_pows
-    mm.vec_mul_mont(dst, buf_n_, zeta_neg_pows_mont_);
+    mm.vec_mul_mont(dst, dst, zeta_neg_pows_mont_);
 }
