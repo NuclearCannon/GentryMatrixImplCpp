@@ -3,7 +3,7 @@
 #include "flints.hpp"
 
 #include "montgomery.hpp"
-
+#include "GPU/cuda_ntt.hpp"
 
 
 
@@ -22,6 +22,8 @@ private:
     vec64 iroots_mont_;
     uint64_t ninv_mont_;
 
+    CudaBuffer roots_cuda_;
+    CudaBuffer iroots_cuda_;
 public:
     StandardNTTer(size_t n, uint64_t q, uint64_t qroot);
     ~StandardNTTer();

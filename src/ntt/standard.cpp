@@ -1,10 +1,13 @@
 #include "ntt.hpp"
 #include "math_utils.hpp"
 #include <cstring>
+#include "GPU/cuda_ntt.hpp"
 
 
 StandardNTTer::StandardNTTer(size_t n, uint64_t q, uint64_t qroot):
     n_(n), q_(q), mm(q)
+    ,roots_cuda_(n*sizeof(uint64_t))
+    ,iroots_cuda_(n*sizeof(uint64_t))
 {
     logn_ = Log2(n);
     assert(q%n==1);
@@ -16,6 +19,9 @@ StandardNTTer::StandardNTTer(size_t n, uint64_t q, uint64_t qroot):
     roots_mont_ = mm.batch_encode(roots_);
     iroots_mont_ = mm.batch_encode(iroots_);
     ninv_mont_ = mm.encode(ninv_);
+
+    roots_cuda_.copy_from_host(roots_mont_.data());
+    iroots_cuda_.copy_from_host(iroots_mont_.data());
 }
 
 StandardNTTer::~StandardNTTer() = default;
@@ -95,11 +101,47 @@ void StandardNTTer::intt(uint64_t* dst) const
     _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm);
 }
 
+constexpr bool USE_CUDA_NTT = true;
+
 void StandardNTTer::ntt_batch(uint64_t* dst, size_t batch_size) const
 {
-    for(size_t i=0; i<batch_size; i++)ntt(dst + n_*i);
+    if constexpr (USE_CUDA_NTT)
+    {
+        CudaBuffer dst_cuda(n_*batch_size*sizeof(uint64_t));
+        dst_cuda.copy_from_host(dst);
+        cuda_ntt(
+            dst_cuda,
+            roots_cuda_,
+            logn_,
+            mm,
+            batch_size,
+            true
+        );
+        dst_cuda.copy_to_host(dst);
+    }
+    else
+    {
+        for(size_t i=0; i<batch_size; i++)ntt(dst + n_*i);
+    }
 }
 void StandardNTTer::intt_batch(uint64_t* dst, size_t batch_size) const
 {
-    for(size_t i=0; i<batch_size; i++)intt(dst + n_*i);
+    if constexpr (USE_CUDA_NTT)
+    {
+        CudaBuffer dst_cuda(n_*batch_size*sizeof(uint64_t));
+        dst_cuda.copy_from_host(dst);
+        cuda_ntt(
+            dst_cuda,
+            iroots_cuda_,
+            logn_,
+            mm,
+            batch_size,
+            false
+        );
+        dst_cuda.copy_to_host(dst);
+    }
+    else
+    {
+        for(size_t i=0; i<batch_size; i++)intt(dst + n_*i);
+    }
 }
