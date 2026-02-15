@@ -29,5 +29,8 @@ public:
     void ntt(uint64_t* dst) const;
     void intt(uint64_t* dst) const;
 
+    void ntt_batch(uint64_t* dst, size_t batch_size) const;
+    void intt_batch(uint64_t* dst, size_t batch_size) const;
+
 };
 

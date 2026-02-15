@@ -94,3 +94,12 @@ void StandardNTTer::intt(uint64_t* dst) const
 {
     _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm);
 }
+
+void StandardNTTer::ntt_batch(uint64_t* dst, size_t batch_size) const
+{
+    for(size_t i=0; i<batch_size; i++)ntt(dst + n_*i);
+}
+void StandardNTTer::intt_batch(uint64_t* dst, size_t batch_size) const
+{
+    for(size_t i=0; i<batch_size; i++)intt(dst + n_*i);
+}

@@ -1,5 +1,6 @@
 #include "u64_array.hpp"
 #include <cstring>
+#include "math_utils.hpp"
 
 
 U64Context::U64Context(int n, int p, uint64_t q, uint64_t root_q):
@@ -106,91 +107,36 @@ void U64Context::iw_intt(vec64& dst, const vec64& src) const
 void U64Context::xy_ntt(vec64& dst, const vec64& src) const
 {
     // x-ntt
-    size_t nn = this->nn_;
-    vec64& buf_n = bufn_;
+    const size_t n = this->n_;
+    const size_t nn = this->nn_;
+    const size_t pnn = this->pnn_;
+    const size_t pn = n*(p_-1);
+    // 转置
+    for(int i=0;i<2*pnn;i+=nn)transpose_auto(dst.data()+i, src.data()+i, n);
+    ntter_p->ntt_batch(dst.data(), pn);
+    ntter_n->ntt_batch(dst.data() + pnn, pn);
+    // 再转置
+    for(int i=0;i<2*pnn;i+=nn)transpose_inplace(dst.data()+i, n);
+    ntter_n->ntt_batch(dst.data(), pn);
+    ntter_p->ntt_batch(dst.data() + pnn, pn);
 
-    for(int i=0;i<2;i++)
-    {
-        size_t base_i = i?pnn_:0;
-        for(int w=0;w<p_-1;w++)
-        {
-            size_t base_w = base_i + w*nn;
-            for(int y=0;y<n_;y++)
-            {
-                size_t base_y = base_w + y;
-                // 取出一列
-                for(int x=0;x<n_;x++)buf_n[x] = src[base_y + x*n_];
-                if (i == 0)ntter_p->ntt_mont(buf_n, buf_n);
-                else       ntter_n->ntt_mont(buf_n, buf_n);
-                // 写回去
-                for(int x=0;x<n_;x++)dst[base_y + x*n_] = buf_n[x];
-            }
-        }
-    }
-    // 现在dst已经是x-ntt
-    for(int i=0;i<2;i++)
-    {
-        size_t base_i = i?pnn_:0;
-        for(int w=0;w<p_-1;w++)
-        {
-            size_t base_w = base_i + w*nn;
-            for(int x=0;x<n_;x++)
-            {
-                size_t base_x = base_w + x*n_;
-                // 取出一列
-                for(int y=0;y<n_;y++)buf_n[y] = dst[base_x + y];
-                if (i == 1)ntter_p->ntt_mont(buf_n, buf_n);
-                else       ntter_n->ntt_mont(buf_n, buf_n);
-                // 写回去
-                for(int y=0;y<n_;y++)dst[base_x + y] = buf_n[y];
-            }
-        }
-    }
 }
 void U64Context::xy_intt(vec64& dst, const vec64& src) const
 {
     // x-ntt
-    size_t nn = this->nn_;
-    vec64& buf_n = bufn_;
-
-    for(int i=0;i<2;i++)
-    {
-        size_t base_i = i?pnn_:0;
-        for(int w=0;w<p_-1;w++)
-        {
-            size_t base_w = base_i + w*nn;
-            for(int y=0;y<n_;y++)
-            {
-                size_t base_y = base_w + y;
-                // 取出一列
-                for(int x=0;x<n_;x++)buf_n[x] = src[base_y + x*n_];
-                if (i == 0)ntter_p->intt_mont(buf_n, buf_n);
-                else       ntter_n->intt_mont(buf_n, buf_n);
-                // 写回去
-                for(int x=0;x<n_;x++)dst[base_y + x*n_] = buf_n[x];
-            }
-        }
-    }
-    for(int i=0;i<2;i++)
-    {
-        size_t base_i = i?pnn_:0;
-        for(int w=0;w<p_-1;w++)
-        {
-            size_t base_w = base_i + w*nn;
-            for(int x=0;x<n_;x++)
-            {
-                size_t base_x = base_w + x*n_;
-                // 取出一列
-                for(int y=0;y<n_;y++)buf_n[y] = dst[base_x + y];
-                if (i == 1)ntter_p->intt_mont(buf_n, buf_n);
-                else       ntter_n->intt_mont(buf_n, buf_n);
-                // 写回去
-                for(int y=0;y<n_;y++)dst[base_x + y] = buf_n[y];
-            }
-        }
-    }
+    const size_t n = this->n_;
+    const size_t nn = this->nn_;
+    const size_t pnn = this->pnn_;
+    const size_t pn = n*(p_-1);
+    // 转置
+    for(int i=0;i<2*pnn;i+=nn)transpose_auto(dst.data()+i, src.data()+i, n);
+    ntter_p->intt_batch(dst.data(), pn);
+    ntter_n->intt_batch(dst.data() + pnn, pn);
+    // 再转置
+    for(int i=0;i<2*pnn;i+=nn)transpose_inplace(dst.data()+i, n);
+    ntter_n->intt_batch(dst.data(), pn);
+    ntter_p->intt_batch(dst.data() + pnn, pn);
 }
-
 // 逐位加法
 void U64Context::add(vec64& dst, const vec64& src1, const vec64& src2) const
 {

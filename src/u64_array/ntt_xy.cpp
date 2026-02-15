@@ -52,3 +52,27 @@ void TwistedNtterXY64::intt_mont(vec64& dst, const vec64& src) const
     // let dst = buffer 逐位乘 zeta_neg_pows
     mm.vec_mul_mont(dst, dst, zeta_neg_pows_mont_);
 }
+
+void TwistedNtterXY64::ntt_batch(uint64_t* dst, size_t batch_size) const
+{
+    for(size_t i=0; i<batch_size; i++)
+    {
+        for(int j=0; j<n_; j++)
+        {
+            dst[i*n_ + j] = mm.mul(dst[i*n_ + j], zeta_pos_pows_mont_[j]);
+        }
+    }
+    std_ntter.ntt_batch(dst, batch_size);
+}
+void TwistedNtterXY64::intt_batch(uint64_t* dst, size_t batch_size) const
+{
+    std_ntter.intt_batch(dst, batch_size);
+    for(size_t i=0; i<batch_size; i++)
+    {
+        for(int j=0; j<n_; j++)
+        {
+            dst[i*n_ + j] = mm.mul(dst[i*n_ + j], zeta_neg_pows_mont_[j]);
+        }
+    }
+
+}

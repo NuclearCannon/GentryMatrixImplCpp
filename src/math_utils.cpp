@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include "math_utils.hpp"
+#include <bits/stl_pair.h>
 
 
 bool is_power_of_two(size_t x) noexcept {
@@ -35,4 +36,32 @@ uint64_t modinv64(uint64_t a) {
     x = x * (2 - a * x); // 64 bits
 
     return x;
+}
+void transpose_auto(uint64_t* dst, const uint64_t* src, int n)
+{
+    if(dst == src)transpose_inplace(dst, n);
+    else transpose_restrict(dst, src, n);
+}
+
+void transpose_restrict(uint64_t* __restrict__ dst, const uint64_t* __restrict__ src, int n)
+{
+    assert(dst != src);
+    for(int x=0;x<n;x++)
+    {
+        for(int y=0;y<n;y++)
+        {
+            dst[x*n+y] = src[y*n+x];
+        }
+    }
+}
+
+void transpose_inplace(uint64_t* dst, int n)
+{
+    for(int x=0;x<n;x++)
+    {
+        for(int y=x+1;y<n;y++)
+        {
+            std::swap(dst[x*n+y], dst[y*n+x]);
+        }
+    }
 }
