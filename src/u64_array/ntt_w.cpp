@@ -50,3 +50,30 @@ void TwistedNtterW64::intt_mont(vec64& dst, const vec64& src) const
     mm.vec_mul_mont(dst, buf1, binv_);
     subntter.intt(dst.data());
 }
+
+void TwistedNtterW64::ntt_batch(uint64_t* dst, size_t batch_size) const
+{
+    subntter.ntt_batch(dst, batch_size);
+    const size_t N = p_-1;
+    for(int i=0; i<batch_size; i++)
+    {
+        for(int j=0; j<N; j++)
+        {
+            dst[i*N+j] = mm.mul(dst[i*N+j], b_[j]);
+        }
+    }
+    subntter.intt_batch(dst, batch_size);
+}
+void TwistedNtterW64::intt_batch(uint64_t* dst, size_t batch_size) const
+{
+    subntter.ntt_batch(dst, batch_size);
+    const size_t N = p_-1;
+    for(int i=0; i<batch_size; i++)
+    {
+        for(int j=0; j<N; j++)
+        {
+            dst[i*N+j] = mm.mul(dst[i*N+j], binv_[j]);
+        }
+    }
+    subntter.intt_batch(dst, batch_size);
+}

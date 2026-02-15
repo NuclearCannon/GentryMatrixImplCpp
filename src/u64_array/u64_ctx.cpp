@@ -11,7 +11,7 @@ U64Context::U64Context(int n, int p, uint64_t q, uint64_t root_q):
     size_(2*(p-1)*n*n),
     q_(q),
     mm_(q),
-    bufp_(p-1),
+    buf_size_(2*(p-1)*n*n),
     bufn_(n)
 {
     // 计算zeta. zeta是4n阶本原单位根
@@ -45,58 +45,34 @@ U64Context::~U64Context()
 void U64Context::iw_ntt(vec64& dst, const vec64& src) const
 {
     // ntt-I
-    for(int i=0;i<pnn_;i++)
+    for(int i=0, j=pnn_;i<pnn_;i++,j++)
     {
         uint64_t real_i = src[i];
-        uint64_t image_I_i = mm_.mul(src[i+pnn_], I_mont_);
+        uint64_t image_I_i = mm_.mul(src[j], I_mont_);
         dst[i] = mod_add(real_i, image_I_i, q_);
-        dst[i+pnn_] = mod_sub(real_i, image_I_i, q_);
+        dst[j] = mod_sub(real_i, image_I_i, q_);
     }
     // 现在dst是I-ntted
-    vec64& buf_p = bufp_;
-    for(int i=0;i<2;i++)
-    {
-        size_t base_i = i?pnn_:0;
-        // 对data_[base:base+pnn]的区域进行W-NTT
-        for(int x=0;x<n_;x++)
-        {
-            size_t base_x = base_i + n_*x;
-            for(int y=0;y<n_;y++)
-            {
-                size_t base_y = base_x + y;
-                for(int w=0;w<p_-1;w++)buf_p[w] = dst[base_y + w*nn_];
-                ntter_w->ntt_mont(buf_p, buf_p);
-                for(int w=0;w<p_-1;w++)dst[base_y + w*nn_] = buf_p[w];
-            }
-        }
-    }
+
+    // 转置：(2, p-1, N^2) -> (N^2, 2, p-1)
+    vec64& buf = buf_size_;
+    transpose_rect_restrict(buf.data(), dst.data(), 2*p_-2, nn_);
+    ntter_w->ntt_batch(buf.data(), 2*nn_);
+    transpose_rect_restrict(dst.data(), buf.data(), nn_, 2*p_-2);
 }
 void U64Context::iw_intt(vec64& dst, const vec64& src) const
 {
     // W-iNTT
-    vec64& buf_p = bufp_;
-    for(int i=0;i<2;i++)
-    {
-        size_t base_i = i?pnn_:0;
-        // 对data_[base:base+pnn]的区域进行W-NTT
-        for(int x=0;x<n_;x++)
-        {
-            size_t base_x = base_i + n_*x;
-            for(int y=0;y<n_;y++)
-            {
-                size_t base_y = base_x + y;
-                for(int w=0;w<p_-1;w++)buf_p[w] = src[base_y + w*nn_];
-                ntter_w->intt_mont(buf_p, buf_p);
-                for(int w=0;w<p_-1;w++)dst[base_y + w*nn_] = buf_p[w];
-            }
-        }
-    }
+    vec64& buf = buf_size_;
+    transpose_rect_restrict(buf.data(), src.data(), 2*p_-2, nn_);
+    ntter_w->intt_batch(buf.data(), 2*nn_);
+    transpose_rect_restrict(dst.data(), buf.data(), nn_, 2*p_-2);
     // I-iNTT
-    for(int i=0;i<pnn_;i++)
+    for(int i=0,j=pnn_;i<pnn_;i++,j++)
     {
-        uint64_t Pi = dst[i], Ni = dst[i+pnn_];
+        uint64_t Pi = dst[i], Ni = dst[j];
         dst[i] = mod_add(Pi, Ni, q_);
-        dst[i+pnn_] = mm_.mul(
+        dst[j] = mm_.mul(
             mod_sub(Pi, Ni, q_),
             I_inv_mont_
         );

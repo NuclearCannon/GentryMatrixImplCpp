@@ -52,6 +52,9 @@ public:
     ~TwistedNtterW64();
     void ntt_mont(vec64& dst, const vec64& src) const;
     void intt_mont(vec64& dst, const vec64& src) const;
+
+    void ntt_batch(uint64_t* dst, size_t batch_size) const;
+    void intt_batch(uint64_t* dst, size_t batch_size) const;
 };
 
 
@@ -65,7 +68,7 @@ private:
     std::unique_ptr<const TwistedNtterXY64> ntter_p, ntter_n;    // 这两个ntter会分别负责模X^n-I的和模X^n+I的
     std::unique_ptr<const TwistedNtterW64> ntter_w;
     MontgomeryMultiplier mm_;
-    mutable vec64 bufp_, bufn_;
+    mutable vec64 buf_size_, bufn_;
 public:
 
     U64Context(int n, int p, uint64_t q, uint64_t root_q);

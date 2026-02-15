@@ -15,3 +15,7 @@ uint64_t modinv64(uint64_t a);
 void transpose_auto(uint64_t* dst, const uint64_t* src, int n);
 void transpose_restrict(uint64_t* __restrict__ dst, const uint64_t* __restrict__ src, int n);
 void transpose_inplace(uint64_t* dst, int n);
+
+// 把一个shape=(r, c)的长方形矩阵给转置成(c, r)的
+// 行优先编码
+void transpose_rect_restrict(uint64_t* __restrict__ dst, const uint64_t* __restrict__ src, size_t r, size_t c);
