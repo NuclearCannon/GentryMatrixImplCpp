@@ -93,5 +93,4 @@ void StandardNTTer::ntt(uint64_t* dst) const
 void StandardNTTer::intt(uint64_t* dst) const
 {
     _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm);
-    for(int i=0;i<n_;i++)dst[i] = mm.mul(dst[i], ninv_mont_);
 }

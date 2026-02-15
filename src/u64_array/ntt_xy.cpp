@@ -24,6 +24,12 @@ TwistedNtterXY64::TwistedNtterXY64(int n, uint64_t q, uint64_t qroot):
     uint64_t zeta_inv = mod_inv(zeta, q);
     get_powers(zeta_neg_pows_, zeta_inv, n, q);
 
+    uint64_t ninv = mod_inv(n, q);
+    for(auto& i:zeta_neg_pows_)
+    {
+        i = mod_mul(i,ninv,q);
+    }
+
     zeta_pos_pows_mont_ = mm.batch_encode(zeta_pos_pows_);
     zeta_neg_pows_mont_ = mm.batch_encode(zeta_neg_pows_);
 

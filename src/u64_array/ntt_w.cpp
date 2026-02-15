@@ -17,7 +17,13 @@ TwistedNtterW64::TwistedNtterW64(int p , uint64_t q, uint64_t qroot):
     subntter.ntt(b_.data());
     // 生成逐位乘法逆元
     for(int i=0; i<p-1; i++)binv_[i] = mod_inv(b_[i], q);
-
+    // 对b和binv都除以p-1，以中和subntter的intt副作用
+    uint64_t inv = mod_inv(p-1, q);
+    for(int i=0; i<p-1; i++)
+    {
+        b_[i] = mod_mul(b_[i], inv, q);
+        binv_[i] = mod_mul(binv_[i], inv, q);
+    }
     // 蒙哥马利编码
     mm.batch_encode_inplace(b_);
     mm.batch_encode_inplace(binv_);
