@@ -107,6 +107,10 @@ public:
     inline const MontgomeryMultiplier& get_multiplier() const {return mm_; }
     
 
+    void iw_ntt_cuda(const CudaBuffer& dst, const CudaBuffer& src) const;
+    void iw_intt_cuda(const CudaBuffer& dst, const CudaBuffer& src) const;
+    void xy_ntt_cuda(const CudaBuffer& dst, const CudaBuffer& src) const;
+    void xy_intt_cuda(const CudaBuffer& dst, const CudaBuffer& src) const;
 };
 
 
