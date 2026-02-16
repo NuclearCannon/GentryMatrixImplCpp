@@ -7,6 +7,12 @@ class CudaBuffer {
 private:
     void* ptr_;
     size_t len_;
+    bool is_ref_;    // 如果自己是切片而来，此处为true
+
+    CudaBuffer(void* ptr, size_t len, bool is_ref):
+        ptr_(ptr), len_(len), is_ref_(is_ref)
+    {}
+
 
 public:
     // 给外面用的工厂函数
@@ -33,9 +39,9 @@ public:
     size_t size() const { return len_; }
 
     // 仅限.cu文件使用！
-    void* get_ptr() {return ptr_;}
+    void* get_ptr() const {return ptr_;}
 
-    // 仅限.cu文件使用！
-    const void* get_ptr() const {return ptr_;}
+    CudaBuffer slice(size_t l, size_t r) const;
+    
 
 };
