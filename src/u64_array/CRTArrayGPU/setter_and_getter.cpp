@@ -21,6 +21,7 @@ vv64 CRTArrayGPU::export_to_vv64() const
         ptr->copy_to_host(r.data());
         result.push_back(std::move(r));
     }
+    return result;
 }
 // 设为全0
 void CRTArrayGPU::set_to_zero()

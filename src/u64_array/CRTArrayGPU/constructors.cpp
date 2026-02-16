@@ -6,7 +6,7 @@ CRTArrayGPU::CRTArrayGPU(std::shared_ptr<const U64CtxChain> cc):
     cuda_data_(cc->get_chain_length())
 {
     // 分配空间
-    size_t size = cc->get_size();
+    size_t size = cc->get_size() * sizeof(uint64_t);
     for(int i=0; i<cc->get_chain_length(); i++)
     {
         cuda_data_[i] = std::make_unique<CudaBuffer>(size);

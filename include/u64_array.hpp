@@ -249,6 +249,11 @@ public:
     CRTArray conj() const;
     CRTArray w_inv() const;
 
+    inline const std::vector<std::vector<uint64_t>>& get_data() const {
+        return data_;
+    }
+
+
 
 };
 
