@@ -25,12 +25,16 @@ vv64 CRTArrayGPU::export_to_vv64() const
 // 设为全0
 void CRTArrayGPU::set_to_zero()
 {
-    // TODO: 需要CudaBuffer的置零
-    throw std::runtime_error("未实现CRTArrayGPU::set_to_zero");
+    for(const auto& ptr: cuda_data_) ptr->set_zero();
 }
 // 从另一个对象处拷贝（取代拷贝赋值）
-void CRTArrayGPU::copy_from(const CRTArray& other)
+void CRTArrayGPU::copy_from(const CRTArrayGPU& other)
 {
-    // TODO: 需要CudaBuffer之间的拷贝
-    throw std::runtime_error("未实现CRTArrayGPU::copy_from");
+    int len = cuda_data_.size();
+
+    assert(len == other.cuda_data_.size());
+    for(int i=0; i<len; i++)
+    {
+        cuda_data_[i]->copy_from_other(*(cuda_data_[i]));
+    }
 }

@@ -34,6 +34,7 @@ public:
     // 注意：这不是高效路径，仅用于必要场景
     void copy_to_host(void* host_ptr) const;
     void copy_from_host(const void* host_ptr);
+    void copy_from_other(const CudaBuffer& other);
 
     // 返回字节数
     size_t size() const { return len_; }
@@ -42,6 +43,8 @@ public:
     void* get_ptr() const {return ptr_;}
 
     CudaBuffer slice(size_t l, size_t r) const;
+    // 置零
+    void set_zero() const;
     
 
 };

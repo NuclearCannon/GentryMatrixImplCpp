@@ -61,9 +61,19 @@ void CudaBuffer::copy_from_host(const void* host_ptr)
 {
     CUDA_CHECK(cudaMemcpy(ptr_, host_ptr, len_, cudaMemcpyHostToDevice));
 }
+void CudaBuffer::copy_from_other(const CudaBuffer& other)
+{
+    assert(len_ == other.len_);
+    CUDA_CHECK(cudaMemcpy(ptr_, other.ptr_, len_, cudaMemcpyDeviceToDevice));
+}
 
 CudaBuffer CudaBuffer::slice(size_t l, size_t r) const
 {
     assert(r>l);
     return CudaBuffer(ptr_ + l, r - l, true);
+}
+
+void CudaBuffer::set_zero() const
+{
+    CUDA_CHECK(cudaMemset(ptr_, 0, len_));
 }

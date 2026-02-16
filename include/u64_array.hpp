@@ -281,7 +281,7 @@ public:
     // 设为全0
     void set_to_zero();
     // 从另一个对象处拷贝（取代拷贝赋值）
-    void copy_from(const CRTArray& other);
+    void copy_from(const CRTArrayGPU& other);
 
     
 
