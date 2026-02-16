@@ -145,3 +145,29 @@ void StandardNTTer::intt_batch(uint64_t* dst, size_t batch_size) const
         for(size_t i=0; i<batch_size; i++)intt(dst + n_*i);
     }
 }
+
+void StandardNTTer::ntt_batch_cuda(const CudaBuffer& dst, size_t batch_size) const
+{
+    assert(dst.size() == n_*batch_size*sizeof(uint64_t));
+    cuda_ntt(
+        dst,
+        roots_cuda_,
+        logn_,
+        mm,
+        batch_size,
+        true
+    );
+
+}
+void StandardNTTer::intt_batch_cuda(const CudaBuffer& dst, size_t batch_size) const
+{
+    assert(dst.size() == n_*batch_size*sizeof(uint64_t));
+    cuda_ntt(
+        dst,
+        iroots_cuda_,
+        logn_,
+        mm,
+        batch_size,
+        false
+    );
+}

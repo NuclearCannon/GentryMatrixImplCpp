@@ -102,7 +102,7 @@ static void __global__ _butterfly_dec_mont_cuda(
 
 
 float cuda_ntt(
-    CudaBuffer& a,
+    const CudaBuffer& a,
     const CudaBuffer& roots,
     size_t logn,
     const MontgomeryMultiplier& mm,

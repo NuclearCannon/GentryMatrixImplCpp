@@ -45,6 +45,8 @@ private:
 
     // binv_[i] = inv(etas[i])（蒙哥马利形式）
     vec64 binv_;
+
+    CudaBuffer b_cuda_, b_inv_cuda_;
     
     mutable vec64 buf1;
 public:
@@ -55,6 +57,9 @@ public:
 
     void ntt_batch(uint64_t* dst, size_t batch_size) const;
     void intt_batch(uint64_t* dst, size_t batch_size) const;
+
+    void ntt_batch_cuda(const CudaBuffer& a, size_t batch_size) const;
+    void intt_batch_cuda(const CudaBuffer& a, size_t batch_size) const;
 };
 
 

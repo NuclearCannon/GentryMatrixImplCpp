@@ -56,3 +56,18 @@ float cuda_batch_mul_scalar(
     size_t batch_size,
     const MontgomeryMultiplier& mm
 );
+
+float cuda_batch_mul_vec(
+    const CudaBuffer& dst,
+    const CudaBuffer& src,
+    const CudaBuffer& vec,
+    size_t batch_size,
+    size_t vec_len,
+    const MontgomeryMultiplier& mm
+);
+
+float cuda_transpose_rect_restrict(
+    const CudaBuffer& dst,
+    const CudaBuffer& src,
+    size_t r, size_t c
+);

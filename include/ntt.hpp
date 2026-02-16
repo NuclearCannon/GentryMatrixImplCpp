@@ -34,5 +34,8 @@ public:
     void ntt_batch(uint64_t* dst, size_t batch_size) const;
     void intt_batch(uint64_t* dst, size_t batch_size) const;
 
+    void ntt_batch_cuda(const CudaBuffer& dst, size_t batch_size) const;
+    void intt_batch_cuda(const CudaBuffer& dst, size_t batch_size) const;
+
 };
 

@@ -3,7 +3,7 @@
 #include "montgomery.hpp"
 
 float cuda_ntt(
-    CudaBuffer& a,
+    const CudaBuffer& a,
     const CudaBuffer& roots,
     size_t logn,
     const MontgomeryMultiplier& mm,

@@ -1,6 +1,7 @@
 #include "u64_array.hpp"
 #include "ntt.hpp"
 #include <cstring>
+#include "GPU/cuda_u64_ctx_ops.hpp"
 
 
 TwistedNtterW64::TwistedNtterW64(int p , uint64_t q, uint64_t qroot):
@@ -8,7 +9,9 @@ TwistedNtterW64::TwistedNtterW64(int p , uint64_t q, uint64_t qroot):
     subntter(p-1, q, qroot),
     mm(q),
     buf1(p-1), 
-    b_(p-1), binv_(p-1)
+    b_(p-1), binv_(p-1),
+    b_cuda_((p-1)*sizeof(uint64_t)), 
+    b_inv_cuda_((p-1)*sizeof(uint64_t))
 {
     vec64 gpp = get_powers(3, p-1, p);
     // 生成etas_
@@ -27,7 +30,8 @@ TwistedNtterW64::TwistedNtterW64(int p , uint64_t q, uint64_t qroot):
     // 蒙哥马利编码
     mm.batch_encode_inplace(b_);
     mm.batch_encode_inplace(binv_);
-
+    b_cuda_.copy_from_host(b_.data());
+    b_inv_cuda_.copy_from_host(binv_.data());
 }
 
 TwistedNtterW64::~TwistedNtterW64()
@@ -76,4 +80,19 @@ void TwistedNtterW64::intt_batch(uint64_t* dst, size_t batch_size) const
         }
     }
     subntter.intt_batch(dst, batch_size);
+}
+
+void TwistedNtterW64::ntt_batch_cuda(const CudaBuffer& a, size_t batch_size) const
+{
+    assert(a.size() == (p_-1)*batch_size*sizeof(uint64_t));
+    subntter.ntt_batch_cuda(a, batch_size);
+    cuda_batch_mul_vec(a, a, b_cuda_, batch_size, p_-1, mm);
+    subntter.intt_batch_cuda(a, batch_size);
+}
+void TwistedNtterW64::intt_batch_cuda(const CudaBuffer& a, size_t batch_size) const
+{
+    assert(a.size() == (p_-1)*batch_size*sizeof(uint64_t));
+    subntter.ntt_batch_cuda(a, batch_size);
+    cuda_batch_mul_vec(a, a, b_inv_cuda_, batch_size, p_-1, mm);
+    subntter.intt_batch_cuda(a, batch_size);
 }
