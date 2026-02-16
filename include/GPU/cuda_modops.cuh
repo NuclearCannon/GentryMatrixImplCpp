@@ -42,3 +42,15 @@ static inline __device__ uint64_t _montgomery_reduce_cuda(__uint128_t t, uint64_
 static inline __device__ uint64_t _mul_cuda(uint64_t a, uint64_t b, uint64_t M, uint64_t N1) {
     return _montgomery_reduce_cuda((__uint128_t)a * b, M, N1);
 }
+
+struct ModAdd {
+    __device__ uint64_t operator()(uint64_t a, uint64_t b, uint64_t M) const {
+        return _mod_add(a, b, M);
+    }
+};
+
+struct ModSub {
+    __device__ uint64_t operator()(uint64_t a, uint64_t b, uint64_t M) const {
+        return _mod_sub(a, b, M); // 假设你已有 _mod_sub
+    }
+};

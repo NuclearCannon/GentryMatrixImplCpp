@@ -1,9 +1,9 @@
 #include "u64_array.hpp"
 
 
-int test_cuda_add()
+int test_cuda_add_sub()
 {
-    printf("测试cuda加法...");
+    printf("测试cuda加减法...");
     // 准备参数
     int n = 256;
     int p = 17;
@@ -16,15 +16,18 @@ int test_cuda_add()
     std::shared_ptr<U64CtxChain> cc = std::make_shared<U64CtxChain>(n, p, mods, roots);
     auto u = CRTArray::randint(cc, 1000, 2000);
     auto v = CRTArray::randint(cc, 1000, 2000);
-    auto uv_cpu = u.add(v);
-    CRTArrayGPU u_gpu(cc), v_gpu(cc), uv_gpu(cc);
+    auto u_add_v = u.add(v);
+    auto u_sub_v = u.sub(v);
+    CRTArrayGPU u_gpu(cc), v_gpu(cc), w_gpu(cc);
     u_gpu.set_from_vv64(u.get_data());
     v_gpu.set_from_vv64(v.get_data());
-    uv_gpu.add(u_gpu, v_gpu);
-
-    auto result_gpu = CRTArray(uv_gpu.export_to_vv64(), cc);
-    assert(uv_cpu.eq(result_gpu));
-    printf("cuda加法测试通过\n");
+    w_gpu.add(u_gpu, v_gpu);
+    auto result_gpu = CRTArray(w_gpu.export_to_vv64(), cc);
+    assert(u_add_v.eq(result_gpu));
+    w_gpu.sub(u_gpu, v_gpu);
+    auto result_gpu2 = CRTArray(w_gpu.export_to_vv64(), cc);
+    assert(u_sub_v.eq(result_gpu2));
+    printf("cuda加减法测试通过\n");
     return 1;
 
 }
@@ -32,5 +35,6 @@ int test_cuda_add()
 
 int main()
 {
-    test_cuda_add();
+    test_cuda_add_sub();
+    return 0;
 }

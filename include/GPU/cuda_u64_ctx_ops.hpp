@@ -25,3 +25,11 @@ float cuda_batch_add(
     size_t batch_size,
     uint64_t M
 );
+
+float cuda_batch_sub(
+    const CudaBuffer& dst,
+    const CudaBuffer& src1,
+    const CudaBuffer& src2,
+    size_t batch_size,
+    uint64_t M
+);
