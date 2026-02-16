@@ -147,3 +147,57 @@ float cuda_batch_mul_mont(
     cudaEventDestroy(stop);
     return ms;
 }
+
+__global__ void _cuda_batch_neg_kernel(
+    uint64_t* dst,
+    const uint64_t* src,
+    size_t batch_size,
+    uint64_t M
+)
+{
+    unsigned gid = blockIdx.x;
+    unsigned tid = threadIdx.x;
+    unsigned id = gid * blockDim.x + tid;
+    size_t stt = id * NUMBERS_PER_THREAD;
+    size_t end = min(stt + NUMBERS_PER_THREAD, batch_size);
+
+
+    for (size_t i = stt; i < end; ++i) {
+        dst[i] = _mod_sub(0, src[i], M);
+    }
+}
+
+
+float cuda_batch_neg(
+    const CudaBuffer& dst,
+    const CudaBuffer& src,
+    size_t batch_size,
+    uint64_t M
+)
+{
+    dim3 blockSize(THREAD_PER_GROUP);
+    dim3 gridSize((batch_size + NUMBERS_PER_GROUP - 1) / NUMBERS_PER_GROUP);
+
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start);
+
+    _cuda_batch_neg_kernel<<<gridSize, blockSize>>>(
+        (uint64_t*)dst.get_ptr(),
+        (const uint64_t*)src.get_ptr(),
+        batch_size,
+        M
+    );
+
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    float ms = 0;
+    cudaEventElapsedTime(&ms, start, stop);
+    CUDA_CHECK(cudaGetLastError());
+    CUDA_CHECK(cudaDeviceSynchronize());
+
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+    return ms;
+}

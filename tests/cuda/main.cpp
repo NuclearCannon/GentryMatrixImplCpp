@@ -27,6 +27,12 @@ int test_cuda_add_sub()
     w_gpu.sub(u_gpu, v_gpu);
     auto result_gpu2 = CRTArray(w_gpu.export_to_vv64(), cc);
     assert(u_sub_v.eq(result_gpu2));
+
+    auto neg_u = u.neg();
+    u_gpu.neg_inplace();
+    auto result_gpu3 = CRTArray(u_gpu.export_to_vv64(), cc);
+    assert(neg_u.eq(result_gpu3));
+
     printf("cuda加减法测试通过\n");
     return 1;
 

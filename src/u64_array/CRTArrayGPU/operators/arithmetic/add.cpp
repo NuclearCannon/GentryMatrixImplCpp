@@ -37,3 +37,18 @@ void CRTArrayGPU::sub(const CRTArrayGPU& src1, const CRTArrayGPU& src2)
         );
     }
 }
+
+void CRTArrayGPU::neg_inplace()
+{
+    size_t len = cuda_data_.size();
+    size_t batch_size = cc_->get_size();
+    for(size_t i=0; i<len; i++)
+    {
+        cuda_batch_neg(
+            *cuda_data_[i],
+            *cuda_data_[i],
+            batch_size,
+            cc_->get_mods()[i]
+        );
+    }
+}

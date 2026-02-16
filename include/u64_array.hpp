@@ -308,9 +308,6 @@ public:
     void sub(const CRTArrayGPU& src1, const CRTArrayGPU& src2);
     void mul_mont(const CRTArrayGPU& src1, const CRTArrayGPU& src2);
 
-    // 比较相等
-    bool eq(const CRTArrayGPU& other) const;
-
     inline std::shared_ptr<const U64CtxChain> get_cc() const { return cc_; }
 
 };
