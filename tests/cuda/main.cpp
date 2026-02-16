@@ -66,9 +66,64 @@ int test_cuda_mul_mont()
 }
 
 
+int test_cuda_scalar_mul()
+{
+    printf("测试cuda标量乘法...");
+    // 准备参数
+    int n = 256;
+    int p = 17;
+    // 质数链
+    vec64 mods = {70368747120641, 70368747294721, 70368748426241};
+    // 原根链
+    vec64 roots = {6, 11, 6};
+    uint64_t qo = 576460752303421441;
+    uint64_t qor = 19;
+    std::shared_ptr<U64CtxChain> cc = std::make_shared<U64CtxChain>(n, p, mods, roots);
+    auto u = CRTArray::randint(cc, 1000, 2000);
+    uint64_t v = 1234;
+    auto uv = u.mul_scalar(v);
+    CRTArrayGPU u_gpu(cc);
+    u_gpu.set_from_vv64(u.get_data());
+    u_gpu.mul_scalar_inplace(v);
+    assert(uv.eq(CRTArray(u_gpu.export_to_vv64(), cc)));
+    printf("cuda标量乘法测试通过\n");
+    return 1;
+}
+
+
+int test_cuda_mont_encode_decode()
+{
+    printf("测试cuda蒙哥马利编解码...");
+    // 准备参数
+    int n = 256;
+    int p = 17;
+    // 质数链
+    vec64 mods = {70368747120641, 70368747294721, 70368748426241};
+    // 原根链
+    vec64 roots = {6, 11, 6};
+    uint64_t qo = 576460752303421441;
+    uint64_t qor = 19;
+    std::shared_ptr<U64CtxChain> cc = std::make_shared<U64CtxChain>(n, p, mods, roots);
+    auto u = CRTArray::randint(cc, 1000, 2000);
+    auto u_encoded = u.mont_encode();
+    auto u_decoded = u.mont_decode();
+    CRTArrayGPU u_gpu(cc);
+    u_gpu.set_from_vv64(u.get_data());
+    u_gpu.mont_encode_inplace();
+    assert(u_encoded.eq(CRTArray(u_gpu.export_to_vv64(), cc)));
+    u_gpu.set_from_vv64(u.get_data());
+    u_gpu.mont_decode_inplace();
+    assert(u_decoded.eq(CRTArray(u_gpu.export_to_vv64(), cc)));
+    printf("cuda蒙哥马利编解码测试通过\n");
+    return 1;
+}
+
+
 int main()
 {
     test_cuda_add_sub();
     test_cuda_mul_mont();
+    test_cuda_scalar_mul();
+    test_cuda_mont_encode_decode();
     return 0;
 }

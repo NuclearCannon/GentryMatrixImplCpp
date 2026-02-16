@@ -14,6 +14,8 @@ public:
 
     inline uint64_t getM() const {return M_;}
     inline uint64_t getN1() const {return N1_;}
+    inline uint64_t getR() const {return R_;}
+    inline uint64_t getR2() const {return R2_;}
 
     // 相当于return t*Rinv mod M
     inline __attribute__((always_inline)) uint64_t montgomery_reduce(__uint128_t t) const {

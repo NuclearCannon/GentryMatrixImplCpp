@@ -48,3 +48,11 @@ float cuda_batch_neg(
     size_t batch_size,
     uint64_t M
 );
+
+float cuda_batch_mul_scalar(
+    const CudaBuffer& dst,
+    const CudaBuffer& src,
+    uint64_t scalar_encoded,
+    size_t batch_size,
+    const MontgomeryMultiplier& mm
+);
