@@ -33,3 +33,11 @@ float cuda_batch_sub(
     size_t batch_size,
     uint64_t M
 );
+
+float cuda_batch_mul_mont(
+    const CudaBuffer& dst,
+    const CudaBuffer& src1,
+    const CudaBuffer& src2,
+    size_t batch_size,
+    const MontgomeryMultiplier& mm
+);
