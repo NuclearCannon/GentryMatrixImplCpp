@@ -9,3 +9,11 @@ float cuda_i_ntt(
     uint64_t I_mont,
     const MontgomeryMultiplier& mm
 );
+
+float cuda_i_intt(
+    const CudaBuffer& dst,
+    const CudaBuffer& src,
+    size_t pnn,
+    uint64_t I_inv_mont,
+    const MontgomeryMultiplier& mm
+);
