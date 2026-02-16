@@ -251,3 +251,61 @@ public:
 
 
 };
+
+
+// CRTArray替代品
+// 本类的接口更加着重原地操作，以this作为输出位置，而不是返回新对象
+
+class CRTArrayGPU
+{
+private:
+    std::shared_ptr<const U64CtxChain> cc_;
+    std::vector<std::unique_ptr<CudaBuffer>> cuda_data_;
+public:
+    // 构造函数: 未初始化状态
+    CRTArrayGPU(std::shared_ptr<const U64CtxChain> cc);
+    ~CRTArrayGPU();
+    // 不可以拷贝构造，请用copy_from
+    CRTArrayGPU(const CRTArrayGPU&) = delete;
+    // 不可以拷贝赋值，请用copy_from
+    CRTArrayGPU& operator=(const CRTArrayGPU&) = delete;
+    // 可以移动构造
+    CRTArrayGPU(CRTArrayGPU&&);
+    // 不可以移动赋值，请用copy_from
+    CRTArrayGPU& operator=(CRTArrayGPU&&) = delete;
+
+    // 从内存的vv64中载入数据
+    void set_from_vv64(const vv64& data);
+    // 将数据写入内存（vv64格式）
+    vv64 export_to_vv64() const;
+    // 设为全0
+    void set_to_zero();
+    // 从另一个对象处拷贝（取代拷贝赋值）
+    void copy_from(const CRTArray& other);
+
+    
+
+    // 一元运算
+    void neg_inplace();
+    void mul_scalar_inplace(uint64_t scalar);   // 注：scalar是未经encode的
+    void mont_encode_inplace();
+    void mont_decode_inplace();
+
+    void iw_ntt_inplace();
+    void iw_intt_inplace();
+    void xy_ntt_inplace();
+    void xy_intt_inplace();
+
+    // 二元运算：加、减、乘
+    // 乘法仅提供蒙哥马利形式
+    // 别名是被允许的
+    void add(const CRTArrayGPU& src1, const CRTArrayGPU& src2);
+    void sub(const CRTArrayGPU& src1, const CRTArrayGPU& src2);
+    void mul_mont(const CRTArrayGPU& src1, const CRTArrayGPU& src2);
+
+    // 比较相等
+    bool eq(const CRTArrayGPU& other) const;
+
+    inline std::shared_ptr<const U64CtxChain> get_cc() const { return cc_; }
+
+};
