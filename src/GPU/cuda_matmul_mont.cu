@@ -3,20 +3,11 @@
 #include "GPU/cuda_buffer.hpp"
 #include "GPU/cuda_check.hpp"
 #include "GPU/cuda_matmul.hpp"
+#include "GPU/cuda_modops.cuh"
 #include "montgomery.hpp"
 #include <cstdint>
 #include <cassert>
 
-
-__device__ uint64_t _montgomery_reduce_cu(__uint128_t t, uint64_t M, uint64_t N1)  {
-    uint64_t m = (uint64_t)t * N1;
-    uint64_t v = ((t + (__uint128_t)m * M) >> 64);
-    return (v<M)?v:v-M;
-}
-
-__device__ uint64_t _mul_cu(uint64_t a, uint64_t b, uint64_t M, uint64_t N1) {
-    return _montgomery_reduce_cu((__uint128_t)a * b, M, N1);
-}
 
 
 __global__ void matmul_tiled(
@@ -50,7 +41,7 @@ __global__ void matmul_tiled(
 
         for (int k = 0; k < TILE_SIZE; ++k)
         {
-            sum += _mul_cu(As[threadIdx.y][k], Bs[k][threadIdx.x], M, N1);
+            sum += _mul_cuda(As[threadIdx.y][k], Bs[k][threadIdx.x], M, N1);
             if(sum>M)sum-=M;
         }
         __syncthreads();
