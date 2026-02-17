@@ -60,5 +60,34 @@ void U64Context::xy_ntt_cuda(const CudaBuffer& dst, const CudaBuffer& src) const
 }
 void U64Context::xy_intt_cuda(const CudaBuffer& dst, const CudaBuffer& src) const
 {
-    throw std::runtime_error("TODO: 尚未实现\n");
+    CudaBuffer buf(size_ * sizeof(uint64_t));
+    const size_t n = this->n_;
+    const size_t nn = this->nn_;
+    const size_t pnn = this->pnn_;
+    const size_t pn = n*(p_-1);
+    // 先转置
+    // TODO: 更好的转置方法？
+    for(int i=0; i<2*p_-2; i++)
+    {
+        cuda_transpose_rect_restrict(
+            buf.slice(i*nn_*sizeof(uint64_t), (i+1)*nn_*sizeof(uint64_t)), 
+            src.slice(i*nn_*sizeof(uint64_t), (i+1)*nn_*sizeof(uint64_t)), 
+            n_, n_
+        );
+    }
+    // NTT
+    // 转置
+    ntter_p->intt_batch_cuda(buf.slice(0, pnn*sizeof(uint64_t)), pn);
+    ntter_n->intt_batch_cuda(buf.slice(pnn*sizeof(uint64_t), 2*pnn*sizeof(uint64_t)), pn);
+    // 再转置
+    for(int i=0; i<2*p_-2; i++)
+    {
+        cuda_transpose_rect_restrict(
+            dst.slice(i*nn_*sizeof(uint64_t), (i+1)*nn_*sizeof(uint64_t)), 
+            buf.slice(i*nn_*sizeof(uint64_t), (i+1)*nn_*sizeof(uint64_t)), 
+            n_, n_
+        );
+    }
+    ntter_n->intt_batch_cuda(dst.slice(0, pnn*sizeof(uint64_t)), pn);
+    ntter_p->intt_batch_cuda(dst.slice(pnn*sizeof(uint64_t), 2*pnn*sizeof(uint64_t)), pn);
 }
