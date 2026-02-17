@@ -25,3 +25,15 @@ void CRTArrayGPU::iw_intt_inplace()
         );
     }
 }
+
+void CRTArrayGPU::xy_ntt_inplace()
+{
+    int len = cuda_data_.size();
+    for(int i=0; i<len; i++)
+    {
+        cc_->get_ctx()[i]->xy_ntt_cuda(
+            *cuda_data_[i],
+            *cuda_data_[i]
+        );
+    }
+}

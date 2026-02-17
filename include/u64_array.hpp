@@ -6,6 +6,7 @@
 #include "ntt.hpp"
 #include <memory>
 #include "montgomery.hpp"
+#include "GPU/cuda_buffer.hpp"
 
 class TwistedNtterXY64
 {
@@ -19,6 +20,9 @@ private:
     StandardNTTer std_ntter;
     MontgomeryMultiplier mm;
 
+    CudaBuffer zeta_pos_pows_mont_cuda_;
+    CudaBuffer zeta_neg_pows_mont_cuda_;
+
 public:
     TwistedNtterXY64(int n, uint64_t q, uint64_t qroot);
     ~TwistedNtterXY64();
@@ -27,6 +31,9 @@ public:
 
     void ntt_batch(uint64_t* dst, size_t batch_size) const;
     void intt_batch(uint64_t* dst, size_t batch_size) const;
+
+    void ntt_batch_cuda(const CudaBuffer& a, size_t batch_size) const;
+    void intt_batch_cuda(const CudaBuffer& a, size_t batch_size) const;
 };
 
 
