@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "flints.hpp"
-
+#include "vec64.hpp"
 #include "montgomery.hpp"
 #include "GPU/cuda_ntt.hpp"
 

@@ -48,7 +48,7 @@ float cuda_i_intt(
 {
     // 计算2的乘法逆元
     // 不用计算了，就是(M+1)/2
-    uint64_t inv2 = mm.encode((mm.getM()+1)/2);
+    uint64_t inv2 = mm.encode((mm.M+1)/2);
     // 每个线程组分配THREAD_PER_GROUP个线程
     dim3 blockSize(THREAD_PER_GROUP);
     // 分配这么多线程组，向上取整，保证
@@ -64,8 +64,8 @@ float cuda_i_intt(
         pnn,
         I_inv_mont,
         inv2,
-        mm.getM(),
-        mm.getN1()
+        mm.M,
+        mm.N1
     );
 
     cudaEventRecord(stop);

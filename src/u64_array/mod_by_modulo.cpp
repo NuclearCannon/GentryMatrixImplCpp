@@ -1,4 +1,5 @@
 #include "u64_array.hpp"
+#include "modops.hpp"
 
 vv64 CRTArray::mod_by_modulo() const
 {

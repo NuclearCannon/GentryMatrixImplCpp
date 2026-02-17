@@ -98,9 +98,17 @@ void U64CtxChain::mul_mont(vv64& dst, const vv64& src1, const vv64& src2) const
     assert(dst.size() == chain_len_);
     assert(src1.size() == chain_len_);
     assert(src2.size() == chain_len_);
+    size_t size = this->get_size();
     for(size_t i=0;i<chain_len_;i++)
     {
-        ctxs_[i]->get_multiplier().vec_mul_mont(dst[i], src1[i], src2[i]);
+        const MontgomeryMultiplier& mm = ctxs_[i]->get_multiplier();
+        vec64& v1 = dst[i];
+        const vec64& v2 = src1[i];
+        const vec64& v3 = src2[i];
+        assert(v1.size() == size);
+        assert(v2.size() == size);
+        assert(v3.size() == size);
+        for(size_t j=0; j<size; j++)v1[j] = mm.mul(v2[j], v3[j]);
     }
 }
 // 逐位负
@@ -139,17 +147,31 @@ void U64CtxChain::mont_encode(vv64& dst, const vv64& src) const
 {
     assert(dst.size() == chain_len_);
     assert(src.size() == chain_len_);
+    size_t size = this->get_size();
+
     for(size_t i=0;i<chain_len_;i++)
     {
-        ctxs_[i]->get_multiplier().batch_encode_to(dst[i], src[i]);
+        const MontgomeryMultiplier& mm = ctxs_[i]->get_multiplier();
+        vec64& v1 = dst[i];
+        const vec64& v2 = src[i];
+        assert(v1.size() == size);
+        assert(v2.size() == size);
+        for(size_t j=0; j<size; j++)v1[j] = mm.encode(v2[j]);
     }
 }
 void U64CtxChain::mont_decode(vv64& dst, const vv64& src) const
 {
     assert(dst.size() == chain_len_);
     assert(src.size() == chain_len_);
+    size_t size = this->get_size();
+
     for(size_t i=0;i<chain_len_;i++)
     {
-        ctxs_[i]->get_multiplier().batch_decode_to(dst[i], src[i]);
+        const MontgomeryMultiplier& mm = ctxs_[i]->get_multiplier();
+        vec64& v1 = dst[i];
+        const vec64& v2 = src[i];
+        assert(v1.size() == size);
+        assert(v2.size() == size);
+        for(size_t j=0; j<size; j++)v1[j] = mm.decode(v2[j]);
     }
 }

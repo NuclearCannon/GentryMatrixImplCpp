@@ -126,13 +126,13 @@ float cuda_ntt(
     if(dec)
     {
         _butterfly_dec_mont_cuda<<<gridSize, blockSize>>>(
-            ap, rp, logn, mm.getM(), mm.getN1()
+            ap, rp, logn, mm.M, mm.N1
         );
     }
     else
     {
         _butterfly_inc_mont_cuda<<<gridSize, blockSize>>>(
-            ap, rp, logn, mm.getM(), mm.getN1()
+            ap, rp, logn, mm.M, mm.N1
         );
     }
     cudaEventRecord(stop);

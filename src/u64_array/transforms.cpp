@@ -1,6 +1,6 @@
 #include "u64_array.hpp"
 #include <cstring>
-
+#include "modops.hpp"
 
 void U64Context::transpose(vec64& dst, const vec64& src) const
 {

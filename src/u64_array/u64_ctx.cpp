@@ -1,7 +1,7 @@
 #include "u64_array.hpp"
 #include <cstring>
 #include "math_utils.hpp"
-
+#include "modops.hpp"
 
 U64Context::U64Context(int n, int p, uint64_t q, uint64_t root_q):
     n_(n),

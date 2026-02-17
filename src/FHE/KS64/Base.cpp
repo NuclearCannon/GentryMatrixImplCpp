@@ -1,4 +1,5 @@
 #include "FHE/key_switch_64.hpp"
+#include "vec64.hpp"
 
 KeySwitchKey64Base::KeySwitchKey64Base(const CRTArray& sk_from, const CRTArray& sk_to, uint64_t B, uint64_t L, uint64_t qo, uint64_t qor):
     B_(B),

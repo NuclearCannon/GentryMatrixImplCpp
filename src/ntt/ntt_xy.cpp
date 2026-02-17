@@ -3,11 +3,14 @@
 #include "math_utils.hpp"
 #include "GPU/cuda_u64_ctx_ops.hpp"
 #include <cstring>
+#include "modops.hpp"
 
 TwistedNtterXY64::TwistedNtterXY64(int n, uint64_t q, uint64_t qroot):
     n_(n), q_(q),
     zeta_pos_pows_(n),
     zeta_neg_pows_(n),
+    zeta_pos_pows_mont_(n),
+    zeta_neg_pows_mont_(n),
     std_ntter(n, q, qroot),
     mm(q),
     zeta_pos_pows_mont_cuda_(n*sizeof(uint64_t)),
@@ -32,9 +35,11 @@ TwistedNtterXY64::TwistedNtterXY64(int n, uint64_t q, uint64_t qroot):
     {
         i = mod_mul(i,ninv,q);
     }
-
-    zeta_pos_pows_mont_ = mm.batch_encode(zeta_pos_pows_);
-    zeta_neg_pows_mont_ = mm.batch_encode(zeta_neg_pows_);
+    for(int i=0; i<n; i++)
+    {
+        zeta_pos_pows_mont_[i] = mm.encode(zeta_pos_pows_[i]);
+        zeta_neg_pows_mont_[i] = mm.encode(zeta_neg_pows_[i]);
+    }
 
     zeta_pos_pows_mont_cuda_.copy_from_host(zeta_pos_pows_mont_.data());
     zeta_neg_pows_mont_cuda_.copy_from_host(zeta_neg_pows_mont_.data());
@@ -50,15 +55,14 @@ TwistedNtterXY64::~TwistedNtterXY64()
 
 void TwistedNtterXY64::ntt_mont(vec64& dst, const vec64& src) const
 {
-    mm.vec_mul_mont(dst, src, zeta_pos_pows_mont_);
+    for(int i=0; i<n_; i++)dst[i] = mm.mul(src[i], zeta_pos_pows_mont_[i]);
     std_ntter.ntt(dst.data());
 }
 void TwistedNtterXY64::intt_mont(vec64& dst, const vec64& src) const
 {
     if(&src != &dst)memcpy(dst.data(), src.data(), n_*sizeof(uint64_t));
     std_ntter.intt(dst.data());
-    // let dst = buffer 逐位乘 zeta_neg_pows
-    mm.vec_mul_mont(dst, dst, zeta_neg_pows_mont_);
+    for(int i=0; i<n_; i++)dst[i] = mm.mul(dst[i], zeta_neg_pows_mont_[i]);
 }
 
 void TwistedNtterXY64::ntt_batch(uint64_t* dst, size_t batch_size) const

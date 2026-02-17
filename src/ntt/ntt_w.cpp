@@ -2,7 +2,7 @@
 #include "ntt.hpp"
 #include <cstring>
 #include "GPU/cuda_u64_ctx_ops.hpp"
-
+#include "modops.hpp"
 
 TwistedNtterW64::TwistedNtterW64(int p , uint64_t q, uint64_t qroot):
     p_(p), q_(q), 
@@ -28,8 +28,8 @@ TwistedNtterW64::TwistedNtterW64(int p , uint64_t q, uint64_t qroot):
         binv_[i] = mod_mul(binv_[i], inv, q);
     }
     // 蒙哥马利编码
-    mm.batch_encode_inplace(b_);
-    mm.batch_encode_inplace(binv_);
+    for(auto& i: b_)i = mm.encode(i);
+    for(auto& i: binv_)i = mm.encode(i);
     b_cuda_.copy_from_host(b_.data());
     b_inv_cuda_.copy_from_host(binv_.data());
 }
@@ -44,14 +44,14 @@ void TwistedNtterW64::ntt_mont(vec64& dst, const vec64& src) const
 {
     memcpy(buf1.data(), src.data(), (p_-1)*sizeof(uint64_t));
     subntter.ntt(buf1.data());
-    mm.vec_mul_mont(dst, buf1, b_);
+    for(int i=0; i<p_-1; i++)dst[i] = mm.mul(buf1[i], b_[i]);
     subntter.intt(dst.data());    
 }
 void TwistedNtterW64::intt_mont(vec64& dst, const vec64& src) const
 {
     memcpy(buf1.data(), src.data(), (p_-1)*sizeof(uint64_t));
     subntter.ntt(buf1.data());
-    mm.vec_mul_mont(dst, buf1, binv_);
+    for(int i=0; i<p_-1; i++)dst[i] = mm.mul(buf1[i], binv_[i]);
     subntter.intt(dst.data());
 }
 

@@ -1,4 +1,5 @@
 #include "u64_array.hpp"
+#include "modops.hpp"
 
 CRTArray CRTArray::mod_reduce(std::shared_ptr<const U64CtxChain> cc2) const
 {

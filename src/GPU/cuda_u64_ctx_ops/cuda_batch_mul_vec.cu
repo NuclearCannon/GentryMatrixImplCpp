@@ -63,7 +63,7 @@ float cuda_batch_mul_vec(
         (const uint64_t*)src.get_ptr(),
         (const uint64_t*)vec.get_ptr(),
         batch_size, vec_len,
-        mm.getM(), mm.getN1()
+        mm.M, mm.N1
     );
 
     cudaEventRecord(stop);

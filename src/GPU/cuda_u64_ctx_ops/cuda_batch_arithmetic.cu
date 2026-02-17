@@ -133,7 +133,7 @@ float cuda_batch_mul_mont(
         (const uint64_t*)src1.get_ptr(),
         (const uint64_t*)src2.get_ptr(),
         batch_size,
-        mm.getM(), mm.getN1()
+        mm.M, mm.N1
     );
 
     cudaEventRecord(stop);
@@ -244,7 +244,7 @@ float cuda_batch_mul_scalar(
         (const uint64_t*)src.get_ptr(),
         scalar_encoded,
         batch_size,
-        mm.getM(), mm.getN1()
+        mm.M, mm.N1
     );
 
     cudaEventRecord(stop);

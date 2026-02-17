@@ -2,12 +2,15 @@
 #include "math_utils.hpp"
 #include <cstring>
 #include "GPU/cuda_ntt.hpp"
-
+#include "modops.hpp"
 
 StandardNTTer::StandardNTTer(size_t n, uint64_t q, uint64_t qroot):
     n_(n), q_(q), mm(q)
     ,roots_cuda_(n*sizeof(uint64_t))
     ,iroots_cuda_(n*sizeof(uint64_t))
+    ,roots_mont_(n)
+    ,iroots_mont_(n)
+
 {
     logn_ = Log2(n);
     assert(q%n==1);
@@ -15,9 +18,11 @@ StandardNTTer::StandardNTTer(size_t n, uint64_t q, uint64_t qroot):
     roots_ = get_powers(nroot, n, q);
     iroots_ = get_powers(mod_inv(nroot, q), n, q);
     ninv_ = mod_inv(n, q);
-
-    roots_mont_ = mm.batch_encode(roots_);
-    iroots_mont_ = mm.batch_encode(iroots_);
+    for(int i=0; i<n; i++)
+    {
+        roots_mont_[i] = mm.encode(roots_[i]);
+        iroots_mont_[i] = mm.encode(iroots_[i]);
+    }
     ninv_mont_ = mm.encode(ninv_);
 
     roots_cuda_.copy_from_host(roots_mont_.data());
@@ -36,7 +41,7 @@ static void _butterfly_inc_mont(
     size_t m = 1;
     size_t t = logn;
     const size_t n = 1<<logn;
-    const uint64_t q = mm.getM();
+    const uint64_t q = mm.M;
     while(m<n)
     {
         size_t m_half = m;
@@ -69,7 +74,7 @@ static void _butterfly_dec_mont(
     const size_t n = 1<<logn;
     size_t m = n;
     size_t t = 0;
-    const uint64_t q = mm.getM();
+    const uint64_t q = mm.M;
     // 恒有m*t == n/2
     while (m>1) {
         size_t m_half = m>>1;

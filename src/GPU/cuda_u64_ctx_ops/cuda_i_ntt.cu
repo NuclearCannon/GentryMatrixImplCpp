@@ -54,8 +54,8 @@ float cuda_i_ntt(
         (const uint64_t*)src.get_ptr(),
         pnn,
         I_mont,
-        mm.getM(),
-        mm.getN1()
+        mm.M,
+        mm.N1
     );
 
     cudaEventRecord(stop);

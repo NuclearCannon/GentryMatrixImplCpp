@@ -102,7 +102,7 @@ void CRTArrayGPU::mont_encode_inplace()
         cuda_batch_mul_scalar(
             *cuda_data_[i],
             *cuda_data_[i],
-            mm.getR2(),
+            mm.R2,
             batch_size,
             mm
         );

@@ -267,7 +267,7 @@ CRTArray CRTArray::circledast(const CRTArray& other) const
             uint64_t q = cc_->get_mods()[i];
             const MontgomeryMultiplier& mm = cc_->get_ctx()[i]->get_multiplier();
             circledast_u64_gpu(result.data_[i].data(), data_[i].data(), other.data_[i].data(), cc_->get_n(), cc_->get_p(), mm);
-            mm.batch_encode_inplace(result.data_[i]);
+            for(auto& j:result.data_[i]) j = mm.encode(j);
         }
         return result;
     }
