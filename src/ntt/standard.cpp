@@ -104,49 +104,14 @@ void StandardNTTer::intt(uint64_t* dst) const
     _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm_);
 }
 
-constexpr bool USE_CUDA_NTT = true;
 
 void StandardNTTer::ntt_batch(uint64_t* dst, size_t batch_size) const
 {
-    if constexpr (USE_CUDA_NTT)
-    {
-        CudaBuffer dst_cuda(n_*batch_size*sizeof(uint64_t));
-        dst_cuda.copy_from_host(dst);
-        cuda_ntt(
-            dst_cuda,
-            roots_cuda_,
-            logn_,
-            mm_,
-            batch_size,
-            true
-        );
-        dst_cuda.copy_to_host(dst);
-    }
-    else
-    {
-        for(size_t i=0; i<batch_size; i++)ntt(dst + n_*i);
-    }
+    for(size_t i=0; i<batch_size; i++)ntt(dst + n_*i);
 }
 void StandardNTTer::intt_batch(uint64_t* dst, size_t batch_size) const
 {
-    if constexpr (USE_CUDA_NTT)
-    {
-        CudaBuffer dst_cuda(n_*batch_size*sizeof(uint64_t));
-        dst_cuda.copy_from_host(dst);
-        cuda_ntt(
-            dst_cuda,
-            iroots_cuda_,
-            logn_,
-            mm_,
-            batch_size,
-            false
-        );
-        dst_cuda.copy_to_host(dst);
-    }
-    else
-    {
-        for(size_t i=0; i<batch_size; i++)intt(dst + n_*i);
-    }
+    for(size_t i=0; i<batch_size; i++)intt(dst + n_*i);
 }
 
 void StandardNTTer::ntt_batch_cuda(const CudaBuffer& dst, size_t batch_size) const
