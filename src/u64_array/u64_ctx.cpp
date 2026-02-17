@@ -19,9 +19,9 @@ U64Context::U64Context(int n, int p, uint64_t q, uint64_t root_q):
     // 计算eta. eta是p阶本原单位根
     assert((q-1)%((uint64_t)p) == 0);
     // 生成各ntter对象
-    ntter_p = std::make_unique<TwistedNtterXY64>(n,q,root_q);
-    ntter_n = std::make_unique<TwistedNtterXY64>(n,q,mod_inv(root_q, q));
-    ntter_w = std::make_unique<TwistedNtterW64>(p,q,root_q);
+    ntter_p = std::make_unique<TwistedNtterXY>(n,q,root_q);
+    ntter_n = std::make_unique<TwistedNtterXY>(n,q,mod_inv(root_q, q));
+    ntter_w = std::make_unique<TwistedNtterW>(p,q,root_q);
     // 计算I及其逆元
     // I = zeta^n
     // zeta = qroot ^ ((q-1)/4n)

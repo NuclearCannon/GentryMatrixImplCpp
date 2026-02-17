@@ -17,8 +17,8 @@ private:
     uint64_t q_, I_, I_inv_;
     uint64_t I_mont_, I_inv_mont_;
     uint64_t inv2_mont;
-    std::unique_ptr<const TwistedNtterXY64> ntter_p, ntter_n;    // 这两个ntter会分别负责模X^n-I的和模X^n+I的
-    std::unique_ptr<const TwistedNtterW64> ntter_w;
+    std::unique_ptr<const TwistedNtterXY> ntter_p, ntter_n;    // 这两个ntter会分别负责模X^n-I的和模X^n+I的
+    std::unique_ptr<const TwistedNtterW> ntter_w;
     MontgomeryMultiplier mm_;
     mutable vec64 buf_size_, bufn_;
 public:

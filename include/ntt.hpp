@@ -11,16 +11,11 @@ class StandardNTTer {
 private:
     size_t n_;
     size_t logn_;
-    uint64_t q_;      // 模数q
-    vec64 roots_;    // nroot的[0,n/2)次幂
-    vec64 iroots_;    // nroot^{-1}的[0,n/2)次幂
-    uint64_t ninv_;       // n_在模q意义下的乘法逆元
+    uint64_t q_;
 
-    // 蒙哥马利约简部分
-    MontgomeryMultiplier mm;
+    MontgomeryMultiplier mm_;
     vec64 roots_mont_;
     vec64 iroots_mont_;
-    uint64_t ninv_mont_;
 
     CudaBuffer roots_cuda_;
     CudaBuffer iroots_cuda_;
@@ -39,24 +34,22 @@ public:
 
 };
 
-class TwistedNtterXY64
+class TwistedNtterXY
 {
 private:
     int n_;
     uint64_t q_;
-    vec64 zeta_pos_pows_;
-    vec64 zeta_neg_pows_;
     vec64 zeta_pos_pows_mont_;
     vec64 zeta_neg_pows_mont_;
-    StandardNTTer std_ntter;
-    MontgomeryMultiplier mm;
+    StandardNTTer std_ntter_;
+    MontgomeryMultiplier mm_;
 
     CudaBuffer zeta_pos_pows_mont_cuda_;
     CudaBuffer zeta_neg_pows_mont_cuda_;
 
 public:
-    TwistedNtterXY64(int n, uint64_t q, uint64_t qroot);
-    ~TwistedNtterXY64();
+    TwistedNtterXY(int n, uint64_t q, uint64_t qroot);
+    ~TwistedNtterXY();
     void ntt_mont(vec64& dst, const vec64& src) const;
     void intt_mont(vec64& dst, const vec64& src) const;
 
@@ -70,13 +63,13 @@ public:
 
 
 
-class TwistedNtterW64
+class TwistedNtterW
 {
 private:
     uint64_t p_;
     uint64_t q_;
-    StandardNTTer subntter;
-    MontgomeryMultiplier mm;
+    StandardNTTer std_ntter_;
+    MontgomeryMultiplier mm_;
 
     // b_[i] = eta^{gamma^i}（蒙哥马利形式）
     vec64 b_;
@@ -85,11 +78,9 @@ private:
     vec64 binv_;
 
     CudaBuffer b_cuda_, b_inv_cuda_;
-    
-    mutable vec64 buf1;
 public:
-    TwistedNtterW64(int p , uint64_t q, uint64_t qroot);
-    ~TwistedNtterW64();
+    TwistedNtterW(int p , uint64_t q, uint64_t qroot);
+    ~TwistedNtterW();
     void ntt_mont(vec64& dst, const vec64& src) const;
     void intt_mont(vec64& dst, const vec64& src) const;
 

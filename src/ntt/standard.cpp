@@ -5,7 +5,7 @@
 #include "modops.hpp"
 
 StandardNTTer::StandardNTTer(size_t n, uint64_t q, uint64_t qroot):
-    n_(n), q_(q), mm(q)
+    n_(n), q_(q), mm_(q)
     ,roots_cuda_(n*sizeof(uint64_t))
     ,iroots_cuda_(n*sizeof(uint64_t))
     ,roots_mont_(n)
@@ -15,15 +15,13 @@ StandardNTTer::StandardNTTer(size_t n, uint64_t q, uint64_t qroot):
     logn_ = Log2(n);
     assert(q%n==1);
     uint64_t nroot = mod_pow(qroot, (q-1)/n, q);
-    roots_ = get_powers(nroot, n, q);
-    iroots_ = get_powers(mod_inv(nroot, q), n, q);
-    ninv_ = mod_inv(n, q);
+    vec64 roots = get_powers(nroot, n, q);
+    vec64 iroots = get_powers(mod_inv(nroot, q), n, q);
     for(int i=0; i<n; i++)
     {
-        roots_mont_[i] = mm.encode(roots_[i]);
-        iroots_mont_[i] = mm.encode(iroots_[i]);
+        roots_mont_[i] = mm_.encode(roots[i]);
+        iroots_mont_[i] = mm_.encode(iroots[i]);
     }
-    ninv_mont_ = mm.encode(ninv_);
 
     roots_cuda_.copy_from_host(roots_mont_.data());
     iroots_cuda_.copy_from_host(iroots_mont_.data());
@@ -99,11 +97,11 @@ static void _butterfly_dec_mont(
 
 void StandardNTTer::ntt(uint64_t* dst) const
 {
-    _butterfly_dec_mont(dst, roots_mont_.data(), logn_, mm);
+    _butterfly_dec_mont(dst, roots_mont_.data(), logn_, mm_);
 }
 void StandardNTTer::intt(uint64_t* dst) const
 {
-    _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm);
+    _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm_);
 }
 
 constexpr bool USE_CUDA_NTT = true;
@@ -118,7 +116,7 @@ void StandardNTTer::ntt_batch(uint64_t* dst, size_t batch_size) const
             dst_cuda,
             roots_cuda_,
             logn_,
-            mm,
+            mm_,
             batch_size,
             true
         );
@@ -139,7 +137,7 @@ void StandardNTTer::intt_batch(uint64_t* dst, size_t batch_size) const
             dst_cuda,
             iroots_cuda_,
             logn_,
-            mm,
+            mm_,
             batch_size,
             false
         );
@@ -158,7 +156,7 @@ void StandardNTTer::ntt_batch_cuda(const CudaBuffer& dst, size_t batch_size) con
         dst,
         roots_cuda_,
         logn_,
-        mm,
+        mm_,
         batch_size,
         true
     );
@@ -171,7 +169,7 @@ void StandardNTTer::intt_batch_cuda(const CudaBuffer& dst, size_t batch_size) co
         dst,
         iroots_cuda_,
         logn_,
-        mm,
+        mm_,
         batch_size,
         false
     );
