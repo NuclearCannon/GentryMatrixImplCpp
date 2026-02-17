@@ -39,3 +39,63 @@ public:
 
 };
 
+class TwistedNtterXY64
+{
+private:
+    int n_;
+    uint64_t q_;
+    vec64 zeta_pos_pows_;
+    vec64 zeta_neg_pows_;
+    vec64 zeta_pos_pows_mont_;
+    vec64 zeta_neg_pows_mont_;
+    StandardNTTer std_ntter;
+    MontgomeryMultiplier mm;
+
+    CudaBuffer zeta_pos_pows_mont_cuda_;
+    CudaBuffer zeta_neg_pows_mont_cuda_;
+
+public:
+    TwistedNtterXY64(int n, uint64_t q, uint64_t qroot);
+    ~TwistedNtterXY64();
+    void ntt_mont(vec64& dst, const vec64& src) const;
+    void intt_mont(vec64& dst, const vec64& src) const;
+
+    void ntt_batch(uint64_t* dst, size_t batch_size) const;
+    void intt_batch(uint64_t* dst, size_t batch_size) const;
+
+    void ntt_batch_cuda(const CudaBuffer& a, size_t batch_size) const;
+    void intt_batch_cuda(const CudaBuffer& a, size_t batch_size) const;
+};
+
+
+
+
+class TwistedNtterW64
+{
+private:
+    uint64_t p_;
+    uint64_t q_;
+    StandardNTTer subntter;
+    MontgomeryMultiplier mm;
+
+    // b_[i] = eta^{gamma^i}（蒙哥马利形式）
+    vec64 b_;
+
+    // binv_[i] = inv(etas[i])（蒙哥马利形式）
+    vec64 binv_;
+
+    CudaBuffer b_cuda_, b_inv_cuda_;
+    
+    mutable vec64 buf1;
+public:
+    TwistedNtterW64(int p , uint64_t q, uint64_t qroot);
+    ~TwistedNtterW64();
+    void ntt_mont(vec64& dst, const vec64& src) const;
+    void intt_mont(vec64& dst, const vec64& src) const;
+
+    void ntt_batch(uint64_t* dst, size_t batch_size) const;
+    void intt_batch(uint64_t* dst, size_t batch_size) const;
+
+    void ntt_batch_cuda(const CudaBuffer& a, size_t batch_size) const;
+    void intt_batch_cuda(const CudaBuffer& a, size_t batch_size) const;
+};
