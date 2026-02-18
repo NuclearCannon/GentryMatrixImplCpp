@@ -29,3 +29,8 @@ GPComponent GPComponent::from_data(size_t n, size_t p, uint64_t q, std::vector<u
     result.data_.swap(data);
     return result;
 }
+
+
+GPComponent::~GPComponent() = default;
+GPComponent::GPComponent(const GPComponent&) = default;
+GPComponent::GPComponent(GPComponent&&) = default;

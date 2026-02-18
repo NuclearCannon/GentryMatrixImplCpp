@@ -59,3 +59,11 @@ void GPComponent::mul_mont(GPComponent& dst, const GPComponent& src1, const GPCo
     size_t size = dst.get_size();
     for(size_t i=0; i<size; i++)dst.data_[i] = dst.mm_.mul(src1.data_[i], src2.data_[i]);
 }
+
+bool GPComponent::eq(const GPComponent& other) const
+{
+    assert(like(other));
+    size_t size = get_size();
+    for(size_t i=0; i<size; i++)if(data_[i] != other.data_[i])return false;
+    return true;
+}
