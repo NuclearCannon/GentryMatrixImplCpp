@@ -24,7 +24,7 @@ void GentryPoly::_op2_tmpl(GentryPoly& dst, const GentryPoly& a) {
 
 
 template<GentryPoly::CpuOp3 cpu_op, GentryPoly::CudaOp3 cuda_op>
-void GentryPoly::_op3_tmpl(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2) {
+void GentryPoly::_op3_tmpl(GentryPoly& dst, const GentryPoly& a, const GentryPoly& b) {
     if (!a.like(b) || !dst.like(a)) {
         throw std::invalid_argument("GentryPoly::add: operands not like");
     }
