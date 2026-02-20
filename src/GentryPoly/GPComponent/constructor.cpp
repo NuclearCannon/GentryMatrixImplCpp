@@ -31,6 +31,23 @@ GPComponent GPComponent::from_data(size_t n, size_t p, uint64_t q, std::vector<u
     return result;
 }
 
+GPComponent GPComponent::from_signed_data(size_t n, size_t p, uint64_t q, const std::vector<int64_t>& data)
+{
+    std::vector<uint64_t> udata(data.size());
+    for(int i=0; i<data.size(); i++)
+    {
+        int64_t di = data[i] % q;
+        if(di<0)di+=q;
+        udata[i] = di;
+    }
+    // data形参是值类型而不是引用，因为我们需要一个完整对象所有权
+    GPComponent result(n, p, q, tag_no_data {});
+    // 检查data长度
+    assert(data.size() == 2*n*n*(p-1));
+    // TODO: 要不要检查data取值？
+    result.data_.swap(udata);
+    return result;
+}
 
 GPComponent::~GPComponent() = default;
 GPComponent::GPComponent(const GPComponent&) = default;

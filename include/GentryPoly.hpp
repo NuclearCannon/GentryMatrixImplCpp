@@ -48,6 +48,7 @@ public:
     // 从给定数据中构造
     // TODO: 要不要改成std::option<GPComponent>之类的返回值？
     static GPComponent from_data(size_t n, size_t p, uint64_t q, std::vector<uint64_t> data);
+    static GPComponent from_signed_data(size_t n, size_t p, uint64_t q, const std::vector<int64_t>& data);
     // 析构函数：默认即可
     ~GPComponent();
     // 允许复制（以便塞进容器），但是用户应该慎用它
