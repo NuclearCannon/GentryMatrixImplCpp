@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace ramdom_generators {
+namespace random_generators {
     double random_real();
     int randint(int a, int b);
     uint64_t randu64(uint64_t a, uint64_t b);

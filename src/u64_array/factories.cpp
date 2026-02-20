@@ -15,7 +15,7 @@ CRTArray CRTArray::uniform(std::shared_ptr<const U64CtxChain> cc)
     for(uint64_t mod : mods)
     {
         vec64 data_i(size);
-        for(int j=0;j<size;j++)data_i[j] = ramdom_generators::randu64(0, mod-1);
+        for(int j=0;j<size;j++)data_i[j] = random_generators::randu64(0, mod-1);
         data.push_back(std::move(data_i));
     }
     return CRTArray(data, cc);
@@ -28,7 +28,7 @@ CRTArray CRTArray::dg(std::shared_ptr<const U64CtxChain> cc)
     for(int i=0;i<size;i++)
     {
         // 生成第i个随机数
-        int64_t t = ramdom_generators::dg(5);
+        int64_t t = random_generators::dg(5);
         // 取余
         for(int j=0;j<mods.size();j++)
         {
@@ -51,7 +51,7 @@ CRTArray CRTArray::sk(std::shared_ptr<const U64CtxChain> cc)
     for(int i=0;i<size;i+=n)
     {
         // 生成第i个随机数
-        int64_t t = ramdom_generators::randint(-1, 1);
+        int64_t t = random_generators::randint(-1, 1);
         // 取余
         for(int j=0;j<mods.size();j++)
         {
@@ -75,7 +75,7 @@ CRTArray CRTArray::randint(std::shared_ptr<const U64CtxChain> cc, int64_t start,
     for(int i=0;i<size;i++)
     {
         // 生成第i个随机数
-        int64_t t = ramdom_generators::randi64(start, end);
+        int64_t t = random_generators::randi64(start, end);
         // 取余
         for(int j=0;j<mods.size();j++)
         {

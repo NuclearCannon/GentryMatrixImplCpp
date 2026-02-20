@@ -5,7 +5,7 @@
 // TODO: 不安全！我们没有使用密码学安全的随机数发生器，而且离散高斯的取法中使用了不安全的浮点数！
 // 浮点计算不仅精度有限，还可能引入侧信道攻击风险
 
-namespace ramdom_generators {
+namespace random_generators {
 
 // 全局或局部的随机数引擎（推荐使用 thread_local 避免多线程问题）
 thread_local static std::mt19937 rng{std::random_device{}()};

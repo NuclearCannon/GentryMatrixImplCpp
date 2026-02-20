@@ -351,4 +351,14 @@ private:
 
     // 内部 like 检查（不检查 device）
     bool like_no_device(const GentryPoly& other) const;
+
+public:
+    // 下面定义一些工厂函数。所有的工厂函数都返回CPU版本的结果。
+
+    
+    static GentryPoly zeros(size_t n, size_t p, const std::vector<uint64_t>& moduli);
+    static GentryPoly dg(size_t n, size_t p, const std::vector<uint64_t>& moduli);
+    static GentryPoly sk(size_t n, size_t p, const std::vector<uint64_t>& moduli);
+    static GentryPoly uniform(size_t n, size_t p, const std::vector<uint64_t>& moduli);
+    static GentryPoly randint(size_t n, size_t p, const std::vector<uint64_t>& moduli, int lb, int ub);
 };

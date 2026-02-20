@@ -130,7 +130,7 @@ fmpz_vector fmpz_vector::dg(int len)
 {
     // TODO: 这里使用的DG可能不够安全
     fmpz_vector result(len);
-    for(int i=0;i<len;i++)fmpz_set_si(result[i], ramdom_generators::dg(10));
+    for(int i=0;i<len;i++)fmpz_set_si(result[i], random_generators::dg(10));
     // 
     return result;
 }
