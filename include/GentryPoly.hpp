@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 #include "ntt.hpp"
+#include <unordered_map>
+#include <variant>
 
 class GPComponent;
 class GPComponentCuda;
@@ -226,4 +228,74 @@ public:
 };
 
 // Zq[i,X,Y,W]/<i^2+1, X^n-i, Y^n+i, Phi_p(W)>
-class GentryPoly;
+class GentryPolyCtx {
+public:
+    using QRootPair = std::pair<uint64_t, uint64_t>;
+
+    GentryPolyCtx(size_t n, size_t p, const std::vector<QRootPair>& q_and_qroots);
+
+    const class GPCCtx& get_ctx(uint64_t q) const;
+
+    size_t n() const { return n_; }
+    size_t p() const { return p_; }
+
+private:
+    size_t n_, p_;
+    std::unordered_map<uint64_t, GPCCtx> ctx_map_;
+};
+
+class GentryPoly {
+public:
+
+    // 从现有 components 构造（内部使用）
+    GentryPoly(bool is_cuda, std::vector<uint64_t> moduli,
+               std::vector<GPComponent> cpu_comps);
+    GentryPoly(bool is_cuda, std::vector<uint64_t> moduli,
+               std::vector<GPComponentCuda> cuda_comps);
+
+    // 用户指定值构造（仅 CPU）
+    static GentryPoly from_coeffs(
+        size_t n, size_t p,
+        const std::vector<uint64_t>& moduli,
+        const std::vector<std::vector<uint64_t>>& coeffs_mod_q
+    );
+
+    // 设备查询
+    bool is_cuda() const { return is_cuda_; }
+    bool is_cpu() const { return !is_cuda_; }
+
+    // 属性
+    size_t n() const;
+    size_t p() const;
+    const std::vector<uint64_t>& moduli() const { return moduli_; }
+
+    // like 判断：same device, n, p, moduli (order-sensitive)
+    bool like(const GentryPoly& other) const;
+
+    // ===== 静态运算 =====
+
+    static void add(GentryPoly& dst, const GentryPoly& a, const GentryPoly& b);
+    static void neg(GentryPoly& dst, const GentryPoly& a);
+    static void mul(GentryPoly& dst, const GentryPoly& a, const GentryPoly& b);
+
+    // NTT / INTT：原地，需传入 ctx_set
+    static void ntt(GentryPoly& poly, const GentryPolyCtx& ctx_set);
+    static void intt(GentryPoly& poly, const GentryPolyCtx& ctx_set);
+
+private:
+    bool is_cuda_ = false;
+    std::vector<uint64_t> moduli_;
+
+    using CpuStorage = std::vector<GPComponent>;
+    using CudaStorage = std::vector<GPComponentCuda>;
+    std::variant<CpuStorage, CudaStorage> storage_;
+
+    // 辅助访问器
+    const CpuStorage& cpu_components() const;
+    CpuStorage& cpu_components();
+    const CudaStorage& cuda_components() const;
+    CudaStorage& cuda_components();
+
+    // 内部 like 检查（不检查 device）
+    bool like_no_device(const GentryPoly& other) const;
+};
