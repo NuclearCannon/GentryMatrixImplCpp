@@ -273,14 +273,67 @@ public:
     bool like(const GentryPoly& other) const;
 
     // ===== 静态运算 =====
+private:
+    using CpuOp2 = void (*)(GPComponent& , const GPComponent& );
+    using CpuOp3 = void (*)(GPComponent& , const GPComponent& , const GPComponent& );
+    using CudaOp2 = void (*)(GPComponentCuda& , const GPComponentCuda& );
+    using CudaOp3 = void (*)(GPComponentCuda& , const GPComponentCuda& , const GPComponentCuda& );
 
-    static void add(GentryPoly& dst, const GentryPoly& a, const GentryPoly& b);
-    static void neg(GentryPoly& dst, const GentryPoly& a);
-    static void mul(GentryPoly& dst, const GentryPoly& a, const GentryPoly& b);
+    template<CpuOp2 cpu_op, CudaOp2 cuda_op>
+    static void _op2_tmpl(GentryPoly& dst, const GentryPoly& src);
+    template<CpuOp3 cpu_op, CudaOp3 cuda_op>
+    static void _op3_tmpl(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);
+public:
+    static void neg(GentryPoly& dst, const GentryPoly& src);
+    static void add(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);
+    static void sub(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);
+    static void mul(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);
+    static void mul_scalar(GentryPoly& dst, const GentryPoly& src1, uint64_t src_scalar);
+    static void mont_encode(GentryPoly& dst, const GentryPoly& src);
+    static void mont_decode(GentryPoly& dst, const GentryPoly& src);
+    static void mul_mont(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);
 
     // NTT / INTT：原地，需传入 ctx_set
-    static void ntt(GentryPoly& poly, const GentryPolyCtx& ctx_set);
-    static void intt(GentryPoly& poly, const GentryPolyCtx& ctx_set);
+private:
+    using CpuNttOp = void (GPComponent::*)(const GPCCtx &ctx);
+    using CudaNttOp = void (GPComponentCuda::*)(const GPCCtx &ctx);
+
+    template<CpuNttOp cpu_op, CudaNttOp cuda_op>
+    void _ntt_tmpl(const GentryPolyCtx&);
+
+public:
+
+    void i_ntt(const GentryPolyCtx&);
+    void i_intt(const GentryPolyCtx&);
+    void w_ntt(const GentryPolyCtx&);
+    void w_intt(const GentryPolyCtx&);
+    void x_ntt(const GentryPolyCtx&);
+    void x_intt(const GentryPolyCtx&);
+    void y_ntt(const GentryPolyCtx&);
+    void y_intt(const GentryPolyCtx&);
+    inline void iw_ntt(const GentryPolyCtx& ctx) {
+        i_ntt(ctx); w_ntt(ctx);
+    }
+
+    inline void iw_intt(const GentryPolyCtx& ctx) {
+        w_intt(ctx); i_intt(ctx);
+    }
+
+    inline void xy_ntt(const GentryPolyCtx& ctx) {
+        x_ntt(ctx); y_ntt(ctx);
+    }
+
+    inline void xy_intt(const GentryPolyCtx& ctx) {
+        y_intt(ctx); x_intt(ctx);
+    }
+
+    inline void ntt(const GentryPolyCtx& ctx) {
+        i_ntt(ctx); w_ntt(ctx); x_ntt(ctx); y_ntt(ctx);
+    }
+
+    inline void intt(const GentryPolyCtx& ctx) {
+        y_intt(ctx); x_intt(ctx); w_intt(ctx); i_intt(ctx);
+    }
 
 private:
     bool is_cuda_ = false;
