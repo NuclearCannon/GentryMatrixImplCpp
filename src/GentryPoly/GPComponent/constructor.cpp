@@ -5,7 +5,7 @@ GPComponent::GPComponent(size_t n, size_t p, uint64_t q):
     p_(p),
     q_(q),
     mm_(q),
-    data_(2*n*n*(p-1))
+    data_(2*n*n*(p-1), 0)
 {
 
 }
@@ -21,6 +21,7 @@ GPComponent::GPComponent(size_t n, size_t p, uint64_t q, GPComponent::tag_no_dat
 
 GPComponent GPComponent::from_data(size_t n, size_t p, uint64_t q, std::vector<uint64_t> data)
 {
+    for(auto& i: data) i %= q;
     // data形参是值类型而不是引用，因为我们需要一个完整对象所有权
     GPComponent result(n, p, q, tag_no_data {});
     // 检查data长度

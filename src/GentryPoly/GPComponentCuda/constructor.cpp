@@ -10,12 +10,6 @@ GPComponentCuda::GPComponentCuda(size_t n, size_t p, uint64_t q):
 
 }
 
-GPComponentCuda GPComponentCuda::from_buffer(size_t n, size_t p, uint64_t q, const uint64_t* data)
-{
-    GPComponentCuda result(n, p, q);
-    result.set_from_buffer(data);
-    return result;
-}
 
 
 GPComponentCuda::~GPComponentCuda() = default;
@@ -29,3 +23,11 @@ GPComponentCuda::GPComponentCuda(const GPComponentCuda& other):
     data_.copy_from_other(other.data_);
 }
 GPComponentCuda::GPComponentCuda(GPComponentCuda&&) = default;
+
+
+GPComponentCuda GPComponentCuda::copy_from_cpu(const GPComponent& other)
+{
+    GPComponentCuda result(other.n_, other.p_, other.q_);
+    result.set_from_cpu(other);
+    return result;
+}

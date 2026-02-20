@@ -6,6 +6,7 @@
 #include "ntt.hpp"
 #include <unordered_map>
 #include <variant>
+#include <memory>
 
 class GPComponent;
 class GPComponentCuda;
@@ -16,12 +17,12 @@ private:
     size_t n_, p_;
     uint64_t q_;
     // 用于I轴NTT
-    NTTerI ntter_i_;
-    TwistedNtterXY ntter_p_, ntter_n_;
-    TwistedNtterW ntter_w_;
+    std::unique_ptr<NTTerI> ntter_i_;
+    std::unique_ptr<TwistedNtterXY> ntter_p_, ntter_n_;
+    std::unique_ptr<TwistedNtterW> ntter_w_;
 public:
     GPCCtx(size_t n, size_t p, uint64_t q, uint64_t qroot);
-
+    GPCCtx(GPCCtx&&);
     friend class GPComponent;
     friend class GPComponentCuda;
 };
@@ -138,8 +139,6 @@ public:
     // 构造函数，未初始化数据
     GPComponentCuda(size_t n, size_t p, uint64_t q);
 
-    // 从给定数据中构造
-    static GPComponentCuda from_buffer(size_t n, size_t p, uint64_t q, const uint64_t* data);
     // 析构函数：默认即可
     ~GPComponentCuda();
     // 允许复制（以便塞进容器），但是用户应该慎用它
@@ -151,9 +150,9 @@ public:
     GPComponentCuda& operator=(GPComponentCuda&&) = delete;
 
     // setters
-    void set_from_buffer(const uint64_t* data);
     void set_from_other(const GPComponentCuda& other);
     void set_from_cpu(const GPComponent& other);
+    static GPComponentCuda copy_from_cpu(const GPComponent&);
 
     // getters
     inline size_t get_n() const {return n_;}
@@ -227,7 +226,6 @@ public:
 
 };
 
-// Zq[i,X,Y,W]/<i^2+1, X^n-i, Y^n+i, Phi_p(W)>
 class GentryPolyCtx {
 public:
     using QRootPair = std::pair<uint64_t, uint64_t>;
@@ -244,6 +242,7 @@ private:
     std::unordered_map<uint64_t, GPCCtx> ctx_map_;
 };
 
+// Zq[i,X,Y,W]/<i^2+1, X^n-i, Y^n+i, Phi_p(W)>
 class GentryPoly {
 public:
 

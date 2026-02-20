@@ -1,9 +1,5 @@
 #include "GentryPoly.hpp"
 
-void GPComponentCuda::set_from_buffer(const uint64_t* data)
-{
-    data_.copy_from_host(data);
-}
 
 void GPComponentCuda::set_from_other(const GPComponentCuda& other)
 {
@@ -13,7 +9,7 @@ void GPComponentCuda::set_from_other(const GPComponentCuda& other)
 void GPComponentCuda::set_from_cpu(const GPComponent& other)
 {
     assert(like(other));
-    set_from_buffer(other.data_.data());
+    data_.copy_from_host(other.data_.data());
 }
 void GPComponentCuda::to_buffer(uint64_t* data)
 {
