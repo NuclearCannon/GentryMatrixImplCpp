@@ -1,6 +1,6 @@
 #include "ntt.hpp"
 #include "modops.hpp"
-
+#include "GPU/cuda_u64_ctx_ops.hpp"
 
 NTTerI::NTTerI(uint64_t q, uint64_t qroot):
     mm_(q)
@@ -10,8 +10,8 @@ NTTerI::NTTerI(uint64_t q, uint64_t qroot):
     I_mont_ = mm_.encode(I);
     
     inv2_mont_ = mm_.encode(mod_inv(2, q));
-
-    I2_inv_mont_ = mm_.mul(mm_.encode(Iinv), inv2_mont_);
+    I_inv_mont_ = mm_.encode(Iinv);
+    I2_inv_mont_ = mm_.mul(I_inv_mont_, inv2_mont_);
 }
 void NTTerI::ntt_batch(
     uint64_t* low, 
@@ -42,4 +42,19 @@ void NTTerI::intt_batch(
         low[i] = R;
         hig[i] = I;
     }
+}
+
+void NTTerI::ntt_batch_cuda(
+    const CudaBuffer& buf, 
+    size_t pnn
+) const
+{
+    cuda_i_ntt(buf, buf, pnn, I_mont_, mm_);
+}
+void NTTerI::intt_batch_cuda(
+    const CudaBuffer& buf, 
+    size_t pnn
+) const
+{
+    cuda_i_intt(buf, buf, pnn, I_inv_mont_, mm_);
 }

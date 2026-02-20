@@ -94,7 +94,7 @@ public:
 class NTTerI
 {
     MontgomeryMultiplier mm_;
-    uint64_t I_mont_, I2_inv_mont_, inv2_mont_;
+    uint64_t I_mont_, I_inv_mont_, I2_inv_mont_, inv2_mont_;
 public:
     NTTerI(uint64_t q, uint64_t qroot);
     void ntt_batch(
@@ -106,5 +106,13 @@ public:
         uint64_t* low, 
         uint64_t* hig, 
         size_t batch_size
+    ) const;
+    void ntt_batch_cuda(
+        const CudaBuffer& buf, 
+        size_t pnn
+    ) const;
+    void intt_batch_cuda(
+        const CudaBuffer& buf, 
+        size_t pnn
     ) const;
 };
