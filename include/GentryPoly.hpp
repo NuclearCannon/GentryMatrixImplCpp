@@ -361,4 +361,7 @@ public:
     static GentryPoly sk(size_t n, size_t p, const std::vector<uint64_t>& moduli);
     static GentryPoly uniform(size_t n, size_t p, const std::vector<uint64_t>& moduli);
     static GentryPoly randint(size_t n, size_t p, const std::vector<uint64_t>& moduli, int lb, int ub);
+
+    // 
+    int64_t abs() const;
 };

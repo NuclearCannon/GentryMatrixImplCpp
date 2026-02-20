@@ -36,7 +36,7 @@ GPComponent GPComponent::from_signed_data(size_t n, size_t p, uint64_t q, const 
     std::vector<uint64_t> udata(data.size());
     for(int i=0; i<data.size(); i++)
     {
-        int64_t di = data[i] % q;
+        int64_t di = data[i] % int64_t(q);
         if(di<0)di+=q;
         udata[i] = di;
     }

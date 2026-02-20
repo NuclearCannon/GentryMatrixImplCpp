@@ -92,3 +92,39 @@ const GentryPoly::CudaStorage& GentryPoly::cuda_components() const {
 GentryPoly::CudaStorage& GentryPoly::cuda_components() {
     return std::get<CudaStorage>(storage_);
 }
+
+
+int64_t GentryPoly::abs() const
+{
+    assert(this->is_cpu());
+    const std::vector<GPComponent>& comp = cpu_components();
+    size_t size = 2*(p()-1)*n()*n();
+    int64_t result = 0;
+
+    for(size_t i=0; i<size; i++)
+    {
+        int64_t value = 0;
+        bool valid = false;
+
+        for(auto& c: comp)
+        {
+            int64_t ci = c.get_data()[i];
+            uint64_t qi = c.get_q();
+            assert(ci >= 0);
+            assert(ci < qi);
+            if(ci*2>qi)ci -= qi;
+            if(!valid)
+            {
+                valid = true;
+                value = ci;
+            }
+            if(value != ci)
+            {
+                return -1;
+            }
+        }
+        value = std::abs(value);
+        if(value>result)result = value;
+    }
+    return result;
+}
