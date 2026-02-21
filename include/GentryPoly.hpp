@@ -128,6 +128,7 @@ public:
 
     bool eq(const GPComponent&) const;
 
+    std::vector<int64_t> to_signed() const;
 
 };
 
@@ -373,6 +374,9 @@ public:
         GentryPoly& remainder,
         uint64_t modulus
     );
+
+    void moduli_extend_mult(uint64_t mod);
+    void moduli_extend_unsafe(uint64_t mod);
 
     // 这会将自己按照KS的要求切分为多个分量
     // 运行结束后，自己的取值会被摧毁

@@ -8,7 +8,7 @@ std::pair<GentryPoly, GentryPoly> encrypt_gp(
 {
     assert(msg.like(sk));
     // 获取sk和
-    GentryPoly a = GentryPoly::zeros(msg.n(), msg.p(), msg.moduli());
+    GentryPoly a = GentryPoly::uniform(msg.n(), msg.p(), msg.moduli());
     GentryPoly e = GentryPoly::dg(msg.n(), msg.p(), msg.moduli());
     // b = m+e-as
     
