@@ -16,7 +16,7 @@ std::pair<GentryPoly, GentryPoly> encrypt_gp(
     a_ntt.ntt(ctx);
     GentryPoly b = sk;
     b.ntt(ctx);    // b = NTT(sk)
-    GentryPoly::mul(b, a_ntt, sk);      // b = 
+    GentryPoly::mul(b, a_ntt, b);      // b = 
     b.intt(ctx);
     GentryPoly::sub(b, msg, b);     // b = msg - b
     GentryPoly::add(b, b, e);       // b = b+e
