@@ -50,8 +50,8 @@ std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_1(const GentryP
     }
     ra.intt(ctx);
     rb.intt(ctx);
-    ra.divmod_by_modulus(piece, qo_);
-    rb.divmod_by_modulus(piece, qo_);
+    ra.divmod_by_modulus(qo_);
+    rb.divmod_by_modulus(qo_);
     ra.drop_modulus(qo_);
     rb.drop_modulus(qo_);
     return std::make_pair(std::move(ra), std::move(rb));

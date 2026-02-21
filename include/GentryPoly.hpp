@@ -376,11 +376,8 @@ public:
     // 
     int64_t abs() const;
 
-    // let remainder, self = divmod(self, modulus)
-    void divmod_by_modulus(
-        GentryPoly& remainder,
-        uint64_t modulus
-    );
+    // self /= modulus
+    void divmod_by_modulus(uint64_t modulus);
 
     void moduli_extend_mult(uint64_t mod);
     void moduli_extend_unsafe(uint64_t mod);
