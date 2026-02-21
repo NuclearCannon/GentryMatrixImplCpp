@@ -23,13 +23,40 @@ KeySwitchKeyGP KeySwitchKeyGP::ksk_gen(const GentryPoly& sk_from, const GentryPo
     }
     return KeySwitchKeyGP(std::move(cts), qo);
 }
-std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_1(const GentryPoly &a) const
+std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_1(const GentryPoly &a ,const GentryPolyCtx& ctx) const
 {
-    throw std::runtime_error("key_switch_big_1尚未实现");
+    std::vector<std::vector<uint64_t>> split = GentryPoly(a).split_by_moduli();
+
+    GentryPoly ra = GentryPoly::zeros(cts_[0].first.n(), cts_[0].first.p(), cts_[0].first.moduli());
+    GentryPoly rb = ra;
+    GentryPoly rc = ra;
+
+    for(int i=0; i<split.size(); i++)
+    {
+        auto [cta, ctb] = cts_[i];
+        cta.ntt(ctx);
+        ctb.ntt(ctx);
+        GentryPoly piece = GentryPoly::zeros(cta.n(), cta.p(), cta.moduli());
+        piece.set_from_vec64(split[i]);
+        piece.ntt(ctx);
+        GentryPoly::mul(cta, cta, piece);
+        GentryPoly::mul(ctb, ctb, piece);
+        GentryPoly::add(ra, ra, cta);
+        GentryPoly::add(rb, rb, ctb);
+    }
+    ra.intt(ctx);
+    rb.intt(ctx);
+    ra.divmod_by_modulus(rc, qo_);
+    rb.divmod_by_modulus(rc, qo_);
+    ra.drop_modulus(qo_);
+    rb.drop_modulus(qo_);
+    return std::make_pair(std::move(ra), std::move(rb));
 }
-std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_2(const GentryPoly& a, const GentryPoly& b) const
+std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_2(const GentryPoly& a, const GentryPoly& b ,const GentryPolyCtx& ctx) const
 {
-    throw std::runtime_error("key_switch_big_2尚未实现");
+    auto [ra, rb] = key_switch_big_1(a, ctx);
+    GentryPoly::add(rb, rb, b);
+    return std::make_pair(std::move(ra), std::move(rb));
 }
 
 

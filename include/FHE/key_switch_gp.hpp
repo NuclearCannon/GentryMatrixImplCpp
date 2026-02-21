@@ -13,7 +13,7 @@ private:
     KeySwitchKeyGP(std::vector<std::pair<GentryPoly, GentryPoly>> cts, uint64_t qo);
 public:
     static KeySwitchKeyGP ksk_gen(const GentryPoly& sk_from, const GentryPoly& sk_to, uint64_t qo, const GentryPolyCtx& ctx);
-    std::pair<GentryPoly, GentryPoly> key_switch_big_1(const GentryPoly &a) const;
-    std::pair<GentryPoly, GentryPoly> key_switch_big_2(const GentryPoly& a, const GentryPoly& b) const;
+    std::pair<GentryPoly, GentryPoly> key_switch_big_1(const GentryPoly &a ,const GentryPolyCtx& ctx) const;
+    std::pair<GentryPoly, GentryPoly> key_switch_big_2(const GentryPoly& a, const GentryPoly& b ,const GentryPolyCtx& ctx) const;
 };
 
