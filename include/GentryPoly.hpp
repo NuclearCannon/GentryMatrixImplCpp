@@ -361,6 +361,9 @@ public:
 
     
     static GentryPoly zeros(size_t n, size_t p, const std::vector<uint64_t>& moduli);
+    static GentryPoly zeros_like(const GentryPoly& other) {
+        return zeros(other.n(), other.p(), other.moduli());
+    }
     static GentryPoly dg(size_t n, size_t p, const std::vector<uint64_t>& moduli);
     static GentryPoly sk(size_t n, size_t p, const std::vector<uint64_t>& moduli);
     static GentryPoly uniform(size_t n, size_t p, const std::vector<uint64_t>& moduli);

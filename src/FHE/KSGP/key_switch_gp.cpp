@@ -34,9 +34,9 @@ std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_1(const GentryP
 {
     std::vector<std::vector<uint64_t>> split = GentryPoly(a).split_by_moduli();
 
-    GentryPoly ra = GentryPoly::zeros(cts_[0].first.n(), cts_[0].first.p(), cts_[0].first.moduli());
-    GentryPoly rb = GentryPoly::zeros(cts_[0].first.n(), cts_[0].first.p(), cts_[0].first.moduli());
-    GentryPoly piece = GentryPoly::zeros(cts_[0].first.n(), cts_[0].first.p(), cts_[0].first.moduli());
+    GentryPoly ra = GentryPoly::zeros_like(cts_[0].first);
+    GentryPoly rb = GentryPoly::zeros_like(cts_[0].first);
+    GentryPoly piece = GentryPoly::zeros_like(cts_[0].first);
 
     for(int i=0; i<split.size(); i++)
     {
