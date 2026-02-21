@@ -376,9 +376,6 @@ public:
     // 
     int64_t abs() const;
 
-    // self /= modulus
-    void divmod_by_modulus(uint64_t modulus);
-
     void moduli_extend_mult(uint64_t mod);
     void moduli_extend_unsafe(uint64_t mod);
 
@@ -386,7 +383,8 @@ public:
     // 运行结束后，自己的取值会被摧毁
     std::vector<std::vector<uint64_t>> split_by_moduli();
 
-    void drop_modulus(uint64_t modulus);
+    // 移除模数链中的一个模数，并且使得自己的值除以它
+    void moduli_reduce(uint64_t modulus);
 
     void set_from_vec64(const std::vector<uint64_t>&);
 

@@ -1,30 +1,5 @@
 #include "GentryPoly.hpp"
 #include "modops.hpp"
-/*
-    auto& self_comp = cpu_components();
-    const auto& r = self_comp[mod_idx].get_data();
-    // 设置remainder
-    for(auto& comp : remainder.cpu_components())
-    {
-        comp.set_from_data(r);
-    }
-    // 令self-=remainder
-    GentryPoly::sub(*this, *this, remainder);
-    // 乘以modulus的乘法逆元。除了mod_idx（它应该已经被清零了）
-    for(int i=0; i<moduli_.size(); i++)
-    {
-        if (i == mod_idx)
-        {
-            // 检查一下是不是清零了
-            for(uint64_t j:self_comp[i].get_data())assert(j == 0);
-        }
-        else
-        {
-            // 乘以modulus的乘法逆元
-            GPComponent::mul_scalar(self_comp[i], self_comp[i], mod_inv(modulus % moduli_[i], moduli_[i]));
-        }
-    }
-*/
 
 std::vector<std::vector<uint64_t>> GentryPoly::split_by_moduli()
 {
