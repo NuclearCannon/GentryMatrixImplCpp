@@ -50,17 +50,6 @@ TwistedNtterXY::~TwistedNtterXY()
     // do nothing
 }
 
-void TwistedNtterXY::ntt_mont(vec64& dst, const vec64& src) const
-{
-    for(int i=0; i<n_; i++)dst[i] = mm_.mul(src[i], zeta_pos_pows_mont_[i]);
-    std_ntter_.ntt(dst.data());
-}
-void TwistedNtterXY::intt_mont(vec64& dst, const vec64& src) const
-{
-    if(&src != &dst)memcpy(dst.data(), src.data(), n_*sizeof(uint64_t));
-    std_ntter_.intt(dst.data());
-    for(int i=0; i<n_; i++)dst[i] = mm_.mul(dst[i], zeta_neg_pows_mont_[i]);
-}
 
 void TwistedNtterXY::ntt_batch(uint64_t* dst, size_t batch_size) const
 {

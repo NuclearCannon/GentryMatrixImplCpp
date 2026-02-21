@@ -50,8 +50,6 @@ private:
 public:
     TwistedNtterXY(int n, uint64_t q, uint64_t qroot);
     ~TwistedNtterXY();
-    void ntt_mont(vec64& dst, const vec64& src) const;
-    void intt_mont(vec64& dst, const vec64& src) const;
 
     void ntt_batch(uint64_t* dst, size_t batch_size) const;
     void intt_batch(uint64_t* dst, size_t batch_size) const;
@@ -81,8 +79,6 @@ private:
 public:
     TwistedNtterW(int p , uint64_t q, uint64_t qroot);
     ~TwistedNtterW();
-    void ntt_mont(vec64& dst, const vec64& src) const;
-    void intt_mont(vec64& dst, const vec64& src) const;
 
     void ntt_batch(uint64_t* dst, size_t batch_size) const;
     void intt_batch(uint64_t* dst, size_t batch_size) const;

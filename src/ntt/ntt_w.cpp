@@ -38,20 +38,6 @@ TwistedNtterW::~TwistedNtterW()
 }
 
 
-void TwistedNtterW::ntt_mont(vec64& dst, const vec64& src) const
-{
-    if(&dst != &src)memcpy(dst.data(), src.data(), (p_-1)*sizeof(uint64_t));
-    std_ntter_.ntt(dst.data());
-    for(int i=0; i<p_-1; i++)dst[i] = mm_.mul(dst[i], b_[i]);
-    std_ntter_.intt(dst.data());    
-}
-void TwistedNtterW::intt_mont(vec64& dst, const vec64& src) const
-{
-    if(&dst != &src)memcpy(dst.data(), src.data(), (p_-1)*sizeof(uint64_t));
-    std_ntter_.ntt(dst.data());
-    for(int i=0; i<p_-1; i++)dst[i] = mm_.mul(dst[i], binv_[i]);
-    std_ntter_.intt(dst.data());
-}
 
 void TwistedNtterW::ntt_batch(uint64_t* dst, size_t batch_size) const
 {
