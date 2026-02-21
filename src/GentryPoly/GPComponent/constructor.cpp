@@ -31,6 +31,13 @@ GPComponent GPComponent::from_data(size_t n, size_t p, uint64_t q, std::vector<u
     return result;
 }
 
+void GPComponent::set_from_data(const std::vector<uint64_t>& data)
+{
+    size_t size = get_size();
+    assert(data.size() == size);
+    for(size_t i=0; i<size; i++)data_[i] = data[i] % q_;
+}
+
 GPComponent GPComponent::from_signed_data(size_t n, size_t p, uint64_t q, const std::vector<int64_t>& data)
 {
     std::vector<uint64_t> udata(data.size());

@@ -59,7 +59,8 @@ public:
     GPComponent& operator=(const GPComponent&) = delete;
     GPComponent& operator=(GPComponent&&) = delete;
 
-    // setters: 无
+    // setters: 
+    void set_from_data(const std::vector<uint64_t>& data);
 
     // getters
     inline size_t get_n() const {return n_;}
@@ -364,4 +365,10 @@ public:
 
     // 
     int64_t abs() const;
+
+    // let remainder, self = divmod(self, modulus)
+    void divmod_by_modulus(
+        GentryPoly& remainder,
+        uint64_t modulus
+    );
 };
