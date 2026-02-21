@@ -42,6 +42,7 @@ private:
 
 public:
     friend class GPComponentCuda;
+    friend class GentryPoly;
     // 构造函数，未初始化数据
     GPComponent(size_t n, size_t p, uint64_t q);
 
@@ -372,6 +373,10 @@ public:
         GentryPoly& remainder,
         uint64_t modulus
     );
+
+    // 这会将自己按照KS的要求切分为多个分量
+    // 运行结束后，自己的取值会被摧毁
+    std::vector<std::vector<uint64_t>> split_by_moduli();
 
     void drop_modulus(uint64_t modulus);
 

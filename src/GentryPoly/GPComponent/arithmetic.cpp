@@ -20,10 +20,18 @@ void GPComponent::add(GPComponent& dst, const GPComponent& src1, const GPCompone
 void GPComponent::sub(GPComponent& dst, const GPComponent& src1, const GPComponent& src2)
 {
     assert(dst.like(src1));
-    assert(dst.like(src2));
     size_t size = dst.get_size();
     uint64_t q = dst.q_;
-    for(size_t i=0; i<size; i++)dst.data_[i] = mod_sub(src1.data_[i], src2.data_[i], q);
+    if(dst.like(src2))
+    {
+        for(size_t i=0; i<size; i++)dst.data_[i] = mod_sub(src1.data_[i], src2.data_[i], q);
+    }
+    else
+    {
+        for(size_t i=0; i<size; i++)dst.data_[i] = mod_sub(src1.data_[i], src2.data_[i] % q, q);
+    }
+    
+    
 }
 void GPComponent::mul(GPComponent& dst, const GPComponent& src1, const GPComponent& src2)
 {
