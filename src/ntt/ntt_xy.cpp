@@ -1,4 +1,3 @@
-#include "u64_array.hpp"
 #include "ntt.hpp"
 #include "math_utils.hpp"
 #include "GPU/cuda_u64_ctx_ops.hpp"
