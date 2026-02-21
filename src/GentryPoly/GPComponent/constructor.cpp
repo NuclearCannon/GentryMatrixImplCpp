@@ -26,7 +26,8 @@ GPComponent GPComponent::from_data(size_t n, size_t p, uint64_t q, std::vector<u
     GPComponent result(n, p, q, tag_no_data {});
     // 检查data长度
     assert(data.size() == 2*n*n*(p-1));
-    // TODO: 要不要检查data取值？
+    // 检查data取值
+    for(auto& i: data) i %= q;
     result.data_.swap(data);
     return result;
 }

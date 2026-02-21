@@ -375,4 +375,6 @@ public:
 
     void drop_modulus(uint64_t modulus);
 
+    void set_from_vec64(const std::vector<uint64_t>&);
+
 };

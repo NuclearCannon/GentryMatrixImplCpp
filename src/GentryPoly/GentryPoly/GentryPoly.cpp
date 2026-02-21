@@ -56,6 +56,15 @@ GentryPoly GentryPoly::from_coeffs(
     return GentryPoly(false, moduli, std::move(comps));
 }
 
+void GentryPoly::set_from_vec64(const std::vector<uint64_t>& v)
+{
+    assert(is_cpu());
+    for(auto& i: cpu_components())
+    {
+        i.set_from_data(v);
+    }
+}
+
 size_t GentryPoly::n() const {
     if (moduli_.empty()) return 0;
     if (is_cuda_) return cuda_components()[0].get_n();
