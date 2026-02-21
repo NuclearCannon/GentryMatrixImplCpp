@@ -46,6 +46,10 @@ public:
     // 构造函数，未初始化数据
     GPComponent(size_t n, size_t p, uint64_t q);
 
+    static GPComponent zeros(size_t n, size_t p, uint64_t q) {
+        return GPComponent(n, p, q);
+    }
+
     // 从给定数据中构造
     // TODO: 要不要改成std::option<GPComponent>之类的返回值？
     static GPComponent from_data(size_t n, size_t p, uint64_t q, std::vector<uint64_t> data);
