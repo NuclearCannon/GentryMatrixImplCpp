@@ -55,9 +55,10 @@ public:
     GPComponent(const GPComponent&);
     // 允许移动（以便塞进容器）
     GPComponent(GPComponent&&);
+    GPComponent& operator=(GPComponent&&) = default;
     // 不允许赋值
     GPComponent& operator=(const GPComponent&) = delete;
-    GPComponent& operator=(GPComponent&&) = delete;
+    
 
     // setters: 
     void set_from_data(const std::vector<uint64_t>& data);
@@ -371,4 +372,7 @@ public:
         GentryPoly& remainder,
         uint64_t modulus
     );
+
+    void drop_modulus(uint64_t modulus);
+
 };

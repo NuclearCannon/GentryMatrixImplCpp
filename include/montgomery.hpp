@@ -45,7 +45,7 @@ public:
     // R: 2^64 % M (在这里隐去)
     // R2: R^2 % M
     // N1: - M^{-1} % 2^{64}
-    const uint64_t M, R2, N1;
+    uint64_t M, R2, N1;
 
     MontgomeryMultiplier(uint64_t M):
         M(M),
@@ -54,6 +54,12 @@ public:
     {
         assert(M % 2 == 1);
     }
+
+    MontgomeryMultiplier(const MontgomeryMultiplier&) = default;
+    MontgomeryMultiplier(MontgomeryMultiplier&&) = default;
+    MontgomeryMultiplier& operator=(const MontgomeryMultiplier&) = default;
+    MontgomeryMultiplier& operator=(MontgomeryMultiplier&&) = default;
+
 
     // 逻辑上，这相当于return t*R^{-1} mod M
     inline __attribute__((always_inline)) uint64_t montgomery_reduce(__uint128_t t) const {
