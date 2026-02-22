@@ -1,6 +1,18 @@
+#include <cstring>
+#include <cstdio>
+
 void bench_ks();
-int main()
+void bench_ks_cuda();
+
+int main(int argc, char *argv[])
 {
-    bench_ks();
+    for(int i=1; i<argc; i++)   // 从1开始以忽略ELF文件名
+    {
+        if(strcmp(argv[i], "--ks")==0)bench_ks();
+        else if(strcmp(argv[i], "--ksc")==0)bench_ks_cuda();
+        else {
+            printf("未被识别的选项：%s\n", argv[i]);
+        }
+    }
     return 0;
 }

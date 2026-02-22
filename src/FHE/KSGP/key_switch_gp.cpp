@@ -70,12 +70,6 @@ std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::_key_switch_big_1_cpu(const Ge
 std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::_key_switch_big_1_cuda(const GentryPoly &a ,const GentryPolyCtx& ctx) const
 {
     assert(a.is_cuda());
-    // 使用保守路径
-    if(true)
-    {
-        auto [x, y] = _key_switch_big_1_cpu(a.to_cpu(), ctx);
-        return {x.to_cuda(), y.to_cuda()};
-    }
     std::vector<std::vector<uint64_t>> split = a.to_cpu().split_by_moduli();
     GentryPoly ra = GentryPoly::zeros_like(cts_[0].first).to_cuda();
     GentryPoly rb = GentryPoly::zeros_like(cts_[0].first).to_cuda();
