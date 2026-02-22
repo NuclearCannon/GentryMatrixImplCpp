@@ -71,3 +71,10 @@ float cuda_transpose_rect_restrict(
     const CudaBuffer& src,
     size_t r, size_t c
 );
+
+float cuda_copy_mod(
+    const CudaBuffer& dst,
+    const CudaBuffer& src,
+    uint64_t M,
+    size_t batch_size
+);

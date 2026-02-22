@@ -65,6 +65,15 @@ void GentryPoly::set_from_vec64(const std::vector<uint64_t>& v)
     }
 }
 
+void GentryPoly::set_from_cuda_buffer(const CudaBuffer& v)
+{
+    assert(is_cuda());
+    for(auto& i: cuda_components())
+    {
+        i.set_from_cuda_buffer(v);
+    }
+}
+
 size_t GentryPoly::n() const {
     assert(!moduli_.empty());
     switch (device_)

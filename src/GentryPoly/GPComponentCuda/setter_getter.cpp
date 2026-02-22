@@ -1,10 +1,15 @@
 #include "GentryPoly.hpp"
-
+#include "GPU/cuda_u64_ctx_ops.hpp"
 
 void GPComponentCuda::set_from_other(const GPComponentCuda& other)
 {
     assert(like(other));
     data_.copy_from_other(other.data_);
+}
+void GPComponentCuda::set_from_cuda_buffer(const CudaBuffer& buf)
+{
+    assert(buf.size() == get_size()*sizeof(uint64_t));
+    cuda_copy_mod(data_, buf, q_, get_size());
 }
 void GPComponentCuda::set_from_cpu(const GPComponent& other)
 {

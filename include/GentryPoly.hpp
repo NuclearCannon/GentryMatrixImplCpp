@@ -165,6 +165,7 @@ public:
 
     // setters
     void set_from_other(const GPComponentCuda& other);
+    void set_from_cuda_buffer(const CudaBuffer&);
     void set_from_cpu(const GPComponent& other);
     static GPComponentCuda copy_from_cpu(const GPComponent&);
 
@@ -394,6 +395,7 @@ public:
     void moduli_reduce(uint64_t modulus);
 
     void set_from_vec64(const std::vector<uint64_t>&);
+    void set_from_cuda_buffer(const CudaBuffer&);
 
     GentryPoly to_cpu() const;
     GentryPoly to_cuda() const;
