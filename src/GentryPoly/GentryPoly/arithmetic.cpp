@@ -26,7 +26,7 @@ void GentryPoly::_op2_tmpl(GentryPoly& dst, const GentryPoly& a) {
 template<GentryPoly::CpuOp3 cpu_op, GentryPoly::CudaOp3 cuda_op>
 void GentryPoly::_op3_tmpl(GentryPoly& dst, const GentryPoly& a, const GentryPoly& b) {
     if (!a.like(b) || !dst.like(a)) {
-        throw std::invalid_argument("GentryPoly::add: operands not like");
+        throw std::invalid_argument("GentryPoly::_op3_tmpl: operands not like");
     }
     if (a.is_cuda()) {
         auto& d = dst.cuda_components();
@@ -83,4 +83,39 @@ void GentryPoly::mul_scalar(GentryPoly& dst, const GentryPoly& src1, uint64_t sr
             GPComponent::mul_scalar(d[i], x[i], src_scalar);
         }
     }
+}
+
+bool GentryPoly::eq(const GentryPoly& other) const
+{
+    if(other.is_cuda())return eq(other.to_cpu());
+    if(is_cuda())return to_cpu().eq(other);
+
+    assert(this->is_cpu());
+    assert(other.is_cpu());
+    assert(like(other));
+    auto& comp1 = cpu_components();
+    auto& comp2 = other.cpu_components();
+    int len = comp1.size();
+    for(int i=0; i<len; i++)
+    {
+        if(!(comp1[i].eq(comp2[i])))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+uint64_t GentryPoly::hash() const
+{
+    if(is_cuda())return to_cpu().hash();
+    uint64_t x = 0;
+    for(auto& i: cpu_components())
+    {
+        for (auto j: i.data_)
+        {
+            x += j;
+        }
+    }
+    return x;
 }

@@ -59,3 +59,31 @@ GentryPoly GentryPoly::randint(size_t n, size_t p, const std::vector<uint64_t>& 
     }
     return GentryPoly(false, moduli, cpu_comps);
 }
+
+GentryPoly GentryPoly::to_cpu() const {
+    if(is_cpu())return *this;
+    assert(is_cuda());
+    GentryPoly res = zeros_like(*this);
+    assert(res.is_cpu());
+    auto& dst = res.cpu_components();
+    auto& src = this->cuda_components();
+    int len = dst.size();
+    assert(src.size() == len);
+    for(int i=0; i<len; i++)
+    {
+        src[i].to_cpu(dst[i]);
+    }
+    return res;
+
+}
+GentryPoly GentryPoly::to_cuda() const {
+    if(is_cuda())return *this;
+    assert(is_cpu());
+    // 构造Cuda Storage
+    CudaStorage sto;
+    for(auto& i : cpu_components())
+    {
+        sto.emplace_back(GPComponentCuda::copy_from_cpu(i));
+    }
+    return GentryPoly(true, moduli_, sto);
+}

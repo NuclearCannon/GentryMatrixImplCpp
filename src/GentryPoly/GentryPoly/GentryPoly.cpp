@@ -105,7 +105,7 @@ GentryPoly::CudaStorage& GentryPoly::cuda_components() {
 
 int64_t GentryPoly::abs() const
 {
-    assert(this->is_cpu());
+    if(is_cuda())return this->to_cpu().abs();
     const std::vector<GPComponent>& comp = cpu_components();
     size_t size = 2*(p()-1)*n()*n();
     int64_t result = 0;

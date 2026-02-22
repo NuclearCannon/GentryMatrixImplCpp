@@ -170,8 +170,8 @@ public:
     inline uint64_t get_q() const {return q_;}
     inline const MontgomeryMultiplier& get_mm() const {return mm_;}
 
-    void to_buffer(uint64_t* data);
-    void to_cpu(GPComponent& other);
+    void to_buffer(uint64_t* data) const;
+    void to_cpu(GPComponent& other) const;
     
     inline bool like(const GPComponentCuda& other) const
     {
@@ -256,6 +256,8 @@ class GentryPoly {
 public:
 
     // 从现有 components 构造（内部使用）
+    // TODO: 这俩构造函数的is_cuda字段真是多余
+    // TODO: 为什么不能从n,p,moduli中构造呢？
     GentryPoly(bool is_cuda, std::vector<uint64_t> moduli,
                std::vector<GPComponent> cpu_comps);
     GentryPoly(bool is_cuda, std::vector<uint64_t> moduli,
@@ -388,4 +390,10 @@ public:
 
     void set_from_vec64(const std::vector<uint64_t>&);
 
+    GentryPoly to_cpu() const;
+    GentryPoly to_cuda() const;
+    bool eq(const GentryPoly&) const;
+
+    // 其实就是所有元素的简单加和
+    uint64_t hash() const;
 };
