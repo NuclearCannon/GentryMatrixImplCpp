@@ -54,3 +54,9 @@ struct ModSub {
         return _mod_sub(a, b, M); // 假设你已有 _mod_sub
     }
 };
+
+struct ModSubSafe {
+    __device__ uint64_t operator()(uint64_t a, uint64_t b, uint64_t M) const {
+        return _mod_sub(a, b % M, M);
+    }
+};

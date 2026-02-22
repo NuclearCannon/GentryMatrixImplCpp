@@ -87,6 +87,15 @@ float cuda_batch_sub(
     return cuda_batch_binary_op_impl<ModSub>(dst, src1, src2, batch_size, M);
 }
 
+float cuda_batch_sub_safe(
+    const CudaBuffer& dst,
+    const CudaBuffer& src1,
+    const CudaBuffer& src2,
+    size_t batch_size,
+    uint64_t M
+) {
+    return cuda_batch_binary_op_impl<ModSubSafe>(dst, src1, src2, batch_size, M);
+}
 
 
 

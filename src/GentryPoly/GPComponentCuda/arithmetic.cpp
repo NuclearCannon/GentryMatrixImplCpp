@@ -22,19 +22,15 @@ void GPComponentCuda::add(GPComponentCuda& dst, const GPComponentCuda& src1, con
 void GPComponentCuda::sub(GPComponentCuda& dst, const GPComponentCuda& src1, const GPComponentCuda& src2)
 {
     assert(dst.like(src1));
+    size_t size = dst.get_size();
+    uint64_t q = dst.q_;
     if(src2.q_ <= dst.q_)
     {
-        size_t size = dst.get_size();
-        uint64_t q = dst.q_;
         cuda_batch_sub(dst.data_, src1.data_, src2.data_, size, q);
     }
     else
     {
-        GPComponentCuda tmp = src1; // TODO: 这个减法成本是不是太高了？
-        size_t size = dst.get_size();
-        uint64_t q = dst.q_;
-        cuda_copy_mod(dst.data_, src2.data_, q, dst.get_size());
-        cuda_batch_sub(dst.data_, tmp.data_, dst.data_, size, q);
+        cuda_batch_sub_safe(dst.data_, src1.data_, src2.data_, size, q);
     }
 }
 void GPComponentCuda::mul(GPComponentCuda& dst, const GPComponentCuda& src1, const GPComponentCuda& src2)

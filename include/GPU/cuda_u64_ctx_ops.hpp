@@ -34,6 +34,14 @@ float cuda_batch_sub(
     uint64_t M
 );
 
+float cuda_batch_sub_safe(
+    const CudaBuffer& dst,
+    const CudaBuffer& src1,
+    const CudaBuffer& src2,
+    size_t batch_size,
+    uint64_t M
+);
+
 float cuda_batch_mul_mont(
     const CudaBuffer& dst,
     const CudaBuffer& src1,
