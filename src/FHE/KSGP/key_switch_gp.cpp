@@ -87,10 +87,9 @@ std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::_key_switch_big_1_cuda(const G
     }
     ra.intt(ctx);
     rb.intt(ctx);
-    GentryPoly rac = ra.to_cpu(), rbc = rb.to_cpu();
-    rac.moduli_reduce(qo_);
-    rbc.moduli_reduce(qo_);
-    return std::make_pair(rac.to_cuda(), rbc.to_cuda());
+    ra.moduli_reduce(qo_);
+    rb.moduli_reduce(qo_);
+    return std::make_pair(std::move(ra), std::move(rb));
 }
 std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_1(const GentryPoly &a ,const GentryPolyCtx& ctx) const
 {

@@ -161,7 +161,7 @@ public:
     GPComponentCuda(GPComponentCuda&&);
     // 不允许赋值
     GPComponentCuda& operator=(const GPComponentCuda&) = delete;
-    GPComponentCuda& operator=(GPComponentCuda&&) = delete;
+    GPComponentCuda& operator=(GPComponentCuda&&) = default;
 
     // setters
     void set_from_other(const GPComponentCuda& other);
