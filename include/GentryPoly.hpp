@@ -166,7 +166,7 @@ public:
     // getters
     inline size_t get_n() const {return n_;}
     inline size_t get_p() const {return p_;}
-    inline size_t get_size() const {return data_.size();}
+    inline size_t get_size() const {return data_.size()/sizeof(uint64_t);}
     inline uint64_t get_q() const {return q_;}
     inline const MontgomeryMultiplier& get_mm() const {return mm_;}
 
