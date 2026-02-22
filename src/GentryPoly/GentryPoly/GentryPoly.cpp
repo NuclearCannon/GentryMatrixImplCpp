@@ -25,15 +25,15 @@ const GPCCtx& GentryPolyCtx::get_ctx(uint64_t q) const {
 // GentryPoly
 // ======================
 
-GentryPoly::GentryPoly(bool is_cuda, std::vector<uint64_t> moduli,
+GentryPoly::GentryPoly(std::vector<uint64_t> moduli,
                        std::vector<GPComponent> cpu_comps)
-    : is_cuda_(false), moduli_(std::move(moduli)) {
+    : device_(GPDevice::CPU), moduli_(std::move(moduli)) {
     storage_ = std::move(cpu_comps);
 }
 
-GentryPoly::GentryPoly(bool is_cuda, std::vector<uint64_t> moduli,
+GentryPoly::GentryPoly(std::vector<uint64_t> moduli,
                        std::vector<GPComponentCuda> cuda_comps)
-    : is_cuda_(true), moduli_(std::move(moduli)) {
+    : device_(GPDevice::CUDA), moduli_(std::move(moduli)) {
     storage_ = std::move(cuda_comps);
 }
 
@@ -53,7 +53,7 @@ GentryPoly GentryPoly::from_coeffs(
         const auto& coeffs = coeffs_mod_q[i];
         comps.emplace_back(GPComponent::from_data(n, p, q, coeffs));
     }
-    return GentryPoly(false, moduli, std::move(comps));
+    return GentryPoly(moduli, std::move(comps));
 }
 
 void GentryPoly::set_from_vec64(const std::vector<uint64_t>& v)
@@ -66,15 +66,27 @@ void GentryPoly::set_from_vec64(const std::vector<uint64_t>& v)
 }
 
 size_t GentryPoly::n() const {
-    if (moduli_.empty()) return 0;
-    if (is_cuda_) return cuda_components()[0].get_n();
-    else          return cpu_components()[0].get_n();
+    assert(!moduli_.empty());
+    switch (device_)
+    {
+        case GPDevice::CPU: return cpu_components()[0].get_n();
+        case GPDevice::CUDA: return cuda_components()[0].get_n();
+        default:
+            // 你不应该来到此处
+            throw std::runtime_error("You should not arrive here.\n");
+    }
 }
 
 size_t GentryPoly::p() const {
-    if (moduli_.empty()) return 0;
-    if (is_cuda_) return cuda_components()[0].get_p();
-    else          return cpu_components()[0].get_p();
+    assert(!moduli_.empty());
+    switch (device_)
+    {
+        case GPDevice::CPU: return cpu_components()[0].get_p();
+        case GPDevice::CUDA: return cuda_components()[0].get_p();
+        default:
+            // 你不应该来到此处
+            throw std::runtime_error("You should not arrive here.\n");
+    }
 }
 
 bool GentryPoly::like_no_device(const GentryPoly& other) const {
@@ -85,7 +97,7 @@ bool GentryPoly::like_no_device(const GentryPoly& other) const {
 }
 
 bool GentryPoly::like(const GentryPoly& other) const {
-    return is_cuda_ == other.is_cuda_ && like_no_device(other);
+    return device_ == other.device_ && like_no_device(other);
 }
 
 // Accessors

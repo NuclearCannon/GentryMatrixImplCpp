@@ -9,7 +9,7 @@ GentryPoly GentryPoly::zeros(size_t n, size_t p, const std::vector<uint64_t>& mo
     {
         cpu_comps.push_back(GPComponent::zeros(n, p, q));
     }
-    return GentryPoly(false, moduli, cpu_comps);
+    return GentryPoly(moduli, cpu_comps);
 }
 GentryPoly GentryPoly::dg(size_t n, size_t p, const std::vector<uint64_t>& moduli)
 {
@@ -21,7 +21,7 @@ GentryPoly GentryPoly::dg(size_t n, size_t p, const std::vector<uint64_t>& modul
     {
         cpu_comps.push_back(GPComponent::from_signed_data(n, p, q, data));
     }
-    return GentryPoly(false, moduli, cpu_comps);
+    return GentryPoly(moduli, cpu_comps);
 }
 GentryPoly GentryPoly::sk(size_t n, size_t p, const std::vector<uint64_t>& moduli)
 {
@@ -33,7 +33,7 @@ GentryPoly GentryPoly::sk(size_t n, size_t p, const std::vector<uint64_t>& modul
     {
         cpu_comps.push_back(GPComponent::from_signed_data(n, p, q, data));
     }
-    return GentryPoly(false, moduli, cpu_comps);
+    return GentryPoly(moduli, cpu_comps);
 }
 GentryPoly GentryPoly::uniform(size_t n, size_t p, const std::vector<uint64_t>& moduli)
 {
@@ -45,7 +45,7 @@ GentryPoly GentryPoly::uniform(size_t n, size_t p, const std::vector<uint64_t>& 
         for(auto& i:data)i = random_generators::randu64(0, q-1);
         cpu_comps.push_back(GPComponent::from_data(n, p, q, std::move(data)));
     }
-    return GentryPoly(false, moduli, cpu_comps);
+    return GentryPoly(moduli, cpu_comps);
 }
 GentryPoly GentryPoly::randint(size_t n, size_t p, const std::vector<uint64_t>& moduli, int lb, int ub)
 {
@@ -57,7 +57,7 @@ GentryPoly GentryPoly::randint(size_t n, size_t p, const std::vector<uint64_t>& 
     {
         cpu_comps.push_back(GPComponent::from_signed_data(n, p, q, data));
     }
-    return GentryPoly(false, moduli, cpu_comps);
+    return GentryPoly(moduli, cpu_comps);
 }
 
 GentryPoly GentryPoly::to_cpu() const {
@@ -85,5 +85,5 @@ GentryPoly GentryPoly::to_cuda() const {
     {
         sto.emplace_back(GPComponentCuda::copy_from_cpu(i));
     }
-    return GentryPoly(true, moduli_, sto);
+    return GentryPoly(moduli_, sto);
 }

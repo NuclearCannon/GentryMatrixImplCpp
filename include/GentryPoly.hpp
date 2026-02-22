@@ -8,6 +8,10 @@
 #include <variant>
 #include <memory>
 
+enum class GPDevice {
+    CPU, CUDA
+};
+
 class GPComponent;
 class GPComponentCuda;
 
@@ -258,9 +262,9 @@ public:
     // 从现有 components 构造（内部使用）
     // TODO: 这俩构造函数的is_cuda字段真是多余
     // TODO: 为什么不能从n,p,moduli中构造呢？
-    GentryPoly(bool is_cuda, std::vector<uint64_t> moduli,
+    GentryPoly(std::vector<uint64_t> moduli,
                std::vector<GPComponent> cpu_comps);
-    GentryPoly(bool is_cuda, std::vector<uint64_t> moduli,
+    GentryPoly(std::vector<uint64_t> moduli,
                std::vector<GPComponentCuda> cuda_comps);
 
     // 用户指定值构造（仅 CPU）
@@ -271,8 +275,8 @@ public:
     );
 
     // 设备查询
-    bool is_cuda() const { return is_cuda_; }
-    bool is_cpu() const { return !is_cuda_; }
+    bool is_cuda() const { return device_ == GPDevice::CUDA; }
+    bool is_cpu() const { return device_ == GPDevice::CPU; }
 
     // 属性
     size_t n() const;
@@ -346,7 +350,7 @@ public:
     }
 
 private:
-    bool is_cuda_ = false;
+    GPDevice device_;
     std::vector<uint64_t> moduli_;
 
     using CpuStorage = std::vector<GPComponent>;
