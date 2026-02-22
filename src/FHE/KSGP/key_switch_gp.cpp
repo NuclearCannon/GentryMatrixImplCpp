@@ -3,8 +3,14 @@
 
 
 
-KeySwitchKeyGP::KeySwitchKeyGP(std::vector<std::pair<GentryPoly, GentryPoly>> cts, uint64_t qo):
-    cts_(cts), qo_(qo)
+KeySwitchKeyGP::KeySwitchKeyGP(
+    std::vector<std::pair<GentryPoly, GentryPoly>> cts,
+    std::vector<std::pair<GentryPoly, GentryPoly>> cts_cuda,
+    uint64_t qo
+):
+    cts_(std::move(cts)), 
+    cts_cuda_(std::move(cts_cuda)),
+    qo_(qo)
 {
 
 }
@@ -13,12 +19,13 @@ KeySwitchKeyGP KeySwitchKeyGP::ksk_gen(const GentryPoly& sk_from, const GentryPo
 {
     // 这里假设sk_from, sk_to都是含qo模数的，且sk_from已经乘过qo
     auto mods = sk_to.moduli();
-    GentryPoly sk_from_cp = sk_from;
+    GentryPoly sk_from_cp = sk_from.to_cpu();
+    GentryPoly sk_to_cpu = sk_to.to_cpu();
     std::vector<std::pair<GentryPoly, GentryPoly>> cts;
     for(auto mod : mods)
     {
         if(mod == qo)continue;
-        cts.push_back(encrypt_gp(sk_from_cp, sk_to, ctx));
+        cts.push_back(encrypt_gp(sk_from_cp, sk_to_cpu, ctx));
         GentryPoly::mul_scalar(sk_from_cp, sk_from_cp, mod);
     }
     for(auto& pair: cts)
@@ -28,10 +35,16 @@ KeySwitchKeyGP KeySwitchKeyGP::ksk_gen(const GentryPoly& sk_from, const GentryPo
         GentryPoly::mont_encode(pair.first,  pair.first );
         GentryPoly::mont_encode(pair.second, pair.second);
     }
-    return KeySwitchKeyGP(std::move(cts), qo);
+    std::vector<std::pair<GentryPoly, GentryPoly>> cts_cuda;
+    for(auto& pair: cts)
+    {
+        cts_cuda.push_back({pair.first.to_cuda(), pair.second.to_cuda()});
+    }
+    return KeySwitchKeyGP(std::move(cts), std::move(cts_cuda), qo);
 }
-std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_1(const GentryPoly &a ,const GentryPolyCtx& ctx) const
+std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::_key_switch_big_1_cpu(const GentryPoly &a ,const GentryPolyCtx& ctx) const
 {
+    assert(a.is_cpu());
     std::vector<std::vector<uint64_t>> split = GentryPoly(a).split_by_moduli();
 
     GentryPoly ra = GentryPoly::zeros_like(cts_[0].first);
@@ -53,6 +66,44 @@ std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_1(const GentryP
     ra.moduli_reduce(qo_);
     rb.moduli_reduce(qo_);
     return std::make_pair(std::move(ra), std::move(rb));
+}
+std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::_key_switch_big_1_cuda(const GentryPoly &a ,const GentryPolyCtx& ctx) const
+{
+    assert(a.is_cuda());
+    // 使用保守路径
+    if(true)
+    {
+        auto [x, y] = _key_switch_big_1_cpu(a.to_cpu(), ctx);
+        return {x.to_cuda(), y.to_cuda()};
+    }
+    std::vector<std::vector<uint64_t>> split = a.to_cpu().split_by_moduli();
+    GentryPoly ra = GentryPoly::zeros_like(cts_[0].first).to_cuda();
+    GentryPoly rb = GentryPoly::zeros_like(cts_[0].first).to_cuda();
+    GentryPoly piece = GentryPoly::zeros_like(cts_[0].first);   // 暂且保持piece: cpu
+    
+    for(int i=0; i<split.size(); i++)
+    {
+        auto [cta, ctb] = cts_cuda_[i];
+        piece.set_from_vec64(split[i]);
+        
+        GentryPoly piece_cuda = piece.to_cuda();
+        piece_cuda.ntt(ctx);
+        GentryPoly::mul_mont(cta, cta, piece_cuda);
+        GentryPoly::mul_mont(ctb, ctb, piece_cuda);
+        GentryPoly::add(ra, ra, cta);
+        GentryPoly::add(rb, rb, ctb);
+    }
+    ra.intt(ctx);
+    rb.intt(ctx);
+    GentryPoly rac = ra.to_cpu(), rbc = rb.to_cpu();
+    rac.moduli_reduce(qo_);
+    rbc.moduli_reduce(qo_);
+    return std::make_pair(rac.to_cuda(), rbc.to_cuda());
+}
+std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_1(const GentryPoly &a ,const GentryPolyCtx& ctx) const
+{
+    if(a.is_cpu())return _key_switch_big_1_cpu(a, ctx);
+    else return _key_switch_big_1_cuda(a, ctx);
 }
 std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::key_switch_big_2(const GentryPoly& a, const GentryPoly& b ,const GentryPolyCtx& ctx) const
 {
