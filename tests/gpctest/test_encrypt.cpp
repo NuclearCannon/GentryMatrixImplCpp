@@ -49,7 +49,7 @@ void test_encrypt_cuda()
     };
 
     GentryPolyCtx ctx(n, p, qrp);
-    GentryPoly m = GentryPoly::zeros(n, p, mods).to_cuda();
+    GentryPoly m = GentryPoly::zeros(n, p, mods, GPDevice::CUDA);
     GentryPoly sk = GentryPoly::sk(n, p, mods).to_cuda();
     // 加密
     auto [cta, ctb] = encrypt_gp(m, sk, ctx);

@@ -47,9 +47,9 @@ std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::_key_switch_big_1_cpu(const Ge
     assert(a.is_cpu());
     std::vector<std::vector<uint64_t>> split = GentryPoly(a).split_by_moduli();
 
-    GentryPoly ra = GentryPoly::zeros_like(cts_[0].first);
-    GentryPoly rb = GentryPoly::zeros_like(cts_[0].first);
-    GentryPoly piece = GentryPoly::zeros_like(cts_[0].first);
+    GentryPoly ra = GentryPoly::zeros_like(cts_[0].first, GPDevice::CPU);
+    GentryPoly rb = GentryPoly::zeros_like(cts_[0].first, GPDevice::CPU);
+    GentryPoly piece = GentryPoly::zeros_like(cts_[0].first, GPDevice::CPU);
 
     for(int i=0; i<split.size(); i++)
     {
@@ -71,9 +71,9 @@ std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::_key_switch_big_1_cuda(const G
 {
     assert(a.is_cuda());
     std::vector<std::vector<uint64_t>> split = a.to_cpu().split_by_moduli();
-    GentryPoly ra = GentryPoly::zeros_like(cts_[0].first).to_cuda();
-    GentryPoly rb = GentryPoly::zeros_like(cts_[0].first).to_cuda();
-    GentryPoly piece = GentryPoly::zeros_like(cts_[0].first);   // 暂且保持piece: cpu
+    GentryPoly ra = GentryPoly::zeros_like(cts_[0].first, GPDevice::CUDA);
+    GentryPoly rb = GentryPoly::zeros_like(cts_[0].first, GPDevice::CUDA);
+    GentryPoly piece = GentryPoly::zeros_like(cts_[0].first, GPDevice::CPU);   // 暂且保持piece: cpu
     
     for(int i=0; i<split.size(); i++)
     {

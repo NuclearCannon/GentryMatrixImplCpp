@@ -2,14 +2,32 @@
 #include "random.hpp"
 
 
-GentryPoly GentryPoly::zeros(size_t n, size_t p, const std::vector<uint64_t>& moduli)
+GentryPoly GentryPoly::zeros(size_t n, size_t p, const std::vector<uint64_t>& moduli, GPDevice dev)
 {
-    std::vector<GPComponent> cpu_comps;
-    for(uint64_t q : moduli)
+    switch (dev)
     {
-        cpu_comps.push_back(GPComponent::zeros(n, p, q));
+        case GPDevice::CPU: {
+            std::vector<GPComponent> cpu_comps;
+            for(uint64_t q : moduli)
+            {
+                cpu_comps.push_back(GPComponent::zeros(n, p, q));
+            }
+            return GentryPoly(moduli, cpu_comps);
+        }
+        case GPDevice::CUDA: {
+            std::vector<GPComponentCuda> cuda_comps;
+            for(uint64_t q : moduli)
+            {
+                cuda_comps.push_back(GPComponentCuda(n, p, q));
+            }
+            for(auto& i: cuda_comps)i.data_.set_zero();
+            return GentryPoly(moduli, cuda_comps);
+        }        
+        default:
+            break;
     }
-    return GentryPoly(moduli, cpu_comps);
+    throw std::runtime_error("GentryPoly::zeros: You should not arrive here.\n");
+    
 }
 GentryPoly GentryPoly::dg(size_t n, size_t p, const std::vector<uint64_t>& moduli)
 {
@@ -63,7 +81,7 @@ GentryPoly GentryPoly::randint(size_t n, size_t p, const std::vector<uint64_t>& 
 GentryPoly GentryPoly::to_cpu() const {
     if(is_cpu())return *this;
     assert(is_cuda());
-    GentryPoly res = zeros_like(*this);
+    GentryPoly res = zeros_like(*this, GPDevice::CPU);
     assert(res.is_cpu());
     auto& dst = res.cpu_components();
     auto& src = this->cuda_components();
