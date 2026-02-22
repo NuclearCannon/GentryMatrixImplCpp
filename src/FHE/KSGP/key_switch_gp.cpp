@@ -70,20 +70,18 @@ std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::_key_switch_big_1_cpu(const Ge
 std::pair<GentryPoly, GentryPoly> KeySwitchKeyGP::_key_switch_big_1_cuda(const GentryPoly &a ,const GentryPolyCtx& ctx) const
 {
     assert(a.is_cuda());
-    std::vector<std::vector<uint64_t>> split = a.to_cpu().split_by_moduli();
+    std::vector<CudaBuffer> split = GentryPoly(a).split_by_moduli_cuda();
     GentryPoly ra = GentryPoly::zeros_like(cts_[0].first, GPDevice::CUDA);
     GentryPoly rb = GentryPoly::zeros_like(cts_[0].first, GPDevice::CUDA);
-    GentryPoly piece = GentryPoly::zeros_like(cts_[0].first, GPDevice::CPU);   // 暂且保持piece: cpu
+    GentryPoly piece = GentryPoly::zeros_like(cts_[0].first, GPDevice::CUDA);
     
     for(int i=0; i<split.size(); i++)
     {
         auto [cta, ctb] = cts_cuda_[i];
-        piece.set_from_vec64(split[i]);
-        
-        GentryPoly piece_cuda = piece.to_cuda();
-        piece_cuda.ntt(ctx);
-        GentryPoly::mul_mont(cta, cta, piece_cuda);
-        GentryPoly::mul_mont(ctb, ctb, piece_cuda);
+        piece.set_from_cuda_buffer(split[i]);
+        piece.ntt(ctx);
+        GentryPoly::mul_mont(cta, cta, piece);
+        GentryPoly::mul_mont(ctb, ctb, piece);
         GentryPoly::add(ra, ra, cta);
         GentryPoly::add(rb, rb, ctb);
     }

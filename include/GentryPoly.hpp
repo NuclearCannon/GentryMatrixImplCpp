@@ -390,6 +390,7 @@ public:
     // 这会将自己按照KS的要求切分为多个分量
     // 运行结束后，自己的取值会被摧毁
     std::vector<std::vector<uint64_t>> split_by_moduli();
+    std::vector<CudaBuffer> split_by_moduli_cuda();
 
     // 移除模数链中的一个模数，并且使得自己的值除以它
     void moduli_reduce(uint64_t modulus);

@@ -22,3 +22,25 @@ std::vector<std::vector<uint64_t>> GentryPoly::split_by_moduli()
     }
     return result;
 }
+
+std::vector<CudaBuffer> GentryPoly::split_by_moduli_cuda()
+{
+    assert(is_cuda());
+    std::vector<CudaBuffer> result;
+    auto& comp = cuda_components();
+
+    int crt_len = comp.size();
+
+
+    for(int i=0; i<crt_len; i++)
+    {
+        GPComponentCuda r = std::move(comp[i]);
+        // 给其余位减去r
+        for(int j=i+1; j<crt_len; j++)GPComponentCuda::sub(comp[j], comp[j], r);
+        // 给其他位乘以乘法逆元
+        for(int j=i+1; j<crt_len; j++)GPComponentCuda::mul_scalar(comp[j], comp[j], mod_inv(r.get_q(), comp[j].get_q()));
+        // push r
+        result.push_back(std::move(r.data_));
+    }
+    return result;
+}
