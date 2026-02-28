@@ -3,6 +3,8 @@
 
 void bench_ks();
 void bench_ks_cuda();
+void bench_ntt_cuda();
+
 
 int main(int argc, char *argv[])
 {
@@ -10,6 +12,7 @@ int main(int argc, char *argv[])
     {
         if(strcmp(argv[i], "--ks")==0)bench_ks();
         else if(strcmp(argv[i], "--ksc")==0)bench_ks_cuda();
+        else if(strcmp(argv[i], "--nttc")==0)bench_ntt_cuda();
         else {
             printf("未被识别的选项：%s\n", argv[i]);
         }
