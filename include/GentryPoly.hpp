@@ -138,6 +138,12 @@ public:
 
     std::vector<int64_t> to_signed() const;
 
+    // 为circledast服务的三大变换。它们天然不适合原地操作
+    
+    void transpose(GPComponent& dst) const;
+    void conj(GPComponent& dst) const;
+    void w_inv(GPComponent& dst) const;
+
 };
 
 // GentryPoly在某个CRT上的分量（CUDA）
@@ -404,4 +410,11 @@ public:
 
     // 其实就是所有元素的简单加和
     uint64_t hash() const;
+
+    // 为circledast服务的三大变换
+
+
+    GentryPoly transpose() const;
+    GentryPoly conj() const;
+    GentryPoly w_inv() const;
 };
