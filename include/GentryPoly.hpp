@@ -314,6 +314,7 @@ public:
     static void mont_encode(GentryPoly& dst, const GentryPoly& src);
     static void mont_decode(GentryPoly& dst, const GentryPoly& src);
     static void mul_mont(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);
+    static void circledast(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);
 
     // NTT / INTT：原地，需传入 ctx_set
 private:
