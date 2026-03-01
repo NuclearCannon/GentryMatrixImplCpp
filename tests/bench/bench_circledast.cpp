@@ -2,12 +2,14 @@
 #include "FHE/key_switch_gp.hpp"
 #include "FHE/circledast.hpp"
 #include "CRT.hpp"
+#include <gperftools/profiler.h>
 
-void test_circledast()
+
+void bench_circledast()
 {
     // 准备参数
-    int n = 16;
-    int p = 5;
+    int n = 256;
+    int p = 17;
     // 质数链
     vec64 mods = {70368747120641, 70368747294721, 70368748426241};
     // 原根链
@@ -35,7 +37,10 @@ void test_circledast()
     auto u2 = decrypt_gp(ua, ub, sk, ctx);
     auto v2 = decrypt_gp(va, vb, sk, ctx);
 
+    ProfilerStart("cd.prof");
     auto [ra, rb] = circledast_ct(ua, ub, va, vb, ksk_pair.first, ksk_pair.second, ctx);
+    ProfilerStop();
+
     GentryPoly r = decrypt_gp(ra, rb, sk, ctx);
     // 直接计算
     GentryPoly w = GentryPoly::zeros_like(u);
@@ -44,16 +49,16 @@ void test_circledast()
     GentryPoly::circledast(w, u2, v2);  // 使用u2 @ v2作为对照组，因为我们忽略加密本身的噪声
     w.iw_intt(ctx);
     GentryPoly::sub(r,r,w);
-    printf("test_circledast: error_abs=%ld\n", r.abs());
+    printf("bench_circledast: error_abs=%ld\n", r.abs());
 
 }
 
 
-void test_circledast_cuda()
+void bench_circledast_cuda()
 {
     // 准备参数
-    int n = 16;
-    int p = 5;
+    int n = 256;
+    int p = 17;
     // 质数链
     vec64 mods = {70368747120641, 70368747294721, 70368748426241};
     // 原根链
@@ -81,7 +86,16 @@ void test_circledast_cuda()
     auto u2 = decrypt_gp(ua, ub, sk, ctx);
     auto v2 = decrypt_gp(va, vb, sk, ctx);
 
-    auto [ra, rb] = circledast_ct(ua.to_cuda(), ub.to_cuda(), va.to_cuda(), vb.to_cuda(), ksk_pair.first, ksk_pair.second, ctx);
+    GentryPoly uac = ua.to_cuda();
+    GentryPoly ubc = ub.to_cuda();
+    GentryPoly vac = va.to_cuda();
+    GentryPoly vbc = vb.to_cuda();
+
+
+    ProfilerStart("cdc.prof");
+    auto [ra, rb] = circledast_ct(uac, ubc, vac, vbc, ksk_pair.first, ksk_pair.second, ctx);
+    ProfilerStop();
+
     GentryPoly r = decrypt_gp(ra.to_cpu(), rb.to_cpu(), sk, ctx);
     // 直接计算
     GentryPoly w = GentryPoly::zeros_like(u);
@@ -90,6 +104,6 @@ void test_circledast_cuda()
     GentryPoly::circledast(w, u2, v2);  // 使用u2 @ v2作为对照组，因为我们忽略加密本身的噪声
     w.iw_intt(ctx);
     GentryPoly::sub(r,r,w);
-    printf("test_circledast_cuda: error_abs=%ld\n", r.abs());
+    printf("bench_circledast_cuda: error_abs=%ld\n", r.abs());
 
 }
