@@ -285,6 +285,7 @@ public:
     // 设备查询
     bool is_cuda() const { return device_ == GPDevice::CUDA; }
     bool is_cpu() const { return device_ == GPDevice::CPU; }
+    GPDevice device() const {return device_; }
 
     // 属性
     size_t n() const;

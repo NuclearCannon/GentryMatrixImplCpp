@@ -16,10 +16,10 @@ std::pair<GentryPoly, GentryPoly> circledast_ct(
     GentryPoly buh = ub; buh.iw_ntt(ctx);
     GentryPoly bvh = vb; bvh.iw_ntt(ctx);
 
-    GentryPoly auav = GentryPoly::zeros_like(ua);
-    GentryPoly aubv = GentryPoly::zeros_like(ua);
-    GentryPoly buav = GentryPoly::zeros_like(ua);
-    GentryPoly bubv = GentryPoly::zeros_like(ua);
+    GentryPoly auav = GentryPoly::zeros_like(ua, ua.device());
+    GentryPoly aubv = GentryPoly::zeros_like(ua, ua.device());
+    GentryPoly buav = GentryPoly::zeros_like(ua, ua.device());
+    GentryPoly bubv = GentryPoly::zeros_like(ua, ua.device());
 
     GentryPoly::circledast(auav, auh, avh);
     GentryPoly::circledast(aubv, auh, bvh);

@@ -2,7 +2,7 @@
 #include "flints.hpp"
 #include <cstdint>
 #include "montgomery.hpp"
-
+#include "GPU/cuda_buffer.hpp"
 
 class MatmulContext {
     int n_;
@@ -25,3 +25,4 @@ public:
 
 
 void circledast_u64_gpu(uint64_t* dst, const uint64_t* A, const uint64_t* B, size_t n, size_t p, const MontgomeryMultiplier& mm);
+void circledast_u64_gpu2(const CudaBuffer& C, const CudaBuffer& A, const CudaBuffer& B, size_t n, size_t p, const MontgomeryMultiplier& mm);

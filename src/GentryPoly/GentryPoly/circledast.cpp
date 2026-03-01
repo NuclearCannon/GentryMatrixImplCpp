@@ -4,20 +4,43 @@
 
 void GentryPoly::circledast(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2)
 {
-    assert(dst.is_cpu());
-    assert(src1.is_cpu());
-    assert(src2.is_cpu());
-
-    auto& comp0 = dst.cpu_components();
-    auto& comp1 = src1.cpu_components();
-    auto& comp2 = src2.cpu_components();
-
-    for(int i=0; i<comp0.size(); i++)
+    if(dst.is_cpu())
     {
-        uint64_t q = comp0[i].get_q();
-        fmpz_scalar q_fmpz = fmpz_scalar::from_ui(q);
+        assert(src1.is_cpu());
+        assert(src2.is_cpu());
 
-        MatmulContext mc(comp0[i].get_n(), q_fmpz.raw());
-        mc.circledast_u64(comp0[i].data_.data(), comp1[i].data_.data(), comp2[i].data_.data(), comp0[i].get_n(), comp0[i].get_p());
+        auto& comp0 = dst.cpu_components();
+        auto& comp1 = src1.cpu_components();
+        auto& comp2 = src2.cpu_components();
+
+        for(int i=0; i<comp0.size(); i++)
+        {
+            uint64_t q = comp0[i].get_q();
+            fmpz_scalar q_fmpz = fmpz_scalar::from_ui(q);
+
+            MatmulContext mc(comp0[i].get_n(), q_fmpz.raw());
+            mc.circledast_u64(comp0[i].data_.data(), comp1[i].data_.data(), comp2[i].data_.data(), comp0[i].get_n(), comp0[i].get_p());
+        }
     }
+    else
+    {
+        
+        assert(src1.is_cuda());
+        assert(src2.is_cuda());
+        auto& comp0 = dst.cuda_components();
+        auto& comp1 = src1.cuda_components();
+        auto& comp2 = src2.cuda_components();
+
+        for(int i=0; i<comp0.size(); i++)
+        {
+            uint64_t q = comp0[i].get_q();
+            MontgomeryMultiplier mm(q);
+            // TODO:
+            circledast_u64_gpu2(comp0[i].data_, comp1[i].data_, comp2[i].data_, comp0[i].get_n(), comp0[i].get_p(), mm);
+            // 中和副作用
+            GPComponentCuda::mont_encode(comp0[i], comp0[i]);
+        }
+        
+    }
+    
 }

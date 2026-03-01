@@ -55,7 +55,7 @@ __global__ void matmul_tiled(
 
 
 void matmul_gpu(
-    CudaBuffer& C,
+    const CudaBuffer& C,
     const CudaBuffer& A,
     const CudaBuffer& B,
     int size,

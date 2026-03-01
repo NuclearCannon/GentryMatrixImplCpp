@@ -161,3 +161,43 @@ void circledast_u64_gpu(uint64_t* dst, const uint64_t* A, const uint64_t* B, siz
         
     }
 }
+
+void circledast_u64_gpu2(const CudaBuffer& C, const CudaBuffer& A, const CudaBuffer& B, size_t n, size_t p, const MontgomeryMultiplier& mm)
+{
+    size_t nn = n*n;
+    size_t pnn = (p-1)*nn;
+    std::vector<size_t> gpp = get_powers(3,p-1,p), gpp_backward(p);
+    for(int i=0; i<p-1; i++)gpp_backward[gpp[i]] = i;
+
+    // [w]位置是多项式在(eta^{3^w})上的取值
+    // 它需要和(eta^{p-3^w})的那一份相乘
+
+    for(size_t w=0; w<p-1; w++)
+    {
+        size_t w2 = gpp_backward[p-gpp[w]];
+        size_t base_a = w*nn;
+        size_t base_b = w2*nn;
+        size_t base_ap = base_a;
+        size_t base_an = base_a + pnn;
+        size_t base_bp = base_b + pnn;
+        size_t base_bn = base_b;
+
+        constexpr size_t s64 = sizeof(uint64_t);
+        // 做矩阵乘法
+        // rp = ap @ bp.T
+        matmul_gpu(
+            C.slice(base_ap*s64, (base_ap+nn)*s64), 
+            A.slice(base_ap*s64, (base_ap+nn)*s64), 
+            B.slice(base_bp*s64, (base_bp+nn)*s64), 
+            n, mm
+        );
+
+        matmul_gpu(
+            C.slice(base_an*s64, (base_an+nn)*s64), 
+            A.slice(base_an*s64, (base_an+nn)*s64), 
+            B.slice(base_bn*s64, (base_bn+nn)*s64), 
+            n, mm
+        );
+
+    }
+}

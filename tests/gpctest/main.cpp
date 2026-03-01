@@ -5,6 +5,7 @@ void test_encrypt_cuda();
 void test_ks();
 void test_ks_cuda();
 void test_circledast();
+void test_circledast_cuda();
 int main()
 {
     // test_ntt();
@@ -13,6 +14,7 @@ int main()
     // test_encrypt_cuda();
     // test_ks();
     // test_ks_cuda();
-    test_circledast();
+    // test_circledast();
+    test_circledast_cuda();
     return 0;
 }
