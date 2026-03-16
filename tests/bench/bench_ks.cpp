@@ -2,6 +2,7 @@
 #include "FHE/key_switch_gp.hpp"
 #include "CRT.hpp"
 #include <gperftools/profiler.h>
+#include <cuda_profiler_api.h>
 
 void bench_ks()
 {
@@ -81,7 +82,9 @@ void bench_ks_cuda()
     auto cta_cuda = cta.to_cuda();
     auto ctb_cuda = ctb.to_cuda();
     ProfilerStart("ks_cuda.prof");
+    cudaProfilerStart();
     auto [a2, b2]  = ksk.key_switch_big_2(cta_cuda, ctb_cuda, ctx);
+    cudaProfilerStop();
     ProfilerStop();
     // 解密
     auto res = decrypt_gp(a2.to_cpu(), b2.to_cpu(), sk2, ctx);
