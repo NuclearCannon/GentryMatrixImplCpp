@@ -35,22 +35,22 @@ float cuda_copy_mod(
     const int grid_size = (batch_size + block_size - 1) / block_size;
 
     // 可选：记录时间（如果返回 float 是为了表示耗时）
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start);
+    // cudaEvent_t start, stop;
+    // cudaEventCreate(&start);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(start);
 
     _copy_mod_kernel<<<grid_size, block_size>>>(dstp, srcp, M, batch_size);
 
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    // cudaEventRecord(stop);
+    // cudaEventSynchronize(stop);
 
     float milliseconds = 0.0f;
-    cudaEventElapsedTime(&milliseconds, start, stop);
+    // cudaEventElapsedTime(&milliseconds, start, stop);
 
     // 清理事件
-    cudaEventDestroy(start);
-    cudaEventDestroy(stop);
+    // cudaEventDestroy(start);
+    // cudaEventDestroy(stop);
     // 检查 kernel 是否出错
     CUDA_CHECK(cudaGetLastError());
     return milliseconds; // 返回 kernel 执行时间（毫秒）

@@ -119,10 +119,10 @@ float cuda_ntt(
 
     dim3 blockSize(n/2);
     dim3 gridSize(batch_size);
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start);
+    // cudaEvent_t start, stop;
+    // cudaEventCreate(&start);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(start);
     if(dec)
     {
         _butterfly_dec_mont_cuda<<<gridSize, blockSize>>>(
@@ -135,11 +135,11 @@ float cuda_ntt(
             ap, rp, logn, mm.M, mm.N1
         );
     }
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    // cudaEventRecord(stop);
+    // cudaEventSynchronize(stop);
     float milliseconds = 0;
-    cudaEventElapsedTime(&milliseconds, start, stop);
+    // cudaEventElapsedTime(&milliseconds, start, stop);
     CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    // CUDA_CHECK(cudaDeviceSynchronize());
     return milliseconds * 1000;
 }

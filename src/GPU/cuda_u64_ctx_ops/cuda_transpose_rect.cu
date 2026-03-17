@@ -41,16 +41,16 @@ float cuda_transpose_rect_restrict(
     dim3 blockSize(TILE_SIZE, TILE_SIZE);
     dim3 gridSize(r/TILE_SIZE, c/TILE_SIZE);
 
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start);
+    // cudaEvent_t start, stop;
+    // cudaEventCreate(&start);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(start);
     _transpose_rect_restrict_kernel<<<gridSize, blockSize>>>(dstp, srcp, r, c);
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    // cudaEventRecord(stop);
+    // cudaEventSynchronize(stop);
     float milliseconds = 0;
-    cudaEventElapsedTime(&milliseconds, start, stop);
+    // cudaEventElapsedTime(&milliseconds, start, stop);
     CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    // CUDA_CHECK(cudaDeviceSynchronize());
     return milliseconds;
 }

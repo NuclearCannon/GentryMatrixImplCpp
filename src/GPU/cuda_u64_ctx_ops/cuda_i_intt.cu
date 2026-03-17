@@ -54,10 +54,10 @@ float cuda_i_intt(
     // 分配这么多线程组，向上取整，保证
     // 线程组个数*THREAD_PER_GROUP >= pnn
     dim3 gridSize((pnn + THREAD_PER_GROUP -1)/THREAD_PER_GROUP);
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start);
+    // cudaEvent_t start, stop;
+    // cudaEventCreate(&start);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(start);
     _cuda_i_intt_kernel<<<gridSize, blockSize>>>(
         (uint64_t*)dst.get_ptr(),
         (const uint64_t*)src.get_ptr(),
@@ -68,11 +68,11 @@ float cuda_i_intt(
         mm.N1
     );
 
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    // cudaEventRecord(stop);
+    // cudaEventSynchronize(stop);
     float ms = 0;
-    cudaEventElapsedTime(&ms, start, stop);
+    // cudaEventElapsedTime(&ms, start, stop);
     CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    // CUDA_CHECK(cudaDeviceSynchronize());
     return ms;
 }

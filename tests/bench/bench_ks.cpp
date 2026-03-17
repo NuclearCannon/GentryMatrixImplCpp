@@ -3,7 +3,8 @@
 #include "CRT.hpp"
 #include <gperftools/profiler.h>
 #include <cuda_profiler_api.h>
-
+#include "GPU/cuda_check.hpp"
+#include <cuda_runtime.h>
 void bench_ks()
 {
     // 准备参数
@@ -84,6 +85,7 @@ void bench_ks_cuda()
     ProfilerStart("ks_cuda.prof");
     cudaProfilerStart();
     auto [a2, b2]  = ksk.key_switch_big_2(cta_cuda, ctb_cuda, ctx);
+    CUDA_CHECK(cudaDeviceSynchronize());
     cudaProfilerStop();
     ProfilerStop();
     // 解密
