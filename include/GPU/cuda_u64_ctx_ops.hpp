@@ -77,7 +77,7 @@ float cuda_batch_mul_vec(
 float cuda_transpose_rect_restrict(
     const CudaBuffer& dst,
     const CudaBuffer& src,
-    size_t r, size_t c
+    size_t r, size_t c, int batch_size = 1
 );
 
 float cuda_copy_mod(

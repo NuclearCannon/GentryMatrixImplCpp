@@ -47,27 +47,15 @@ void GPComponentCuda::x_ntt(const GPCCtx& ctx)
     size_t nn = n*n;
     size_t pn = (p_-1)*n;
     size_t pnn = pn*n;
-    for(int i=0; i<2*p_-2; i++)
-    {
-        cuda_transpose_rect_restrict(
-            buf.slice(i*nn*sizeof(uint64_t), (i+1)*nn*sizeof(uint64_t)), 
-            data_.slice(i*nn*sizeof(uint64_t), (i+1)*nn*sizeof(uint64_t)), 
-            n_, n_
-        );
-    }
+    cuda_transpose_rect_restrict(buf, data_, n_, n_, 2*p_-2);
+
     // NTT
     // 转置
     ctx.ntter_p_->ntt_batch_cuda(buf.slice(0, pnn*sizeof(uint64_t)), pn);
     ctx.ntter_n_->ntt_batch_cuda(buf.slice(pnn*sizeof(uint64_t), 2*pnn*sizeof(uint64_t)), pn);
     // 再转置
-    for(int i=0; i<2*p_-2; i++)
-    {
-        cuda_transpose_rect_restrict(
-            data_.slice(i*nn*sizeof(uint64_t), (i+1)*nn*sizeof(uint64_t)), 
-            buf.slice(i*nn*sizeof(uint64_t), (i+1)*nn*sizeof(uint64_t)), 
-            n_, n_
-        );
-    }
+    cuda_transpose_rect_restrict(data_, buf, n_, n_, 2*p_-2);
+
 }
 void GPComponentCuda::x_intt(const GPCCtx& ctx)
 {
@@ -76,27 +64,14 @@ void GPComponentCuda::x_intt(const GPCCtx& ctx)
     size_t nn = n*n;
     size_t pn = (p_-1)*n;
     size_t pnn = pn*n;
-    for(int i=0; i<2*p_-2; i++)
-    {
-        cuda_transpose_rect_restrict(
-            buf.slice(i*nn*sizeof(uint64_t), (i+1)*nn*sizeof(uint64_t)), 
-            data_.slice(i*nn*sizeof(uint64_t), (i+1)*nn*sizeof(uint64_t)), 
-            n_, n_
-        );
-    }
+    cuda_transpose_rect_restrict(buf, data_, n_, n_, 2*p_-2);
     // NTT
     // 转置
     ctx.ntter_p_->intt_batch_cuda(buf.slice(0, pnn*sizeof(uint64_t)), pn);
     ctx.ntter_n_->intt_batch_cuda(buf.slice(pnn*sizeof(uint64_t), 2*pnn*sizeof(uint64_t)), pn);
     // 再转置
-    for(int i=0; i<2*p_-2; i++)
-    {
-        cuda_transpose_rect_restrict(
-            data_.slice(i*nn*sizeof(uint64_t), (i+1)*nn*sizeof(uint64_t)), 
-            buf.slice(i*nn*sizeof(uint64_t), (i+1)*nn*sizeof(uint64_t)), 
-            n_, n_
-        );
-    }
+    cuda_transpose_rect_restrict(data_, buf, n_, n_, 2*p_-2);
+
 }
 void GPComponentCuda::y_ntt(const GPCCtx& ctx)
 {

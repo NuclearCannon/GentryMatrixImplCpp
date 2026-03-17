@@ -12,6 +12,12 @@ __global__ void _transpose_rect_restrict_kernel(
     size_t r, size_t c
 )
 {
+    // 注意：使用blockIdx.z 传递“自己正在转置哪一个矩阵”的信息
+    size_t bias = blockIdx.z*r*c;
+    dst += bias;
+    src += bias;
+
+
     unsigned ii = blockIdx.x * TILE_SIZE;
     unsigned jj = blockIdx.y * TILE_SIZE;
     unsigned i = ii + threadIdx.x;
@@ -23,11 +29,11 @@ __global__ void _transpose_rect_restrict_kernel(
 float cuda_transpose_rect_restrict(
     const CudaBuffer& dst,
     const CudaBuffer& src,
-    size_t r, size_t c
+    size_t r, size_t c, int batch_size
 )
 {
-    assert(dst.size() == r*c*sizeof(uint64_t));
-    assert(src.size() == r*c*sizeof(uint64_t));
+    assert(dst.size() == batch_size*r*c*sizeof(uint64_t));
+    assert(src.size() == batch_size*r*c*sizeof(uint64_t));
 
     uint64_t * dstp = (uint64_t*)dst.get_ptr();
     const uint64_t * srcp = (const uint64_t*)src.get_ptr();
@@ -39,7 +45,7 @@ float cuda_transpose_rect_restrict(
 
 
     dim3 blockSize(TILE_SIZE, TILE_SIZE);
-    dim3 gridSize(r/TILE_SIZE, c/TILE_SIZE);
+    dim3 gridSize(r/TILE_SIZE, c/TILE_SIZE, batch_size);
 
     // cudaEvent_t start, stop;
     // cudaEventCreate(&start);
