@@ -3,7 +3,11 @@
 #include "FHE/circledast.hpp"
 #include "CRT.hpp"
 #include <gperftools/profiler.h>
-
+#include "timer.hpp"
+#include <cuda_profiler_api.h>
+#include <cuda_runtime_api.h>
+#include "GPU/cuda_check.hpp"
+#include <iostream>
 
 void bench_circledast()
 {
@@ -56,6 +60,7 @@ void bench_circledast()
 
 void bench_circledast_cuda()
 {
+    printf("进入bench_circledast_cuda\n");
     // 准备参数
     int n = 256;
     int p = 17;
@@ -73,32 +78,39 @@ void bench_circledast_cuda()
     };
 
     GentryPolyCtx ctx(n, p, qrp);
+    printf("生成明文\n");
     GentryPoly u = GentryPoly::randint(n, p, mods, -1000, 1000);
     GentryPoly v = GentryPoly::randint(n, p, mods, -1000, 1000);
+    printf("生成私钥\n");
     GentryPoly sk = GentryPoly::sk(n, p, mods);
-
+    printf("加密\n");
     auto [ua, ub] = encrypt_gp(u, sk, ctx);
     auto [va, vb] = encrypt_gp(v, sk, ctx);
-
+    printf("生成KSK\n");
     // 生成含有qo的sk1, sk2
     // 生成KSK
     auto ksk_pair = create_ksks_for_circledast_ct(sk, qo, ctx);
-    auto u2 = decrypt_gp(ua, ub, sk, ctx);
-    auto v2 = decrypt_gp(va, vb, sk, ctx);
-
+    printf("将明文转为cuda\n");
     GentryPoly uac = ua.to_cuda();
     GentryPoly ubc = ub.to_cuda();
     GentryPoly vac = va.to_cuda();
     GentryPoly vbc = vb.to_cuda();
+    printf("开始CCMM\n");
+    HighResolutionTimer timer;
+    cudaProfilerStart();
+    timer.start();
 
-
-    ProfilerStart("cdc.prof");
     auto [ra, rb] = circledast_ct(uac, ubc, vac, vbc, ksk_pair.first, ksk_pair.second, ctx);
-    ProfilerStop();
+    CUDA_CHECK(cudaDeviceSynchronize());
+    double time = timer.stop();
+    cudaProfilerStop();
+    std::cout << "time(ms):" << time << std::endl;
 
     GentryPoly r = decrypt_gp(ra.to_cpu(), rb.to_cpu(), sk, ctx);
     // 直接计算
     GentryPoly w = GentryPoly::zeros_like(u);
+    auto u2 = decrypt_gp(ua, ub, sk, ctx);
+    auto v2 = decrypt_gp(va, vb, sk, ctx);
     u2.iw_ntt(ctx);
     v2.iw_ntt(ctx);
     GentryPoly::circledast(w, u2, v2);  // 使用u2 @ v2作为对照组，因为我们忽略加密本身的噪声
