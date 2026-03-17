@@ -77,5 +77,5 @@ void matmul_gpu(
     
     matmul_tiled<<<gridSize, blockSize>>>(Ap, Bp, Cp, mm.M, mm.N1, size);
     CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    // CUDA_CHECK(cudaDeviceSynchronize());
 }
