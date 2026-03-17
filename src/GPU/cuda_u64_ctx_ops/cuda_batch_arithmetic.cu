@@ -28,6 +28,33 @@ __global__ void _cuda_batch_binary_op_kernel(
     }
 }
 
+// 在调用本版本的核函数时，
+// blockSize在可能的前提下尽可能大
+// 第一版耗时占比10.5%
+// 第二版（此处）耗时占比4.1%
+// 可见本版本性能更优
+template<typename Op>
+__global__ void _cuda_batch_binary_op_kernel_ver2(
+    uint64_t* dst,
+    const uint64_t* src1,
+    const uint64_t* src2,
+    size_t batch_size,
+    uint64_t M
+)
+{
+    // 使用网格跨步循环法
+    // 计算全局起始索引
+    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    // 计算整个 Grid 的总步长
+    size_t stride = blockDim.x * gridDim.x;
+
+    // 循环处理，自动适应 N 的大小
+    Op op; // 构造仿函数（无开销）
+    for (size_t i = idx; i < batch_size; i += stride) {
+        dst[i] = op(src1[i], src2[i], M);
+    }
+}
+
 
 template<typename Op>
 inline float cuda_batch_binary_op_impl(
@@ -38,15 +65,15 @@ inline float cuda_batch_binary_op_impl(
     uint64_t M
 )
 {
-    dim3 blockSize(THREAD_PER_GROUP);
-    dim3 gridSize((batch_size + NUMBERS_PER_GROUP - 1) / NUMBERS_PER_GROUP);
+    dim3 blockSize(256);
+    dim3 gridSize((batch_size + blockSize.x - 1) / blockSize.x);
 
     // cudaEvent_t start, stop;
     // cudaEventCreate(&start);
     // cudaEventCreate(&stop);
     // cudaEventRecord(start);
 
-    _cuda_batch_binary_op_kernel<Op><<<gridSize, blockSize>>>(
+    _cuda_batch_binary_op_kernel_ver2<Op><<<gridSize, blockSize>>>(
         (uint64_t*)dst.get_ptr(),
         (const uint64_t*)src1.get_ptr(),
         (const uint64_t*)src2.get_ptr(),
@@ -120,6 +147,30 @@ __global__ void _cuda_batch_mul_mont_kernel(
     }
 }
 
+// 耗时占比：7.1% -> 2.7
+__global__ void _cuda_batch_mul_mont_kernel_ver2(
+    uint64_t* dst,
+    const uint64_t* src1,
+    const uint64_t* src2,
+    size_t batch_size,
+    uint64_t M,
+    uint64_t N1
+)
+{
+    // 使用网格跨步循环法
+    // 计算全局起始索引
+    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    // 计算整个 Grid 的总步长
+    size_t stride = blockDim.x * gridDim.x;
+
+    // 循环处理，自动适应 N 的大小
+    for (size_t i = idx; i < batch_size; i += stride) {
+        dst[i] = _mul_cuda(src1[i], src2[i], M, N1);
+    }
+}
+
+
+
 
 float cuda_batch_mul_mont(
     const CudaBuffer& dst,
@@ -129,15 +180,15 @@ float cuda_batch_mul_mont(
     const MontgomeryMultiplier& mm
 )
 {
-    dim3 blockSize(THREAD_PER_GROUP);
-    dim3 gridSize((batch_size + NUMBERS_PER_GROUP - 1) / NUMBERS_PER_GROUP);
+    dim3 blockSize(256);
+    dim3 gridSize((batch_size + blockSize.x - 1) / blockSize.x);
 
     // cudaEvent_t start, stop;
     // cudaEventCreate(&start);
     // cudaEventCreate(&stop);
     // cudaEventRecord(start);
 
-    _cuda_batch_mul_mont_kernel<<<gridSize, blockSize>>>(
+    _cuda_batch_mul_mont_kernel_ver2<<<gridSize, blockSize>>>(
         (uint64_t*)dst.get_ptr(),
         (const uint64_t*)src1.get_ptr(),
         (const uint64_t*)src2.get_ptr(),
@@ -231,6 +282,27 @@ __global__ void _cuda_batch_mul_scalar_kernel(
     }
 }
 
+// 耗时占比：3.7% -> 0.7%
+__global__ void _cuda_batch_mul_scalar_kernel_ver2(
+    uint64_t* dst,
+    const uint64_t* src,
+    uint64_t scalar_encoded,
+    size_t batch_size,
+    uint64_t M,
+    uint64_t N1
+)
+{
+    // 计算全局起始索引
+    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    // 计算整个 Grid 的总步长
+    size_t stride = blockDim.x * gridDim.x;
+
+    // 循环处理，自动适应 N 的大小
+    for (size_t i = idx; i < batch_size; i += stride) {
+        // 执行计算任务
+        dst[i] = _mul_cuda(src[i], scalar_encoded, M, N1);
+    }
+}
 
 float cuda_batch_mul_scalar(
     const CudaBuffer& dst,
@@ -240,15 +312,15 @@ float cuda_batch_mul_scalar(
     const MontgomeryMultiplier& mm
 )
 {
-    dim3 blockSize(THREAD_PER_GROUP);
-    dim3 gridSize((batch_size + NUMBERS_PER_GROUP - 1) / NUMBERS_PER_GROUP);
+    dim3 blockSize(256);
+    dim3 gridSize((batch_size + blockSize.x - 1) / blockSize.x);
 
     // cudaEvent_t start, stop;
     // cudaEventCreate(&start);
     // cudaEventCreate(&stop);
     // cudaEventRecord(start);
 
-    _cuda_batch_mul_scalar_kernel<<<gridSize, blockSize>>>(
+    _cuda_batch_mul_scalar_kernel_ver2<<<gridSize, blockSize>>>(
         (uint64_t*)dst.get_ptr(),
         (const uint64_t*)src.get_ptr(),
         scalar_encoded,
@@ -260,7 +332,7 @@ float cuda_batch_mul_scalar(
     // cudaEventSynchronize(stop);
     float ms = 0;
     // cudaEventElapsedTime(&ms, start, stop);
-    // CUDA_CHECK(cudaGetLastError());
+    CUDA_CHECK(cudaGetLastError());
     // CUDA_CHECK(cudaDeviceSynchronize());
 
     // cudaEventDestroy(start);
