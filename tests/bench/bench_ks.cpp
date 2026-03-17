@@ -5,6 +5,7 @@
 #include <cuda_profiler_api.h>
 #include "GPU/cuda_check.hpp"
 #include <cuda_runtime.h>
+#include "timer.hpp"
 void bench_ks()
 {
     // 准备参数
@@ -82,12 +83,14 @@ void bench_ks_cuda()
     KeySwitchKeyGP ksk = KeySwitchKeyGP::ksk_gen(sk1qo, sk2qo, qo, ctx);
     auto cta_cuda = cta.to_cuda();
     auto ctb_cuda = ctb.to_cuda();
-    ProfilerStart("ks_cuda.prof");
+    HighResolutionTimer timer;
     cudaProfilerStart();
+    timer.start();
     auto [a2, b2]  = ksk.key_switch_big_2(cta_cuda, ctb_cuda, ctx);
     CUDA_CHECK(cudaDeviceSynchronize());
+    double time = timer.stop();
     cudaProfilerStop();
-    ProfilerStop();
+    std::cout << "time(ms):" << time << std::endl;
     // 解密
     auto res = decrypt_gp(a2.to_cpu(), b2.to_cpu(), sk2, ctx);
     auto error = res;
@@ -96,6 +99,17 @@ void bench_ks_cuda()
     printf("bench_ks: error_abs=%ld\n", error_abs);
 
 }
+
+/*
+
+若要使用nsys分析性能，请使用
+nsys profile --capture-range=cudaProfilerApi -t cuda,osrt,nvtx -o my_app_profile --force-overwrite true --stats true ./bench --ksc
+若只想统计端到端延迟或者验证正确性，请使用
+./bench --ksc
+
+*/
+
+
 /*
 
 pprof --pdf ./bench ./kskgen.prof > kskgen.pdf
