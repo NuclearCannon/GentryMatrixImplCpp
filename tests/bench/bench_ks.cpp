@@ -80,7 +80,11 @@ void bench_ks_cuda()
     sk1qo.moduli_extend_mult(qo);
     sk2qo.moduli_extend_unsafe(qo);
     // 生成KSK
+    HighResolutionTimer timer_kskgen;
+    timer_kskgen.start();
     KeySwitchKeyGP ksk = KeySwitchKeyGP::ksk_gen(sk1qo, sk2qo, qo, ctx);
+    std::cout << "time(ksk gen)(ms):" << timer_kskgen.stop() << std::endl;
+
     auto cta_cuda = cta.to_cuda();
     auto ctb_cuda = ctb.to_cuda();
     HighResolutionTimer timer;
