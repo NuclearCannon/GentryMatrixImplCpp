@@ -40,8 +40,9 @@ void GPComponentCuda::mul(GPComponentCuda& dst, const GPComponentCuda& src1, con
     size_t size = dst.get_size();
     uint64_t q = dst.q_;
     // 用一次蒙哥马利乘和一次编码模拟逐位乘的效果
-    GPComponentCuda::mont_encode(dst, src1);
-    cuda_batch_mul_mont(dst.data_, dst.data_, src2.data_, size, q);
+    // 先乘，后编码，这是为了使得alias现象不导致结果的错误
+    cuda_batch_mul_mont(dst.data_, src1.data_, src2.data_, size, q);
+    GPComponentCuda::mont_encode(dst, dst);
 }
 void GPComponentCuda::mul_scalar(GPComponentCuda& dst, const GPComponentCuda& src1, uint64_t src_scalar)
 {
