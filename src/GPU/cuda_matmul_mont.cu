@@ -23,25 +23,33 @@ __global__ void matmul_tiled(
     __shared__ uint64_t As[TILE_SIZE][TILE_SIZE];
     __shared__ uint64_t Bs[TILE_SIZE][TILE_SIZE];
 
+    // 本线程组负责生成C[Y*T : Y*T + T, X*T : X*T + T]
     int row = blockIdx.y * TILE_SIZE + threadIdx.y;
     int col = blockIdx.x * TILE_SIZE + threadIdx.x;
 
     uint64_t sum = 0;
     for (int t = 0; t < (size + TILE_SIZE - 1) / TILE_SIZE; ++t) {
+        // let As = A[Y*T : Y*T+T , t*T : t*T+T]
+        // 也即分块视角下：As = A[Y, t]
         if (row < size && t * TILE_SIZE + threadIdx.x < size)
             As[threadIdx.y][threadIdx.x] = A[row * size + t * TILE_SIZE + threadIdx.x];
         else
             As[threadIdx.y][threadIdx.x] = 0;
 
+        // let Bs = B[X*T : X*T+T , t*T : t*T+T]
+        // 也即分块视角下：As = B[X, t]
         if (col < size && t * TILE_SIZE + threadIdx.y < size)
             Bs[threadIdx.y][threadIdx.x] = B[col * size + t * TILE_SIZE + threadIdx.y];
         else
             Bs[threadIdx.y][threadIdx.x] = 0;
 
+        // 同步以确保对As, Bs的读取完毕
         __syncthreads();
 
+        // 每个线程各自的sum组成的矩阵 = As @ Bs
         for (int k = 0; k < TILE_SIZE; ++k)
         {
+            // 每个线程需要执行size次乘法
             sum += _mul_cuda(As[threadIdx.y][k], Bs[k][threadIdx.x], M, N1);
             if(sum>M)sum-=M;
         }
