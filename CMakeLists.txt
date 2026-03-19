@@ -23,6 +23,7 @@ add_library(poly_impl_flint STATIC ${SRC_FILES})
 target_compile_options(poly_impl_flint PRIVATE -O3)
 target_link_libraries(poly_impl_flint PRIVATE ${FLINT_LIB} ${GMP_LIB} profiler tcmalloc)
 set_property(TARGET poly_impl_flint PROPERTY CUDA_ARCHITECTURES native)
+target_include_directories(poly_impl_flint PRIVATE "/usr/local/cuda-13/include")
 
 # 编译tests下每个次级文件夹为一个可执行文件
 file(GLOB TEST_SUBDIRS RELATIVE "${CMAKE_SOURCE_DIR}/tests" "${CMAKE_SOURCE_DIR}/tests/*")

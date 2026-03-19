@@ -26,3 +26,7 @@ public:
 
 void circledast_u64_gpu(uint64_t* dst, const uint64_t* A, const uint64_t* B, size_t n, size_t p, const MontgomeryMultiplier& mm);
 void circledast_u64_gpu2(const CudaBuffer& C, const CudaBuffer& A, const CudaBuffer& B, size_t n, size_t p, const MontgomeryMultiplier& mm);
+void circledast_u64_gpu_multi_stream(
+    const CudaBuffer& C, const CudaBuffer& A, const CudaBuffer& B, 
+    size_t n, size_t p, const MontgomeryMultiplier& mm
+);

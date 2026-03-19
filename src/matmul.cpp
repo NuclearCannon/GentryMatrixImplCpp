@@ -2,7 +2,7 @@
 #include "vec64.hpp"
 #include "montgomery.hpp"
 #include "GPU/cuda_matmul.hpp"
-
+#include <cuda_runtime.h>
 
 
 
@@ -199,5 +199,65 @@ void circledast_u64_gpu2(const CudaBuffer& C, const CudaBuffer& A, const CudaBuf
             n, mm
         );
 
+    }
+}
+
+// 我们不得不追求多流并发
+void circledast_u64_gpu_multi_stream(
+    const CudaBuffer& C, const CudaBuffer& A, const CudaBuffer& B, 
+    size_t n, size_t p, const MontgomeryMultiplier& mm
+)
+{
+    size_t nn = n*n;
+    size_t pnn = (p-1)*nn;
+    std::vector<size_t> gpp = get_powers(3,p-1,p), gpp_backward(p);
+    for(int i=0; i<p-1; i++)gpp_backward[gpp[i]] = i;
+
+    // 开辟2p-2个流
+    std::vector<cudaStream_t> streams(2*p-2);
+    for (int i = 0; i < 2*p-2; i++) {
+        auto err = cudaStreamCreate(&streams[i]);
+        if (err != cudaSuccess) {
+            printf("流 %d 创建失败: %s\n", i, cudaGetErrorString(err));
+            return;
+        }
+    }
+
+    for(size_t w=0; w<p-1; w++)
+    {
+        size_t w2 = gpp_backward[p-gpp[w]];
+        size_t base_a = w*nn;
+        size_t base_b = w2*nn;
+        size_t base_ap = base_a;
+        size_t base_an = base_a + pnn;
+        size_t base_bp = base_b + pnn;
+        size_t base_bn = base_b;
+
+        constexpr size_t s64 = sizeof(uint64_t);
+        // 做矩阵乘法
+        // rp = ap @ bp.T
+        matmul_gpu_stream(
+            C.slice(base_ap*s64, (base_ap+nn)*s64), 
+            A.slice(base_ap*s64, (base_ap+nn)*s64), 
+            B.slice(base_bp*s64, (base_bp+nn)*s64), 
+            n, mm, streams[2*w]
+        );
+
+        matmul_gpu_stream(
+            C.slice(base_an*s64, (base_an+nn)*s64), 
+            A.slice(base_an*s64, (base_an+nn)*s64), 
+            B.slice(base_bn*s64, (base_bn+nn)*s64), 
+            n, mm, streams[2*w+1]
+        );
+
+    }
+    cudaDeviceSynchronize();// 等待所有流结束
+
+    // 销毁流
+    for (auto s: streams) {
+        auto err = cudaStreamDestroy(s);
+        if (err != cudaSuccess) {
+            printf("流销毁失败: %s\n", cudaGetErrorString(err));
+        }
     }
 }

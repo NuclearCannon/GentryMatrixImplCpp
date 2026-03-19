@@ -10,6 +10,7 @@
 
 
 
+// 调用此函数时，请令blockSize=(16, 16), gridSize=(size/16, size/16)
 __global__ void matmul_tiled(
     const uint64_t* __restrict__ A,
     const uint64_t* __restrict__ B,
@@ -78,4 +79,53 @@ void matmul_gpu(
     matmul_tiled<<<gridSize, blockSize>>>(Ap, Bp, Cp, mm.M, mm.N1, size);
     CUDA_CHECK(cudaGetLastError());
     // CUDA_CHECK(cudaDeviceSynchronize());
+}
+
+// matmul_gpu的制定流版本
+void matmul_gpu_stream(
+    const CudaBuffer& C,
+    const CudaBuffer& A,
+    const CudaBuffer& B,
+    int size,
+    const MontgomeryMultiplier& mm,
+    cudaStream_t stream
+)
+{
+    // std::cout << "matmul_gpu" << std::endl;
+    const uint64_t* Ap = (const uint64_t*)(A.get_ptr());
+    const uint64_t* Bp = (const uint64_t*)(B.get_ptr());
+    uint64_t* Cp = (uint64_t*)(C.get_ptr());
+
+    size_t bytes = size * size * sizeof(uint64_t);
+    assert(A.size() == bytes);
+    assert(B.size() == bytes);
+    assert(C.size() == bytes);
+    dim3 blockSize(16, 16);
+    dim3 gridSize((size + blockSize.x - 1) / blockSize.x,
+                  (size + blockSize.y - 1) / blockSize.y);
+
+    
+    
+    matmul_tiled<<<gridSize, blockSize, 0, stream>>>(Ap, Bp, Cp, mm.M, mm.N1, size);
+    CUDA_CHECK(cudaGetLastError());
+    // CUDA_CHECK(cudaDeviceSynchronize());
+}
+
+// 这个函数会打印matmul_tiled要想占满GPU
+// 没人调用它是正常的
+void matmul_tiled_report()
+{
+    int minGridSize = -1;
+    int blockSize = -1;
+    auto error = cudaOccupancyMaxPotentialBlockSize(
+        &minGridSize, &blockSize, matmul_tiled, 0, 256
+    );
+    if(error != cudaSuccess)
+    {
+        printf("matmul_tiled_report: Error发生\n");
+    }
+    printf("matmul_tiled_report:\n");
+    printf("blockSize  \t %d\n", blockSize);
+    printf("minGridSize\t %d\n", minGridSize);
+    
 }
