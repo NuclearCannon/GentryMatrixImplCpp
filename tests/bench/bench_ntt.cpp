@@ -3,10 +3,58 @@
 #include <vector>
 #include "modops.hpp"
 #include <iostream>
+#include "ntt.hpp"
+#include "timer.hpp"
+
+void bench_ntt()
+{
+    // 准备参数
+    int logn = 8;
+    int n = 1<<logn;    // 单次NTT规模
+    int batch_size = 1024;   // 批次大小
+    uint64_t q = 70368747120641;// 模数
+    uint64_t qr = 6;    // q的原根
+    MontgomeryMultiplier mm(q);
+
+    std::cout << "NTT性能测试" << std::endl;
+    std::cout << "n=" << n << "\tbatch=" << batch_size << "\tq=" << q << std::endl;
+
+    StandardNTTer ntter(n, q, qr);
+
+    std::vector<uint64_t> buf(n);
+    for(int i=0; i<n; i++)buf[i] = i;
+
+    // 进行50次NTT, iNTT
+    HighResolutionTimer timer;
+    timer.start();
+    for(int i=0; i<50; i++)
+    {
+        ntter.ntt(buf.data());
+        ntter.intt(buf.data());
+    }
+    auto time = timer.stop();
+    // 除以n^10
+    uint64_t n10 = mod_pow(mod_inv(n, q), 50, q);
+    for(auto &i : buf) i = mod_mul(i, n10, q);
+    for(int i=0; i<n; i++){
+        if(buf[i] != i)
+        {
+            printf("出错了\n");
+            return;
+        }
+    }
+    printf("检验正确\n");
+    std::cout << "50次NTT,50次iNTT总耗时：" << time << std::endl;
+
+    
+    
+
+}
 
 
 void bench_ntt_cuda()
 {
+    printf("由于现在核函数调用不再会阻塞并返回耗时，bench_ntt_cuda现在实际上暂不可用\n");
     // 准备参数
     int logn = 8;
     int n = 1<<logn;    // 单次NTT规模
@@ -49,7 +97,6 @@ void bench_ntt_cuda()
         assert(tmp[i] == mod_mul(i, n, q)); // 乘n是因为ntt有乘n的副作用
     }
     std::cout << "正确性检查通过" << std::endl;
-
     for(int i=1; i<=10; i++)
     {
         std::cout << "第" << i << "次（性能）" << std::endl;
