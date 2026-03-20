@@ -95,13 +95,28 @@ static void _butterfly_dec_mont(
 }
 
 
+extern const std::vector<size_t>& get_bit_reverse_table_by_logn(size_t log2n);
+static void bit_reverse_copy(uint64_t* dst, int logn)
+{
+    int n = 1<<logn;
+    auto& table = get_bit_reverse_table_by_logn(logn);
+    for(int i=0; i<n; i++)
+    {
+        int j = table[i];
+        if(i<j)std::swap(dst[i], dst[j]);
+    }
+}
+
 void StandardNTTer::ntt(uint64_t* dst) const
 {
     _butterfly_dec_mont(dst, roots_mont_.data(), logn_, mm_);
+    bit_reverse_copy(dst, logn_);
 }
 void StandardNTTer::intt(uint64_t* dst) const
 {
-    _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm_);
+    // _butterfly_inc_mont(dst, iroots_mont_.data(), logn_, mm_);
+    _butterfly_dec_mont(dst, iroots_mont_.data(), logn_, mm_);
+    bit_reverse_copy(dst, logn_);
 }
 
 

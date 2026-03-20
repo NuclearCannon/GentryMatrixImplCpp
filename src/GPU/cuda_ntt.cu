@@ -100,6 +100,23 @@ static void __global__ _butterfly_dec_mont_cuda(
 }
 
 
+// 请令gridSize = batch_size, blockSize = n
+// TODO: 如果n太大，这个函数可能会爆？
+__global__ void bit_reverse_inplace_kernel(
+    uint64_t* buf,
+    int logn,
+    int batch_size
+)
+{
+    buf += blockIdx.x << logn;
+    // 获取自己的全局id
+    unsigned i = threadIdx.x;
+    // 获取自己全局id的比特反转
+    unsigned j = __brev(i) >> (32-logn);
+    uint64_t a = buf[i];
+    __syncthreads();
+    buf[j] = a;
+}
 
 float cuda_ntt(
     const CudaBuffer& a,
@@ -123,18 +140,22 @@ float cuda_ntt(
     // cudaEventCreate(&start);
     // cudaEventCreate(&stop);
     // cudaEventRecord(start);
-    if(dec)
-    {
-        _butterfly_dec_mont_cuda<<<gridSize, blockSize>>>(
-            ap, rp, logn, mm.M, mm.N1
-        );
-    }
-    else
-    {
-        _butterfly_inc_mont_cuda<<<gridSize, blockSize>>>(
-            ap, rp, logn, mm.M, mm.N1
-        );
-    }
+    _butterfly_dec_mont_cuda<<<gridSize, blockSize>>>(
+        ap, rp, logn, mm.M, mm.N1
+    );
+    bit_reverse_inplace_kernel<<<batch_size, n>>>(ap, logn, batch_size);
+    // if(dec)
+    // {
+    //     _butterfly_dec_mont_cuda<<<gridSize, blockSize>>>(
+    //         ap, rp, logn, mm.M, mm.N1
+    //     );
+    // }
+    // else
+    // {
+    //     _butterfly_inc_mont_cuda<<<gridSize, blockSize>>>(
+    //         ap, rp, logn, mm.M, mm.N1
+    //     );
+    // }
     // cudaEventRecord(stop);
     // cudaEventSynchronize(stop);
     float milliseconds = 0;
