@@ -9,6 +9,7 @@
 #include "montgomery.hpp"
 
 
+/*
 static void __global__ _butterfly_inc_mont_cuda(
     uint64_t* a, 
     const uint64_t* omegas_mont,
@@ -117,6 +118,57 @@ __global__ void bit_reverse_inplace_kernel(
     __syncthreads();
     buf[j] = a;
 }
+*/
+
+// 调用时，令blockSize=n/2, gridSize=batch_size, sharedMemory=n*sizeof(uint64_t)
+static void __global__ _butterfly_new(
+    uint64_t* a, 
+    const uint64_t* omegas_mont,
+    size_t logn,
+    const uint64_t M,   // 模数
+    const uint64_t N1  // 蒙哥马利约简辅助量
+)
+{
+    // ====准备工作====
+    // 获取当前线程组id
+    size_t gid = blockIdx.x;
+    a += gid << logn;   // 这是自己负责的片区
+    // 获取组内线程id
+    // 一个组内应当有n/2个线程，每个线程负责一个蝴蝶操作
+    size_t tid = threadIdx.x;
+    size_t wtid = tid << 1; // double tid
+    // ====初始化各变量====
+    const size_t n = 1<<logn;
+    size_t N = n>>1;
+    // 开辟共享内存
+    extern __shared__ uint64_t buf[];
+    // 将初始数据拷贝到buf中
+    buf[tid]   = a[tid];
+    buf[tid+N] = a[tid+N];
+    __syncthreads();    // 等待对所有buf的修改完毕
+    for(int t=0; t<logn; t++)
+    {
+        unsigned T = 1<<t;
+        // 从tid中提取出j, k
+        // 低t位为k，其余为j
+        unsigned k = tid & (T-1);
+        unsigned j = tid ^ k;
+        uint64_t w = omegas_mont[j];
+        unsigned i1 = tid;
+        unsigned i2 = i1 + N;
+        uint64_t u = buf[i1];
+        uint64_t v = buf[i2];
+        i1 = (j<<1) + k;
+        i2 = i1 + T;
+        __syncthreads();    // 等待对所有buf的读取完毕
+        buf[i1] = _mod_add(u,v,M);
+        buf[i2] = _mul_cuda(_mod_sub(u,v,M), w, M, N1);
+        __syncthreads();    // 等待对所有buf的修改完毕
+
+    }
+    a[tid]   = buf[tid];
+    a[tid+N] = buf[tid+N];
+}
 
 float cuda_ntt(
     const CudaBuffer& a,
@@ -140,22 +192,8 @@ float cuda_ntt(
     // cudaEventCreate(&start);
     // cudaEventCreate(&stop);
     // cudaEventRecord(start);
-    _butterfly_dec_mont_cuda<<<gridSize, blockSize>>>(
-        ap, rp, logn, mm.M, mm.N1
-    );
-    bit_reverse_inplace_kernel<<<batch_size, n>>>(ap, logn, batch_size);
-    // if(dec)
-    // {
-    //     _butterfly_dec_mont_cuda<<<gridSize, blockSize>>>(
-    //         ap, rp, logn, mm.M, mm.N1
-    //     );
-    // }
-    // else
-    // {
-    //     _butterfly_inc_mont_cuda<<<gridSize, blockSize>>>(
-    //         ap, rp, logn, mm.M, mm.N1
-    //     );
-    // }
+    _butterfly_new<<<gridSize, blockSize, n*sizeof(uint64_t)>>>(ap, rp, logn, mm.M, mm.N1);
+
     // cudaEventRecord(stop);
     // cudaEventSynchronize(stop);
     float milliseconds = 0;
