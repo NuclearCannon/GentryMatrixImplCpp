@@ -31,6 +31,17 @@ void bench_matmul_cuda()
     GentryPoly bc = GentryPoly::zeros(n, p, mods, GPDevice::CUDA);
     GentryPoly bd = GentryPoly::zeros(n, p, mods, GPDevice::CUDA);
     
+    // 正确性检验
+    {
+        printf("正确性检验\n");
+        GentryPoly::circledast(ac, a, c);
+        GentryPoly a2 = a.to_cpu();
+        GentryPoly c2 = c.to_cpu();
+        GentryPoly ac2 = GentryPoly::zeros(n, p, mods, GPDevice::CPU);
+        GentryPoly::circledast(ac2, a2, c2);
+        assert(ac2.eq(ac));
+        printf("正确性检验通过\n");
+    }
 
     HighResolutionTimer timer;
     cudaProfilerStart();

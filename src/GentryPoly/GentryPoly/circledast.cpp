@@ -36,10 +36,7 @@ void GentryPoly::circledast(GentryPoly& dst, const GentryPoly& src1, const Gentr
             uint64_t q = comp0[i].get_q();
             MontgomeryMultiplier mm(q);
             // TODO:
-            // circledast_u64_gpu2(comp0[i].data_, comp1[i].data_, comp2[i].data_, comp0[i].get_n(), comp0[i].get_p(), mm);
-            circledast_u64_gpu_multi_stream(comp0[i].data_, comp1[i].data_, comp2[i].data_, comp0[i].get_n(), comp0[i].get_p(), mm);
-            // 中和副作用
-            GPComponentCuda::mont_encode(comp0[i], comp0[i]);
+            circledast_u64_gpu(comp0[i].data_, comp1[i].data_, comp2[i].data_, comp0[i].get_n(), comp0[i].get_p(), mm);
         }
         
     }

@@ -3,20 +3,18 @@
 #include <cstdint>
 #include "montgomery.hpp"
 #include <cuda_runtime.h>
+#include <vector>
 
-void matmul_gpu(
-    const CudaBuffer& C,
-    const CudaBuffer& A,
-    const CudaBuffer& B,
-    int size,
-    const MontgomeryMultiplier& mm
-);
+class CudaMatmulTaskSet
+{
+private:
+    int n_;
+    uint64_t M_;
+    std::vector<uint64_t*> Atasks, Btasks, Ctasks;
 
-void matmul_gpu_stream(
-    const CudaBuffer& C,
-    const CudaBuffer& A,
-    const CudaBuffer& B,
-    int size,
-    const MontgomeryMultiplier& mm,
-    cudaStream_t stream
-);
+public:
+    CudaMatmulTaskSet(int n, uint64_t q): n_(n), M_(q) {};
+    void run();
+    void append(const CudaBuffer& C,const CudaBuffer& A,const CudaBuffer& B);
+    
+};
