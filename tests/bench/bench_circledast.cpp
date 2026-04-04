@@ -4,9 +4,7 @@
 #include "flints.hpp"
 #include <gperftools/profiler.h>
 #include "timer.hpp"
-#include <cuda_profiler_api.h>
-#include <cuda_runtime_api.h>
-#include "GPU/cuda_check.hpp"
+#include "GPU/cuda_interf.hpp"
 #include <iostream>
 
 void bench_circledast()
@@ -97,13 +95,14 @@ void bench_circledast_cuda()
     GentryPoly vbc = vb.to_cuda();
     printf("开始CCMM\n");
     HighResolutionTimer timer;
-    cudaProfilerStart();
+    // cudaProfilerStart();
+    CudaInterf::cuda_profiler_start();
     timer.start();
 
     auto [ra, rb] = circledast_ct(uac, ubc, vac, vbc, ksk_pair.first, ksk_pair.second, ctx);
-    CUDA_CHECK(cudaDeviceSynchronize());
+    CudaInterf::cuda_device_synchronize();
     double time = timer.stop();
-    cudaProfilerStop();
+    CudaInterf::cuda_profiler_stop();
     std::cout << "time(ms):" << time << std::endl;
 
     GentryPoly r = decrypt_gp(ra.to_cpu(), rb.to_cpu(), sk, ctx);

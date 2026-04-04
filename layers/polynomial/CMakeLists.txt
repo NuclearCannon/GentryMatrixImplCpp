@@ -15,4 +15,3 @@ target_include_directories(polynomial SYSTEM PRIVATE
     ${CMAKE_SOURCE_DIR}/layers/complex_matrix/include
 )
 set_property(TARGET polynomial PROPERTY CUDA_ARCHITECTURES native)
-target_include_directories(polynomial PRIVATE "/usr/local/cuda-13/include")

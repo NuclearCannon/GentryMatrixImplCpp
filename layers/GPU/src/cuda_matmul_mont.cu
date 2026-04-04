@@ -3,7 +3,7 @@
 #include "GPU/cuda_buffer.hpp"
 #include "GPU/cuda_check.hpp"
 #include "GPU/cuda_matmul.hpp"
-#include "GPU/cuda_modops.cuh"
+#include "./cuda_modops.cuh"
 #include "montgomery.hpp"
 #include <cstdint>
 #include <cassert>

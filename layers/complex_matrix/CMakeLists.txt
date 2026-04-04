@@ -9,4 +9,3 @@ target_include_directories(complex_matrix PRIVATE ${CMAKE_CURRENT_LIST_DIR}/incl
 #     ${CMAKE_SOURCE_DIR}/layers/operators/include
 # )
 set_property(TARGET complex_matrix PROPERTY CUDA_ARCHITECTURES native)
-target_include_directories(complex_matrix PRIVATE "/usr/local/cuda-13/include")

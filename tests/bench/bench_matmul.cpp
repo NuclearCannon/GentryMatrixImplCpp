@@ -4,9 +4,7 @@
 #include "flints.hpp"
 #include <gperftools/profiler.h>
 #include "timer.hpp"
-#include <cuda_profiler_api.h>
-#include <cuda_runtime_api.h>
-#include "GPU/cuda_check.hpp"
+#include "GPU/cuda_interf.hpp"
 #include <iostream>
 
 
@@ -44,15 +42,15 @@ void bench_matmul_cuda()
     }
 
     HighResolutionTimer timer;
-    cudaProfilerStart();
+    CudaInterf::cuda_profiler_start();
     timer.start();
     GentryPoly::circledast(ac, a, c);
     GentryPoly::circledast(ad, a, d);
     GentryPoly::circledast(bc, b, c);
     GentryPoly::circledast(bd, b, d);
-    CUDA_CHECK(cudaDeviceSynchronize());
+    CudaInterf::cuda_device_synchronize();
     double time = timer.stop();
-    cudaProfilerStop();
+    CudaInterf::cuda_profiler_stop();
     std::cout << "time(ms):" << time << std::endl;
 
 }

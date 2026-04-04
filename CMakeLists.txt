@@ -30,7 +30,6 @@ foreach(subdir ${TEST_SUBDIRS})
             set_property(TARGET ${subdir} PROPERTY CUDA_ARCHITECTURES native)
             target_link_libraries(${subdir} PRIVATE poly_impl_flint ${FLINT_LIB} ${GMP_LIB} profiler tcmalloc)
             target_include_directories(${subdir} PRIVATE 
-                "/usr/local/cuda-13/include"
                 "${CMAKE_SOURCE_DIR}/layers/utils/include"
                 "${CMAKE_SOURCE_DIR}/layers/GPU/include"
                 "${CMAKE_SOURCE_DIR}/layers/operators/include"

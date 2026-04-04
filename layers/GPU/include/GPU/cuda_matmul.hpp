@@ -1,7 +1,6 @@
 #pragma once
 #include "GPU/cuda_buffer.hpp"
 #include <cstdint>
-#include "montgomery.hpp"
 #include <vector>
 
 class CudaMatmulTaskSet
