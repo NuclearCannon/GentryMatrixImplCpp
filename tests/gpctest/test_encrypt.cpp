@@ -1,5 +1,5 @@
 #include "FHE/encrypt_gp.hpp"
-#include "CRT.hpp"
+#include "flints.hpp"
 
 void test_encrypt()
 {

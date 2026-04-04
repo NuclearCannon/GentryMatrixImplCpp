@@ -1,6 +1,6 @@
 #include "FHE/encrypt_gp.hpp"
 #include "FHE/key_switch_gp.hpp"
-#include "CRT.hpp"
+#include "flints.hpp"
 #include <gperftools/profiler.h>
 #include <cuda_profiler_api.h>
 #include "GPU/cuda_check.hpp"
