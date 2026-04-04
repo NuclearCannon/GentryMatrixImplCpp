@@ -2,7 +2,6 @@
 #include "vec64.hpp"
 #include "montgomery.hpp"
 #include "GPU/cuda_matmul.hpp"
-#include <cuda_runtime.h>
 
 
 

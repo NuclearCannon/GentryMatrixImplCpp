@@ -1,5 +1,6 @@
 file(GLOB OPERATORS_SRC 
     "${CMAKE_CURRENT_LIST_DIR}/src/ntt/*.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp"
 )
 add_library(operators STATIC ${OPERATORS_SRC})
 target_link_libraries(operators PRIVATE utils GPU ${FLINT_LIB} ${GMP_LIB})

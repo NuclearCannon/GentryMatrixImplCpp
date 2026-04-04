@@ -2,7 +2,6 @@
 #include "GPU/cuda_buffer.hpp"
 #include <cstdint>
 #include "montgomery.hpp"
-#include <cuda_runtime.h>
 #include <vector>
 
 class CudaMatmulTaskSet
