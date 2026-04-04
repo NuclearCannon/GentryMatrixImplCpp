@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 // 判断一个整数是不是power of 2
 bool is_power_of_two(size_t x) noexcept;
@@ -17,3 +18,5 @@ void transpose_inplace(uint64_t* dst, int n);
 // 把一个shape=(r, c)的长方形矩阵给转置成(c, r)的
 // 行优先编码
 void transpose_rect_restrict(uint64_t* __restrict__ dst, const uint64_t* __restrict__ src, size_t r, size_t c);
+
+const std::vector<size_t>& get_bit_reverse_table_by_logn(size_t log2n);

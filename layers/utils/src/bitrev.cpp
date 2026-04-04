@@ -1,6 +1,5 @@
 #include <vector>
 #include <cassert>
-#include "ntt.hpp"
 #include <memory>
 #include "math_utils.hpp"
 
