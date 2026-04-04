@@ -4,7 +4,6 @@
 #include "GPU/cuda_check.hpp"
 #include "GPU/cuda_matmul.hpp"
 #include "./cuda_modops.cuh"
-#include "montgomery.hpp"
 #include <cstdint>
 #include <cassert>
 #include <vector>
@@ -12,6 +11,36 @@
 constexpr int TILE = 16;
 constexpr int WIDTH = 32;   // 这俩可以不等
 
+
+__global__ void matmul_batch_kernel_flex(
+    const uint64_t** Aseq,
+    const uint64_t** Bseq,
+    uint64_t** Cseq,
+    uint64_t M,
+    int n
+)
+{
+    // 领取任务
+    const uint64_t* A = Aseq[blockIdx.z];
+    const uint64_t* B = Bseq[blockIdx.z];
+    uint64_t* C = Cseq[blockIdx.z];
+    int i = blockIdx.x * gridDim.x + threadIdx.x;
+    int j = blockIdx.y * gridDim.y + threadIdx.y;
+    int in = i*n;
+    int jn = j*n;
+    __uint128_t sum = 0;
+    for(int k=0; k<n; k++)
+    {
+        sum += ((__uint128_t)(A[in+k])) * B[jn+k];
+    }
+    sum %= M;
+    if(i<n && j<n)
+    {
+        C[in+j] = sum;
+    }
+
+
+}
 
 
 /// 对于一个算例，有[n/TILE, n/TILE]个block，每个block尺寸为[TILE, TILE]
@@ -84,12 +113,22 @@ void CudaMatmulTaskSet::run() {
     Aseq.copy_from_host(Atasks.data());
     Bseq.copy_from_host(Btasks.data());
     Cseq.copy_from_host(Ctasks.data());
-    // 提交运行
-    dim3 blockSize(TILE, TILE);
-    dim3 gridSize(n_/TILE, n_/TILE, ntask);
-    matmul_batch_kernel<<<gridSize, blockSize>>>(
-        (const uint64_t**)Aseq.get_ptr(), (const uint64_t**)Bseq.get_ptr(), (uint64_t**)Cseq.get_ptr(), M_, n_
-    );
+
+    bool aligned = (n_ % TILE == 0) && (n_ % WIDTH == 0);
+
+    if (aligned) {
+        dim3 blockSize(TILE, TILE);
+        dim3 gridSize(n_/TILE, n_/TILE, ntask);
+        matmul_batch_kernel<<<gridSize, blockSize>>>(
+            (const uint64_t**)Aseq.get_ptr(), (const uint64_t**)Bseq.get_ptr(), (uint64_t**)Cseq.get_ptr(), M_, n_
+        );
+    } else {
+        dim3 blockSize(TILE, TILE);
+        dim3 gridSize((n_ + TILE - 1) / TILE, (n_ + TILE - 1) / TILE, ntask);
+        matmul_batch_kernel_flex<<<gridSize, blockSize>>>(
+            (const uint64_t**)Aseq.get_ptr(), (const uint64_t**)Bseq.get_ptr(), (uint64_t**)Cseq.get_ptr(), M_, n_
+        );
+    }
 }
 
 
