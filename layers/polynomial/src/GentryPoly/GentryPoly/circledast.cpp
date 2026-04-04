@@ -15,11 +15,10 @@ void GentryPoly::circledast(GentryPoly& dst, const GentryPoly& src1, const Gentr
 
         for(int i=0; i<comp0.size(); i++)
         {
-            uint64_t q = comp0[i].get_q();
-            fmpz_scalar q_fmpz = fmpz_scalar::from_ui(q);
-
-            MatmulContext mc(comp0[i].get_n(), q_fmpz.raw());
-            mc.circledast_u64(comp0[i].data_.data(), comp1[i].data_.data(), comp2[i].data_.data(), comp0[i].get_n(), comp0[i].get_p());
+            circledast_u64_cpu(
+                comp0[i].data_.data(), comp1[i].data_.data(), comp2[i].data_.data(), 
+                comp0[i].get_n(), comp0[i].get_p(), comp0[i].get_q()
+            );
         }
     }
     else
@@ -33,10 +32,10 @@ void GentryPoly::circledast(GentryPoly& dst, const GentryPoly& src1, const Gentr
 
         for(int i=0; i<comp0.size(); i++)
         {
-            uint64_t q = comp0[i].get_q();
-            MontgomeryMultiplier mm(q);
-            // TODO:
-            circledast_u64_gpu(comp0[i].data_, comp1[i].data_, comp2[i].data_, comp0[i].get_n(), comp0[i].get_p(), mm);
+            circledast_u64_gpu(
+                comp0[i].data_, comp1[i].data_, comp2[i].data_, 
+                comp0[i].get_n(), comp0[i].get_p(), comp0[i].get_q()
+            );
         }
         
     }
