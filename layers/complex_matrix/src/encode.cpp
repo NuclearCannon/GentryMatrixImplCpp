@@ -1,4 +1,4 @@
-#include "complecx_matrix.hpp"
+#include "complex_matrix.hpp"
 #include <cassert>
 #include <cstring>
 #include <memory>

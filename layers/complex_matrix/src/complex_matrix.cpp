@@ -1,4 +1,4 @@
-#include "complecx_matrix.hpp"
+#include "complex_matrix.hpp"
 
 ComplexMatrixGroup::ComplexMatrixGroup(size_t n, size_t p, std::vector<complex> data):
     p_(p), n_(n), data_(data)

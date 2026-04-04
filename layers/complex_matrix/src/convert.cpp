@@ -1,4 +1,4 @@
-#include "complecx_matrix.hpp"
+#include "complex_matrix.hpp"
 #include <cmath>
 
 // 取一个 fmpz_t 整数对应的实数表示

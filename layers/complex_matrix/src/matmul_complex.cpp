@@ -1,4 +1,4 @@
-#include "complecx_matrix.hpp"
+#include "complex_matrix.hpp"
 
 
 // let C = A @ B.conj().T
