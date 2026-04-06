@@ -14,10 +14,11 @@ add_subdirectory(layers/operators)
 add_subdirectory(layers/polynomial)
 add_subdirectory(layers/FHE)
 add_subdirectory(layers/complex_matrix)
+add_subdirectory(layers/application)
 
 add_library(poly_impl_flint INTERFACE)
 target_link_libraries(poly_impl_flint INTERFACE 
-    utils GPU operators polynomial FHE complex_matrix 
+    utils GPU operators polynomial FHE complex_matrix application
     ${FLINT_LIB} ${GMP_LIB} profiler tcmalloc
 )
 
@@ -36,6 +37,7 @@ foreach(subdir ${TEST_SUBDIRS})
                 "${CMAKE_SOURCE_DIR}/layers/polynomial/include"
                 "${CMAKE_SOURCE_DIR}/layers/FHE/include"
                 "${CMAKE_SOURCE_DIR}/layers/complex_matrix/include"
+                "${CMAKE_SOURCE_DIR}/layers/application/include"
             )
         endif()
     endif()

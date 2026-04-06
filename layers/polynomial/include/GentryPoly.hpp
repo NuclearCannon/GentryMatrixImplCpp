@@ -282,6 +282,8 @@ public:
         const std::vector<std::vector<uint64_t>>& coeffs_mod_q
     );
 
+    std::vector<std::vector<uint64_t>> to_coeffs() const;
+
     // 设备查询
     bool is_cuda() const { return device_ == GPDevice::CUDA; }
     bool is_cpu() const { return device_ == GPDevice::CPU; }

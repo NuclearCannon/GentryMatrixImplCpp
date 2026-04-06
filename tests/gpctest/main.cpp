@@ -1,3 +1,6 @@
+#include "application.hpp"
+
+
 void test_ntt();
 void test_ntt_cuda();
 void test_encrypt();
@@ -15,6 +18,7 @@ int main()
     // test_ks();
     // test_ks_cuda();
     // test_circledast();
-    test_circledast_cuda();
+    // test_circledast_cuda();
+    Plaintext::test_pt_encode_and_decode();
     return 0;
 }

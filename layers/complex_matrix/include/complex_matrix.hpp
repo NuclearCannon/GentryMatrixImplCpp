@@ -18,6 +18,9 @@ private:
     // 私有构造函数，从内容中直接构造
     ComplexMatrixGroup(size_t n, size_t p, std::vector<complex> data);
 public:
+    inline size_t get_p() const {return p_;}
+    inline size_t get_n() const {return n_;}
+
     ComplexMatrixGroup(size_t n, size_t p); // 0矩阵
 
     ComplexMatrixGroup(const ComplexMatrixGroup&) = default;
