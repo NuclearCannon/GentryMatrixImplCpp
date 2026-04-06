@@ -20,5 +20,6 @@ int main()
     // test_circledast();
     // test_circledast_cuda();
     Plaintext::test_pt_encode_and_decode();
+    Ciphertext::test_ct_encrypt_and_decrypt();
     return 0;
 }

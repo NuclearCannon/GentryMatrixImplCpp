@@ -7,6 +7,7 @@ target_include_directories(application PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include
 target_include_directories(application SYSTEM PRIVATE 
     ${CMAKE_SOURCE_DIR}/layers/complex_matrix/include
     ${CMAKE_SOURCE_DIR}/layers/GPU/include      
+    ${CMAKE_SOURCE_DIR}/layers/FHE/include      
     ${CMAKE_SOURCE_DIR}/layers/polynomial/include
     ${CMAKE_SOURCE_DIR}/layers/operators/include
 )

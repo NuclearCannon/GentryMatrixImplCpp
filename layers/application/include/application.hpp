@@ -3,8 +3,11 @@
 #include <memory>
 #include "GentryPoly.hpp"
 
+class Ciphertext;
+
 class Plaintext
 {
+    friend class Ciphertext;
 private:
     std::unique_ptr<GentryPoly> data_;
 
@@ -26,4 +29,29 @@ public:
 
 // ===========================以下是单元测试==========================
     static void test_pt_encode_and_decode();
+};
+
+class SecretKey
+{
+    friend class Ciphertext;
+private:
+    std::unique_ptr<GentryPoly> data_;
+public:
+    SecretKey(size_t n, size_t p, const std::vector<uint64_t>& mods);
+
+    ~SecretKey() = default;
+    
+};
+
+class Ciphertext
+{
+private:
+    std::unique_ptr<GentryPoly> a_, b_;
+    Ciphertext(std::unique_ptr<GentryPoly> a, std::unique_ptr<GentryPoly> b);
+
+public:
+    static Ciphertext encrypt(const Plaintext& pt, const SecretKey& sk, const GentryPolyCtx& ctx);
+    Plaintext decrypt(const SecretKey& sk, const GentryPolyCtx& ctx);
+
+    static void test_ct_encrypt_and_decrypt();
 };
