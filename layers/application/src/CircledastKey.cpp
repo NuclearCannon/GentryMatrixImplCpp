@@ -111,7 +111,7 @@ void CircledastKey::test_ct_circledast_end2end(bool cuda)
     Plaintext pt2 = Plaintext::from_cmat(mat2, mods, delta);
     // 准备一个私钥
     SecretKey sk(n, p, mods);
-    // 分布加密成密文
+    // 分别加密成密文
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     Ciphertext ct2 = Ciphertext::encrypt(pt2, sk, ctx);
     // 生成circledast ksk

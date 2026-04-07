@@ -24,5 +24,7 @@ int main()
     CircledastKey::test_pt_circledast_end2end();
     CircledastKey::test_ct_circledast_end2end();
     CircledastKey::test_ct_circledast_end2end(true);
+    ConjTransposeKey::test_pt_transpose();
+    ConjTransposeKey::test_ct_transpose();
     return 0;
 }

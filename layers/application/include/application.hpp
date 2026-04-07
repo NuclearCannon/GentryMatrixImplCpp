@@ -5,10 +5,13 @@
 #include "FHE/key_switch_gp.hpp"
 
 class Ciphertext;
+class CircledastKey;
+class ConjTransposeKey;
 
 class Plaintext
 {
     friend class Ciphertext;
+    friend class ConjTransposeKey;
 private:
     std::unique_ptr<GentryPoly> data_;
 
@@ -27,17 +30,19 @@ public:
     ComplexMatrixGroup to_cmat(double delta) const;
 
     Plaintext circledast(const Plaintext& other, const GentryPolyCtx& ctx) const;
+    Plaintext conj_transpose(const GentryPolyCtx& ctx) const;
 
 // ===========================以下是单元测试==========================
     static void test_pt_encode_and_decode();
 };
 
-class CircledastKey;
+
 
 class SecretKey
 {
     friend class Ciphertext;
     friend class CircledastKey;
+    friend class ConjTransposeKey;
 private:
     std::unique_ptr<GentryPoly> data_;
 public:
@@ -53,6 +58,7 @@ public:
 class Ciphertext
 {
     friend class CircledastKey;
+    friend class ConjTransposeKey;
 private:
     std::unique_ptr<GentryPoly> a_, b_;
     Ciphertext(std::unique_ptr<GentryPoly> a, std::unique_ptr<GentryPoly> b);
@@ -78,4 +84,19 @@ public:
 
     static void test_pt_circledast_end2end();
     static void test_ct_circledast_end2end(bool cuda = false);
+};
+
+class ConjTransposeKey
+{
+private:
+    std::unique_ptr<KeySwitchKeyGP> ksk_;
+    ConjTransposeKey(std::unique_ptr<KeySwitchKeyGP> ksk);
+
+
+public:
+    static ConjTransposeKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx);
+    Ciphertext run(const Ciphertext& src, const GentryPolyCtx& ctx) const;
+    static void test_pt_transpose();
+    static void test_ct_transpose();
+
 };

@@ -48,6 +48,11 @@ Plaintext Plaintext::circledast(const Plaintext& other, const GentryPolyCtx& ctx
     return Plaintext(std::make_unique<GentryPoly>(std::move(w)));
 }
 
+Plaintext Plaintext::conj_transpose(const GentryPolyCtx& ctx) const
+{
+    return Plaintext(std::make_unique<GentryPoly>(data_->w_inv().transpose().conj()));
+}
+
 void Plaintext::test_pt_encode_and_decode()
 {
     int n=8, p=5;
