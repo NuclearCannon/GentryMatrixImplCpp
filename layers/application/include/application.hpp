@@ -7,6 +7,7 @@
 class Ciphertext;
 class CircledastKey;
 class ConjTransposeKey;
+class MultKey;
 
 class Plaintext
 {
@@ -43,6 +44,7 @@ class SecretKey
     friend class Ciphertext;
     friend class CircledastKey;
     friend class ConjTransposeKey;
+    friend class MultKey;
 private:
     std::unique_ptr<GentryPoly> data_;
 public:
@@ -59,6 +61,7 @@ class Ciphertext
 {
     friend class CircledastKey;
     friend class ConjTransposeKey;
+    friend class MultKey;
 private:
     std::unique_ptr<GentryPoly> a_, b_;
     Ciphertext(std::unique_ptr<GentryPoly> a, std::unique_ptr<GentryPoly> b);
@@ -98,5 +101,21 @@ public:
     Ciphertext run(const Ciphertext& src, const GentryPolyCtx& ctx) const;
     static void test_pt_transpose();
     static void test_ct_transpose();
+
+};
+
+
+class MultKey
+{
+private:
+    std::unique_ptr<KeySwitchKeyGP> ksk_;
+    MultKey(std::unique_ptr<KeySwitchKeyGP> ksk);
+
+
+public:
+    static MultKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx);
+    Ciphertext run(const Ciphertext& src1, const Ciphertext& src2, const GentryPolyCtx& ctx) const;
+    // static void test_pt_transpose(); // TODO: 如果有需要再做
+    static void test_ct_mult();
 
 };
