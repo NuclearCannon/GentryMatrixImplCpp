@@ -21,5 +21,7 @@ int main()
     // test_circledast_cuda();
     Plaintext::test_pt_encode_and_decode();
     Ciphertext::test_ct_encrypt_and_decrypt();
+    CircledastKey::test_pt_circledast_end2end();
+    CircledastKey::test_ct_circledast_end2end();
     return 0;
 }

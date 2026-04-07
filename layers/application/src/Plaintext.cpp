@@ -10,9 +10,7 @@ Plaintext::Plaintext(std::unique_ptr<GentryPoly> data):
 
 Plaintext Plaintext::from_cmat(const ComplexMatrixGroup& cmg, const std::vector<uint64_t>& mods, double delta)
 {
-    // ComplexMatrixGroup encoded = cmg.encode();
-    // fmpz_vector vec = cmg.encode().to_fmpz_vector(delta);
-    fmpz_vector vec = cmg.to_fmpz_vector(delta);
+    fmpz_vector vec = cmg.encode().to_fmpz_vector(delta);
     auto res = crt(vec, mods);  // 执行CRT分解
     size_t n = cmg.get_n(), p = cmg.get_p();
     std::unique_ptr<GentryPoly> data = std::make_unique<GentryPoly>(GentryPoly::from_coeffs(n, p, mods, res));
@@ -36,8 +34,18 @@ ComplexMatrixGroup Plaintext::to_cmat(double delta) const
     }
     fmpz_vector vec_centered = vec.mod_centered(Q.raw());
     ComplexMatrixGroup encoded = ComplexMatrixGroup::from_fmpz_vector(vec_centered, delta, data_->n(), data_->p());
-    // return encoded.decode();
-    return encoded;
+    return encoded.decode();
+}
+
+Plaintext Plaintext::circledast(const Plaintext& other, const GentryPolyCtx& ctx) const
+{
+    GentryPoly x = *data_, y = *other.data_;
+    x.iw_ntt(ctx);
+    y.iw_ntt(ctx);
+    GentryPoly w = GentryPoly::zeros_like(x);
+    GentryPoly::circledast(w, x, y);
+    w.iw_intt(ctx);
+    return Plaintext(std::make_unique<GentryPoly>(std::move(w)));
 }
 
 void Plaintext::test_pt_encode_and_decode()
@@ -46,14 +54,8 @@ void Plaintext::test_pt_encode_and_decode()
     vec64 mods = {70368747120641, 70368747294721, 70368748426241};
     double delta = 1000;
 
-    ComplexMatrixGroup mat(n,p);
-    // 混乱赋值给它
-    for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
-    {
-        mat.at(w,x,y) = complex(w+x, w-y) * 3.1415926;
-    }
+    ComplexMatrixGroup mat = ComplexMatrixGroup::random(5, n, p);
     Plaintext pt = Plaintext::from_cmat(mat, mods, delta);
-    
     ComplexMatrixGroup mat2 = pt.to_cmat(delta);
 
     double max_diff = 0;

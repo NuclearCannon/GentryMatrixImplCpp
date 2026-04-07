@@ -2,6 +2,7 @@
 #include "complex_matrix.hpp"
 #include <memory>
 #include "GentryPoly.hpp"
+#include "FHE/key_switch_gp.hpp"
 
 class Ciphertext;
 
@@ -25,15 +26,18 @@ public:
     // 从明文对象中恢复出复矩阵
     ComplexMatrixGroup to_cmat(double delta) const;
 
-
+    Plaintext circledast(const Plaintext& other, const GentryPolyCtx& ctx) const;
 
 // ===========================以下是单元测试==========================
     static void test_pt_encode_and_decode();
 };
 
+class CircledastKey;
+
 class SecretKey
 {
     friend class Ciphertext;
+    friend class CircledastKey;
 private:
     std::unique_ptr<GentryPoly> data_;
 public:
@@ -43,8 +47,12 @@ public:
     
 };
 
+
+
+
 class Ciphertext
 {
+    friend class CircledastKey;
 private:
     std::unique_ptr<GentryPoly> a_, b_;
     Ciphertext(std::unique_ptr<GentryPoly> a, std::unique_ptr<GentryPoly> b);
@@ -54,4 +62,17 @@ public:
     Plaintext decrypt(const SecretKey& sk, const GentryPolyCtx& ctx);
 
     static void test_ct_encrypt_and_decrypt();
+};
+
+class CircledastKey
+{
+private:
+    std::unique_ptr<KeySwitchKeyGP> ksk1_, ksk2_;
+    CircledastKey(std::unique_ptr<KeySwitchKeyGP> ksk1, std::unique_ptr<KeySwitchKeyGP> ksk2);
+public:
+    static CircledastKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx);
+    Ciphertext run(const Ciphertext& u, const Ciphertext& v, const GentryPolyCtx& ctx) const;
+
+    static void test_pt_circledast_end2end();
+    static void test_ct_circledast_end2end();
 };

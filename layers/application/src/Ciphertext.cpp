@@ -45,14 +45,9 @@ void Ciphertext::test_ct_encrypt_and_decrypt()
     };
     GentryPolyCtx ctx(n, p, qrp);
 
-    double delta = 1000;
+    double delta = 10000;
 
-    ComplexMatrixGroup mat(n,p);
-    // 混乱赋值给它
-    for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
-    {
-        mat.at(w,x,y) = complex(w+x, w-y) * 3.1415926;
-    }
+    ComplexMatrixGroup mat = ComplexMatrixGroup::random(5, n, p);
     Plaintext pt = Plaintext::from_cmat(mat, mods, delta);
     SecretKey sk(n, p, mods);
     Ciphertext ct = Ciphertext::encrypt(pt, sk, ctx);
