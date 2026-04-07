@@ -24,13 +24,25 @@ Ciphertext Ciphertext::encrypt(const Plaintext& pt, const SecretKey& sk, const G
 
 Plaintext Ciphertext::decrypt(const SecretKey& sk, const GentryPolyCtx& ctx)
 {
-    auto m = decrypt_gp(
-        *a_, *b_, *(sk.data_), ctx
-    );
-    return Plaintext(std::make_unique<GentryPoly>(std::move(m)));
+    if(a_->is_cuda())
+    {
+        return Plaintext(std::make_unique<GentryPoly>(decrypt_gp(a_->to_cpu(), b_->to_cpu(), *(sk.data_), ctx)));
+    }
+    else
+    {
+        return Plaintext(std::make_unique<GentryPoly>(decrypt_gp(*a_, *b_, *(sk.data_), ctx)));
+    }
+    
 
 }
 
+Ciphertext Ciphertext::to_cuda() const
+{
+    return Ciphertext(
+        std::make_unique<GentryPoly>(a_->to_cuda()),
+        std::make_unique<GentryPoly>(b_->to_cuda())
+    );
+}
 
 void Ciphertext::test_ct_encrypt_and_decrypt()
 {

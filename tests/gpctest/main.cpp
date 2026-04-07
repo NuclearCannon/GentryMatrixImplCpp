@@ -23,5 +23,6 @@ int main()
     Ciphertext::test_ct_encrypt_and_decrypt();
     CircledastKey::test_pt_circledast_end2end();
     CircledastKey::test_ct_circledast_end2end();
+    CircledastKey::test_ct_circledast_end2end(true);
     return 0;
 }

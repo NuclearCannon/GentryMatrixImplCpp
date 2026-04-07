@@ -82,7 +82,7 @@ void CircledastKey::test_pt_circledast_end2end()
     
 }
 
-void CircledastKey::test_ct_circledast_end2end()
+void CircledastKey::test_ct_circledast_end2end(bool cuda)
 {
     // 准备各个参数
     int n = 8;
@@ -116,7 +116,7 @@ void CircledastKey::test_ct_circledast_end2end()
     Ciphertext ct2 = Ciphertext::encrypt(pt2, sk, ctx);
     // 生成circledast ksk
     CircledastKey key = CircledastKey::gen(sk, qo, ctx);
-    Ciphertext ct3 = key.run(ct1, ct2, ctx);
+    Ciphertext ct3 = (cuda) ? key.run(ct1.to_cuda(), ct2.to_cuda(), ctx) : key.run(ct1, ct2, ctx);
     Plaintext pt3 = ct3.decrypt(sk, ctx);
     // 恢复成矩阵
     ComplexMatrixGroup mat3 = pt3.to_cmat(delta * delta);

@@ -62,6 +62,9 @@ public:
     Plaintext decrypt(const SecretKey& sk, const GentryPolyCtx& ctx);
 
     static void test_ct_encrypt_and_decrypt();
+
+    // 这将会创建一个新的密文对象，它的数据都放在cuda上
+    Ciphertext to_cuda() const;
 };
 
 class CircledastKey
@@ -74,5 +77,5 @@ public:
     Ciphertext run(const Ciphertext& u, const Ciphertext& v, const GentryPolyCtx& ctx) const;
 
     static void test_pt_circledast_end2end();
-    static void test_ct_circledast_end2end();
+    static void test_ct_circledast_end2end(bool cuda = false);
 };
