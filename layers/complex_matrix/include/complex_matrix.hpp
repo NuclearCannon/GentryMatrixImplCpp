@@ -56,4 +56,6 @@ public:
     // mat[w,x,y] = x+yi
     static ComplexMatrixGroup example_matrix(size_t n, size_t p);
 
+    void print(const char* name) const;
+
 };

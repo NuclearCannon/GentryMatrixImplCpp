@@ -1,6 +1,6 @@
 #include "application.hpp"
 #include <iostream>
-
+#include "modops.hpp"
 
 Plaintext::Plaintext(std::unique_ptr<GentryPoly> data):
     data_(std::move(data))
@@ -51,6 +51,16 @@ Plaintext Plaintext::circledast(const Plaintext& other, const GentryPolyCtx& ctx
 Plaintext Plaintext::conj_transpose(const GentryPolyCtx& ctx) const
 {
     return Plaintext(std::make_unique<GentryPoly>(data_->w_inv().transpose().conj()));
+}
+
+Plaintext Plaintext::rotate_XY(int x_bias, int y_bias) const
+{
+    int n = data_->n();
+    int x_auto = mod_pow(5, x_bias, 4*n);
+    int y_auto = mod_pow(5, y_bias, 4*n);
+    return Plaintext(std::make_unique<GentryPoly>(data_->automorphism2(
+        x_auto, y_auto
+    )));
 }
 
 void Plaintext::test_pt_encode_and_decode()

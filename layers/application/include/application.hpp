@@ -32,6 +32,7 @@ public:
 
     Plaintext circledast(const Plaintext& other, const GentryPolyCtx& ctx) const;
     Plaintext conj_transpose(const GentryPolyCtx& ctx) const;
+    Plaintext rotate_XY(int x_bias, int y_bias) const;
 
 // ===========================以下是单元测试==========================
     static void test_pt_encode_and_decode();
@@ -118,4 +119,18 @@ public:
     // static void test_pt_transpose(); // TODO: 如果有需要再做
     static void test_ct_mult();
 
+};
+
+class RotateKey
+{
+private:
+    // std::unique_ptr<KeySwitchKeyGP> ksk_;
+    // MultKey(std::unique_ptr<KeySwitchKeyGP> ksk);
+
+
+public:
+    // static MultKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx);
+    // Ciphertext run(const Ciphertext& src1, const Ciphertext& src2, const GentryPolyCtx& ctx) const;
+    // static void test_pt_transpose(); // TODO: 如果有需要再做
+    static void test_pt_rotate();
 };

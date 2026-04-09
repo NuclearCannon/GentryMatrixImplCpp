@@ -84,3 +84,70 @@ void GPComponent::w_inv(GPComponent& dst_) const
         }
     }
 }
+
+void GPComponent::automorphism_XY(GPComponent& dst_, int x, int y) const
+{
+    assert(x > 0);
+    assert(y > 0);
+    assert(x % 2 == 1);
+    assert(y % 2 == 1);
+    const vec64& src = this->data_;
+    vec64& dst = dst_.data_;
+    assert(&src != &dst);
+    const size_t n = n_;
+    const size_t nn = n*n;
+    const size_t pnn = (p_-1)*nn;
+
+    memset(dst.data(), 0, dst.size()*sizeof(uint64_t));
+
+    for(int w=0; w<p_-1; w++)
+    {
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<n; j++)
+            {
+                // 将src[w, i, j]移动到dst[w, i2, j2]
+                int i2 = (i * x) % (4*n);   // zeta^4n=1，因此可以取模4n
+                int j2 = (j * y) % (4*n);
+                int iexp = 0;   // 虚数单位i的指数
+                if(i2>=n){iexp++; i2-=n;}
+                if(i2>=n){iexp++; i2-=n;}
+                if(i2>=n){iexp++; i2-=n;}
+
+                if(j2>=n){iexp--; j2-=n;}
+                if(j2>=n){iexp--; j2-=n;}
+                if(j2>=n){iexp--; j2-=n;}
+                // iexp in [-3,3]
+                iexp = (iexp + 4) % 4;
+                // iexp in [0,3]
+
+
+                uint64_t s1 = src[w*nn + i*n + j];
+                uint64_t s2 = src[pnn + w*nn + i*n + j];
+                uint64_t& d1 = dst[w*nn + i2*n + j2];
+                uint64_t& d2 = dst[pnn + w*nn + i2*n + j2];
+                if(iexp == 0)
+                {
+                    d1 = mod_add(d1, s1, q_);
+                    d2 = mod_add(d2, s2, q_);
+                }
+                else if (iexp == 1)
+                {
+                    d1 = mod_sub(d1, s2, q_);
+                    d2 = mod_add(d2, s1, q_);
+                }
+                else if (iexp == 2)
+                {
+                    d1 = mod_sub(d1, s1, q_);
+                    d2 = mod_sub(d2, s2, q_);
+                }
+                else if (iexp == 3)
+                {
+                    d1 = mod_add(d1, s2, q_);
+                    d2 = mod_sub(d2, s1, q_);
+                }
+
+            }
+        }
+    }
+}

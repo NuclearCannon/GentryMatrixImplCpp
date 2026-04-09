@@ -144,6 +144,10 @@ public:
     void conj(GPComponent& dst) const;
     void w_inv(GPComponent& dst) const;
 
+    // return self(X^x, Y^y, W)
+    // x, y 必须是奇数
+    void automorphism_XY(GPComponent& dst, int x, int y) const;
+
 };
 
 // GentryPoly在某个CRT上的分量（CUDA）
@@ -421,4 +425,7 @@ public:
     GentryPoly transpose() const;
     GentryPoly conj() const;
     GentryPoly w_inv() const;
+
+    // return self(X^x, Y^y, W)
+    GentryPoly automorphism2(int x, int y) const;
 };
