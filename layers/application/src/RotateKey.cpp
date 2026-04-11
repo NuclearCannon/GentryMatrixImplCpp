@@ -1,16 +1,16 @@
 #include "application.hpp"
 #include <iostream>
 
-RotateKey::RotateKey(std::unique_ptr<KeySwitchKeyGP> ksk, int x_bias, int y_bias):
-    ksk_(std::move(ksk)), x_bias_(x_bias), y_bias_(y_bias)
+RotateKey::RotateKey(std::unique_ptr<KeySwitchKeyGP> ksk, int x_bias, int y_bias, int w_bias):
+    ksk_(std::move(ksk)), x_bias_(x_bias), y_bias_(y_bias), w_bias_(w_bias)
 {
 
 }
 
-RotateKey RotateKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, int x_bias, int y_bias)
+RotateKey RotateKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, int x_bias, int y_bias, int w_bias)
 {
     // 注意，sk在用于生成KSK前需要扩展模数
-    GentryPoly sk_from = (*sk.data_).rotate2(x_bias, y_bias);
+    GentryPoly sk_from = (*sk.data_).rotate(x_bias, y_bias, w_bias);
     sk_from.moduli_extend_mult(qo);
     GentryPoly sk_to = (*sk.data_);
     sk_to.moduli_extend_unsafe(qo);
@@ -23,14 +23,14 @@ RotateKey RotateKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& 
                 qo, ctx
             )
         ), 
-        x_bias, y_bias
+        x_bias, y_bias, w_bias
     );
 }
 
 Ciphertext RotateKey::run(const Ciphertext& src, const GentryPolyCtx& ctx) const
 {
-    GentryPoly a = (*src.a_).rotate2(x_bias_, y_bias_);
-    GentryPoly b = (*src.b_).rotate2(x_bias_, y_bias_);
+    GentryPoly a = (*src.a_).rotate(x_bias_, y_bias_, w_bias_);
+    GentryPoly b = (*src.b_).rotate(x_bias_, y_bias_, w_bias_);
     // ks
     auto [a2, b2] = ksk_->key_switch_big_2(a, b, ctx);
 
@@ -62,6 +62,7 @@ void RotateKey::test_pt_rotate()
     // 确定rotate步长
     int x_bias = 5;
     int y_bias = 3;
+    int w_bias = 2;
 
     GentryPolyCtx ctx(n, p, qrp);
 
@@ -69,7 +70,7 @@ void RotateKey::test_pt_rotate()
     ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(5, n, p);
     // for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++) mat1.at(w, x, y) = w*x;
     Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
-    Plaintext pt2 = pt1.rotate_XY(x_bias, y_bias);
+    Plaintext pt2 = pt1.rotate(x_bias, y_bias, w_bias);
     // 恢复成矩阵
     ComplexMatrixGroup mat2 = pt2.to_cmat(delta);
 
@@ -79,7 +80,7 @@ void RotateKey::test_pt_rotate()
     double max_diff = 0;
     for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
     {
-        complex diff = mat2.at(w,x,y) - mat1.at(w,(x+x_bias)%n,(y+y_bias)%n); // 在这里进行编码前层面上的转置操作
+        complex diff = mat2.at(w,x,y) - mat1.at((w+w_bias)%(p-1),(x+x_bias)%n,(y+y_bias)%n); // 在这里进行编码前层面上的转置操作
         double diff_abs = std::abs(diff);
         if(diff_abs>max_diff)max_diff = diff_abs;
     }
@@ -107,6 +108,7 @@ void RotateKey::test_ct_rotate()
     // 确定rotate步长
     int x_bias = 5;
     int y_bias = 3;
+    int w_bias = 2;
 
     GentryPolyCtx ctx(n, p, qrp);
 
@@ -115,7 +117,7 @@ void RotateKey::test_ct_rotate()
     // for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++) mat1.at(w, x, y) = w*x;
     Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
     SecretKey sk(n, p, mods);
-    RotateKey key = RotateKey::gen(sk, qo, ctx, x_bias, y_bias);
+    RotateKey key = RotateKey::gen(sk, qo, ctx, x_bias, y_bias, w_bias);
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     Ciphertext ct2 = key.run(ct1, ctx);
     Plaintext pt2 = ct2.decrypt(sk, ctx);
@@ -128,7 +130,7 @@ void RotateKey::test_ct_rotate()
     double max_diff = 0;
     for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
     {
-        complex diff = mat2.at(w,x,y) - mat1.at(w,(x+x_bias)%n,(y+y_bias)%n); // 在这里进行编码前层面上的转置操作
+        complex diff = mat2.at(w,x,y) - mat1.at((w+w_bias)%(p-1),(x+x_bias)%n,(y+y_bias)%n); // 在这里进行编码前层面上的转置操作
         double diff_abs = std::abs(diff);
         if(diff_abs>max_diff)max_diff = diff_abs;
     }

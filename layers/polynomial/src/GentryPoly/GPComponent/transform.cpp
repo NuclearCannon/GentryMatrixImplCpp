@@ -151,3 +151,37 @@ void GPComponent::automorphism_XY(GPComponent& dst_, int x, int y) const
         }
     }
 }
+
+void GPComponent::automorphism_W(GPComponent& dst_, int delta_w) const
+{
+
+    const vec64& src = this->data_;
+    vec64& dst = dst_.data_;
+    assert(&src != &dst);
+    const size_t n = n_;
+    const size_t nn = n*n;
+    const size_t pnn = (p_-1)*nn;
+
+    memset(dst.data(), 0, dst.size()*sizeof(uint64_t));
+
+    for(int w=0; w<p_-1; w++)
+    {
+        int w2 = (w+delta_w)%(p_-1);
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<n; j++)
+            {
+                
+
+
+                uint64_t s1 = src[w*nn + i*n + j];
+                uint64_t s2 = src[pnn + w*nn + i*n + j];
+                uint64_t& d1 = dst[w2*nn + i*n + j];
+                uint64_t& d2 = dst[pnn + w2*nn + i*n + j];
+                d1 = s1;
+                d2 = s2;
+
+            }
+        }
+    }
+}
