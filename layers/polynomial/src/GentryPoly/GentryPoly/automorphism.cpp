@@ -1,4 +1,5 @@
 #include "GentryPoly.hpp"
+#include "modops.hpp"
 
 GentryPoly GentryPoly::automorphism2(int x, int y) const
 {
@@ -11,4 +12,10 @@ GentryPoly GentryPoly::automorphism2(int x, int y) const
         src[i].automorphism_XY(dst[i], x, y);
     }
     return res;
+}
+
+GentryPoly GentryPoly::rotate2(int x, int y) const
+{
+    int n = this->n();
+    return automorphism2(mod_pow(5, x, 4*n), mod_pow(5, y, 4*n));
 }

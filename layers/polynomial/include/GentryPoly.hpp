@@ -428,4 +428,7 @@ public:
 
     // return self(X^x, Y^y, W)
     GentryPoly automorphism2(int x, int y) const;
+
+    // 这是对automorphism2的包装
+    GentryPoly rotate2(int x, int y) const;
 };

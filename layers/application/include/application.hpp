@@ -8,6 +8,7 @@ class Ciphertext;
 class CircledastKey;
 class ConjTransposeKey;
 class MultKey;
+class RotateKey;
 
 class Plaintext
 {
@@ -46,6 +47,7 @@ class SecretKey
     friend class CircledastKey;
     friend class ConjTransposeKey;
     friend class MultKey;
+    friend class RotateKey;
 private:
     std::unique_ptr<GentryPoly> data_;
 public:
@@ -63,6 +65,7 @@ class Ciphertext
     friend class CircledastKey;
     friend class ConjTransposeKey;
     friend class MultKey;
+    friend class RotateKey;
 private:
     std::unique_ptr<GentryPoly> a_, b_;
     Ciphertext(std::unique_ptr<GentryPoly> a, std::unique_ptr<GentryPoly> b);
@@ -124,13 +127,13 @@ public:
 class RotateKey
 {
 private:
-    // std::unique_ptr<KeySwitchKeyGP> ksk_;
-    // MultKey(std::unique_ptr<KeySwitchKeyGP> ksk);
-
+    std::unique_ptr<KeySwitchKeyGP> ksk_;
+    int x_bias_, y_bias_;
+    RotateKey(std::unique_ptr<KeySwitchKeyGP> ksk, int x_bias, int y_bias);
 
 public:
-    // static MultKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx);
-    // Ciphertext run(const Ciphertext& src1, const Ciphertext& src2, const GentryPolyCtx& ctx) const;
-    // static void test_pt_transpose(); // TODO: 如果有需要再做
+    static RotateKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, int x_bias, int y_bias);
+    Ciphertext run(const Ciphertext& src, const GentryPolyCtx& ctx) const;
     static void test_pt_rotate();
+    static void test_ct_rotate();
 };

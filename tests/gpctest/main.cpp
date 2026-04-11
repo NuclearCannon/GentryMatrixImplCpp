@@ -28,5 +28,6 @@ int main()
     // ConjTransposeKey::test_ct_transpose();
     // MultKey::test_ct_mult();
     RotateKey::test_pt_rotate();
+    RotateKey::test_ct_rotate();
     return 0;
 }
