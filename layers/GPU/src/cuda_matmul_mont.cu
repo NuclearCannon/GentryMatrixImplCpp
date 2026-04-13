@@ -53,7 +53,8 @@ __global__ void matmul_batch_kernel(
     int n    // 矩阵边长
 )
 {
-    __shared__ uint64_t As[TILE][WIDTH+1];    // 双缓冲区，异步加载
+    // 我们会把输入的A,B都切分成多个小块，每个小块的尺寸是[TILE, WIDTH]，做分块矩阵乘法
+    __shared__ uint64_t As[TILE][WIDTH+1];  // 用于存放一个小矩阵
     __shared__ uint64_t Bs[TILE][WIDTH+1];
 
     // 领取任务
@@ -61,31 +62,36 @@ __global__ void matmul_batch_kernel(
     const uint64_t* B = Bseq[blockIdx.z];
     uint64_t* C = Cseq[blockIdx.z];
 
+    // 本线程负责计算C[glb_y, glb_x]
+    // glb_x = blockIdx.x * TILE + threadIdx.x;
+    // glb_y = blockIdx.y * TILE + threadIdx.y;
 
-    // 本线程组负责生成C中第[by, bx]小块的第[TILE, TILE]元素
-    int row = (blockIdx.y * TILE + threadIdx.y) * n;
-    int col = (blockIdx.x * TILE + threadIdx.y) * n;
-    int dst = blockIdx.x * TILE + threadIdx.x + row;
+    // 本线程组负责生成C中第[blockIdx.y, blockIdx.x]小块
+    // 需要访问
+    // A中的[blockIdx.y, :]块列
+    // B中的[blockIdx.x, :]块列
+    // 在搬运中，本块需要搬运一个块内的[threadIdx.y, threadIdx.x:WIDTH:TILE]部分
+    // 预计算一些偏移量
+    int offsetA = (blockIdx.y * TILE + threadIdx.y) * n;    // blockIdx.y * TILE表示自己负责哪个块，threadIdx.y表示自己负责块内哪个行
+    int offsetB = (blockIdx.x * TILE + threadIdx.y) * n;
 
     // 直接存储128位结果，最后朴素取模。不做什么蒙哥马利乘法。
     __uint128_t sum = 0;
     uint64_t areg, breg;
     for (int t = 0; t < n / WIDTH; ++t) {
-        // 异步加载另一个缓冲区
-        // 将A的第[by, t]小块和B的第[bx, t]小块复制到As, Bs
-
+        // 将A的第[blockIdx.y, t]小块和B的第[blockIdx.x, t]小块复制到As, Bs
+        // 注意，
         for(int i=threadIdx.x; i<WIDTH; i+=TILE)
         {
             // 这会执行(n / WIDTH) * (WIDTH/TILE) = n/TILE次
             // n*n 个线程
             // 因此，TILE越大，内存搬运的成本就越小
-            As[threadIdx.y][i] = A[row + t * WIDTH + i];
-            Bs[threadIdx.y][i] = B[col + t * WIDTH + i];
+            As[threadIdx.y][i] = A[offsetA + t * WIDTH + i];
+            Bs[threadIdx.y][i] = B[offsetB + t * WIDTH + i];
         }
         
         __syncthreads();
-        // 使用当前缓冲区
-        // 每个线程各自的sum组成的矩阵 = As @ Bs
+        // 每个线程各自的sum组成的矩阵 += As @ Bs.T
         for (int k = 0; k < WIDTH; ++k)
         {
             areg = As[threadIdx.y][k];
@@ -97,7 +103,9 @@ __global__ void matmul_batch_kernel(
     }
 
     sum %= M;
-    C[dst] = sum;
+    int glb_x = blockIdx.x * TILE + threadIdx.x;
+    int glb_y = blockIdx.y * TILE + threadIdx.y;
+    C[glb_y*n + glb_x] = sum;
 }
 
 
