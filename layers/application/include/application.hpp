@@ -78,6 +78,14 @@ public:
 
     // 这将会创建一个新的密文对象，它的数据都放在cuda上
     Ciphertext to_cuda() const;
+
+    Ciphertext add_pt(const Plaintext& pt, const GentryPolyCtx& ctx) const;
+    Ciphertext add(const Ciphertext& other, const GentryPolyCtx& ctx) const;
+    Ciphertext mul_pt(const Plaintext& pt, const GentryPolyCtx& ctx) const;
+
+    static void test_ct_add_pt();
+    static void test_ct_add();
+    static void test_ct_mul_pt();
 };
 
 class CircledastKey

@@ -29,5 +29,8 @@ int main()
     // MultKey::test_ct_mult();
     RotateKey::test_pt_rotate();
     RotateKey::test_ct_rotate();
+    Ciphertext::test_ct_add_pt();
+    Ciphertext::test_ct_add();
+    Ciphertext::test_ct_mul_pt();
     return 0;
 }
