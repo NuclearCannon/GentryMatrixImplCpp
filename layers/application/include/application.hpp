@@ -14,6 +14,7 @@ class Plaintext
 {
     friend class Ciphertext;
     friend class ConjTransposeKey;
+    friend class CircledastKey;
 private:
     std::unique_ptr<GentryPoly> data_;
 
@@ -96,6 +97,8 @@ private:
 public:
     static CircledastKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx);
     Ciphertext run(const Ciphertext& u, const Ciphertext& v, const GentryPolyCtx& ctx) const;
+    Ciphertext run_cp(const Ciphertext& u, const Plaintext& v, const GentryPolyCtx& ctx) const;
+    Ciphertext run_pc(const Plaintext& u, const Ciphertext& v, const GentryPolyCtx& ctx) const;
 
     static void test_pt_circledast_end2end();
     static void test_ct_circledast_end2end(bool cuda = false);

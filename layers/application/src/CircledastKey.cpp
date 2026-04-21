@@ -29,6 +29,25 @@ Ciphertext CircledastKey::run(const Ciphertext& u, const Ciphertext& v, const Ge
 
 }
 
+Ciphertext CircledastKey::run_cp(const Ciphertext& u, const Plaintext& v, const GentryPolyCtx& ctx) const
+{
+    auto [wa, wb] = circledast_cp(
+        *u.a_, *u.b_, *v.data_, ctx 
+    );
+    std::unique_ptr<GentryPoly> wap = std::make_unique<GentryPoly>(std::move(wa));
+    std::unique_ptr<GentryPoly> wbp = std::make_unique<GentryPoly>(std::move(wb));
+    return Ciphertext(std::move(wap), std::move(wbp));
+}
+Ciphertext CircledastKey::run_pc(const Plaintext& u, const Ciphertext& v, const GentryPolyCtx& ctx) const
+{
+    auto [wa, wb] = circledast_pc(
+        *u.data_, *v.a_, *v.b_, *ksk1_, ctx 
+    );
+    std::unique_ptr<GentryPoly> wap = std::make_unique<GentryPoly>(std::move(wa));
+    std::unique_ptr<GentryPoly> wbp = std::make_unique<GentryPoly>(std::move(wb));
+    return Ciphertext(std::move(wap), std::move(wbp));
+}
+
 
 void CircledastKey::test_pt_circledast_end2end()
 {
@@ -137,7 +156,46 @@ void CircledastKey::test_ct_circledast_end2end(bool cuda)
         double diff_abs = std::abs(diff);
         if(diff_abs>max_diff)max_diff = diff_abs;
     }
-    std::cout << "test_ct_circledast_end2end: max_diff="<<max_diff<<std::endl;
+    std::cout << "test_ct_circledast_end2end(CCMM): max_diff="<<max_diff<<std::endl;
+
+    {
+        Ciphertext ct_cp = key.run_cp(ct1, pt2, ctx);
+        ComplexMatrixGroup mat_cp = ct_cp.decrypt(sk, ctx).to_cmat(delta * delta);
+        // 对mat_cp乘以n以弥补circledast运算的副作用
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            mat_cp.at(w, x, y) *= n;
+        }
+        max_diff = 0;
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex diff = mat_cp.at(w,x,y) - mat4.at(w,x,y);
+            double diff_abs = std::abs(diff);
+            if(diff_abs>max_diff)max_diff = diff_abs;
+        }
+        std::cout << "test_ct_circledast_end2end(CPMM): max_diff="<<max_diff<<std::endl;
+    }
+    
+    {
+        Ciphertext ct_pc = key.run_pc(pt1, ct2, ctx);
+        ComplexMatrixGroup mat_pc = ct_pc.decrypt(sk, ctx).to_cmat(delta * delta);
+        // 对mat_pc乘以n以弥补circledast运算的副作用
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            mat_pc.at(w, x, y) *= n;
+        }
+        max_diff = 0;
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex diff = mat_pc.at(w,x,y) - mat4.at(w,x,y);
+            double diff_abs = std::abs(diff);
+            if(diff_abs>max_diff)max_diff = diff_abs;
+        }
+        std::cout << "test_ct_circledast_end2end(PCMM): max_diff="<<max_diff<<std::endl;
+    }
+
+    
+
 
     
 }

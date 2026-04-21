@@ -43,3 +43,61 @@ std::pair<GentryPoly, GentryPoly> circledast_ct(
         std::move(aubv), std::move(bubv)
     );
 }
+
+std::pair<GentryPoly, GentryPoly> circledast_cp(
+    const GentryPoly& ua,
+    const GentryPoly& ub,
+    const GentryPoly& v,
+    const GentryPolyCtx& ctx
+)
+{
+    // 需要先转化为half形式才能circledast
+    GentryPoly auh = ua; auh.iw_ntt(ctx);
+    GentryPoly buh = ub; buh.iw_ntt(ctx);
+    GentryPoly bvh = v; bvh.iw_ntt(ctx);
+
+    GentryPoly aubv = GentryPoly::zeros_like(ua, ua.device());
+    GentryPoly bubv = GentryPoly::zeros_like(ua, ua.device());
+
+    GentryPoly::circledast(aubv, auh, bvh);
+    GentryPoly::circledast(bubv, buh, bvh);
+
+    aubv.iw_intt(ctx);
+    bubv.iw_intt(ctx);
+
+    return std::make_pair(
+        std::move(aubv), std::move(bubv)
+    );
+}
+
+std::pair<GentryPoly, GentryPoly> circledast_pc(
+    const GentryPoly& ub,
+    const GentryPoly& va,
+    const GentryPoly& vb,
+    const KeySwitchKeyGP& ksk1,
+    const GentryPolyCtx& ctx
+)
+{
+    // 需要先转化为half形式才能circledast
+    GentryPoly avh = va; avh.iw_ntt(ctx);
+    GentryPoly buh = ub; buh.iw_ntt(ctx);
+    GentryPoly bvh = vb; bvh.iw_ntt(ctx);
+
+
+    GentryPoly buav = GentryPoly::zeros_like(ub, ub.device());
+    GentryPoly bubv = GentryPoly::zeros_like(ub, ub.device());
+
+    GentryPoly::circledast(buav, buh, avh);
+    GentryPoly::circledast(bubv, buh, bvh);
+
+    buav.iw_intt(ctx);
+    bubv.iw_intt(ctx);
+
+    auto [buav0, buav1] = ksk1.key_switch_big_1(buav, ctx);
+
+    GentryPoly::add(bubv, bubv, buav1);
+
+    return std::make_pair(
+        std::move(buav0), std::move(bubv)
+    );
+}

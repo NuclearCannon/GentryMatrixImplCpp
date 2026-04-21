@@ -13,3 +13,19 @@ std::pair<GentryPoly, GentryPoly> circledast_ct(
     const KeySwitchKeyGP& ksk2,
     const GentryPolyCtx& ctx
 );
+
+
+std::pair<GentryPoly, GentryPoly> circledast_cp(
+    const GentryPoly& ua,
+    const GentryPoly& ub,
+    const GentryPoly& v,
+    const GentryPolyCtx& ctx
+);
+
+std::pair<GentryPoly, GentryPoly> circledast_pc(
+    const GentryPoly& ub,
+    const GentryPoly& va,
+    const GentryPoly& vb,
+    const KeySwitchKeyGP& ksk1,
+    const GentryPolyCtx& ctx
+);
