@@ -108,7 +108,7 @@ void RotateKey::test_ct_rotate()
     // 确定rotate步长
     int x_bias = 5;
     int y_bias = 3;
-    int w_bias = 2;
+    int w_bias = 1;
 
     GentryPolyCtx ctx(n, p, qrp);
 

@@ -1,4 +1,5 @@
 #include "application.hpp"
+#include <iostream>
 
 void exp_bootstrapping()
 {
@@ -61,45 +62,43 @@ void exp_bootstrapping()
         ), ctx
     );// m02的缩放因子是delta^3
     // 执行W-DFT
-    // Ciphertext m03 = Ciphertext::zeros(n, p, mods); // m03的缩放因子是delta^4
+    Ciphertext m03 = Ciphertext::zeros(n, p, mods); // m03的缩放因子是delta^4
     
-    // {
-    //     double scalar = 1;
-    //     // scalar/=n;
-    //     // scalar/=n;
-    //     // scalar/=p-1;
-    //     for(int l=0, gamma=1; l<p-1; l++, gamma=gamma*3%p)
-    //     {
-    //         // 构造Rotate l的ksk
-    //         RotateKey rkey = RotateKey::gen(sk, qo, ctx, 0,0,l);
-    //         Ciphertext rotated = rkey.run(m02, ctx);
-    //         // 构造临时明文
-    //         ComplexMatrixGroup tmp(n, p);
-    //         complex x = std::polar<double>(scalar, - 2 * M_PI / p * gamma);
-    //         for(int k=0;k<p-1;k++)for(int i=0;i<n;i++)for(int j=0;j<n;j++)tmp.at(k,i,j)=x;
-    //         Plaintext tmppt = Plaintext::from_cmat(tmp, mods, delta);
-    //         Ciphertext multed = rotated.mul_pt(tmppt, ctx);
-    //         m03.add_(multed, ctx);
-    //     }
-    // }
-    Plaintext final_pt = m02.decrypt(sk, ctx);
-    ComplexMatrixGroup result = final_pt.to_cmat(delta*delta*delta);
-    ComplexMatrixGroup encoded = mat1._encodeXY();
+    {
+
+        for(int l=0, gamma=1; l<p-1; l++, gamma=gamma*3%p)
+        {
+            // 构造Rotate l的ksk
+            RotateKey rkey = RotateKey::gen(sk, qo, ctx, 0,0,l);
+            Ciphertext rotated = rkey.run(m02, ctx);
+            // 构造临时明文
+            ComplexMatrixGroup tmp(n, p);
+            complex x = std::polar<double>(1, - (2 * M_PI / ((double)p)) * (double)gamma);
+            x = (x-1.0)/((double)p);
+            for(int k=0;k<p-1;k++)for(int i=0;i<n;i++)for(int j=0;j<n;j++)tmp.at(k,i,j)=x;
+            Plaintext tmppt = Plaintext::from_cmat(tmp, mods, delta);
+            Ciphertext multed = rotated.mul_pt(tmppt, ctx);
+            m03.add_(multed, ctx);
+        }
+    }
+    Plaintext final_pt = m03.decrypt(sk, ctx);
+    ComplexMatrixGroup result = final_pt.to_cmat(delta*delta*delta*delta);
+    ComplexMatrixGroup encoded = mat1.encode();
     
+    double max_diff = 0;
     for(int w=0;w<p-1;w++)
     {
         for(int x=0; x<n; x++)
         {
             for(int y=0; y<n; y++)
             {
-                complex c1 = result.at(w, x, y) / encoded.at(w, x, y);
-                double c2 = std::abs(c1);
-                printf("%.2lf ", c2);
+                double new_diff = std::abs(result.at(w, x, y)-encoded.at(w, x, y));
+                if(new_diff>max_diff)max_diff=new_diff;
+
             }
-            printf("\n");
         }
-        printf("\n");
     }
+    std::cout << "exp_bootstrapping: BS(C2S): max_diff:" << max_diff << std::endl;
 
 
     

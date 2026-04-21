@@ -3,8 +3,13 @@
 
 GentryPoly GentryPoly::automorphism(int x, int y, int w) const
 {
+    assert(x!=0);
     assert(is_cpu());
-    if(x == 0 && y == 0)
+    if(x == 1 && y == 1 && w==0)
+    {
+        return *this;
+    }
+    if(x == 1 && y == 1)
     {
         GentryPoly res = zeros_like(*this, GPDevice::CPU);
         auto& src = this->cpu_components();
@@ -28,7 +33,7 @@ GentryPoly GentryPoly::automorphism(int x, int y, int w) const
     }
     else
     {
-        return automorphism(x, y, 0).automorphism(0, 0, w);
+        return automorphism(x, y, 0).automorphism(1, 1, w);
     }
     
 }

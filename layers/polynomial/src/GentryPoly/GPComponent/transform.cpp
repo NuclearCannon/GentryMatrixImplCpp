@@ -166,7 +166,7 @@ void GPComponent::automorphism_W(GPComponent& dst_, int delta_w) const
 
     for(int w=0; w<p_-1; w++)
     {
-        int w2 = (w+delta_w)%(p_-1);
+        int w2 = (w-delta_w+p_-1)%(p_-1);
         for(int i=0; i<n; i++)
         {
             for(int j=0; j<n; j++)

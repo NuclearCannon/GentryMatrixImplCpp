@@ -41,6 +41,7 @@ public:
 
     ComplexMatrixGroup encode() const;
     ComplexMatrixGroup _encodeXY() const;
+    ComplexMatrixGroup _encodeW() const;
     ComplexMatrixGroup decode() const;
 
     fmpz_vector to_fmpz_vector(double delta) const;

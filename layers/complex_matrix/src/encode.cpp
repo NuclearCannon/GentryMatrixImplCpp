@@ -270,6 +270,29 @@ void encodeXY(
 
 }
 
+void encodeW(
+    complex* dst,
+    const complex* src,
+    ssize_t n,
+    ssize_t p
+)
+{
+    ssize_t buflen = (p-1)<n?n:p-1;
+    std::vector<complex> buf1(buflen);
+    std::vector<complex> buf2(buflen);
+    auto ietas = get_ieta_powers(p);
+    // W-iDFT
+    for(int x=0; x<n; x++)
+    {
+        for(int y=0; y<n; y++)
+        {
+            for(int w=0; w<p-1; w++)buf1[w] = src[w*n*n + x*n + y];
+            naive_idft_W_complex(buf2.data(), buf1.data(), p, ietas);
+            for(int w=0; w<p-1; w++)dst[w*n*n + x*n + y] = buf2[w];
+        }
+    }
+}
+
 void decode3d(
     complex* dst,
     const complex* src,
@@ -323,6 +346,12 @@ ComplexMatrixGroup ComplexMatrixGroup::_encodeXY() const
 {
     ComplexMatrixGroup res(n_, p_);
     encodeXY(res.data_.data(), data_.data(), n_, p_);
+    return res;
+}
+ComplexMatrixGroup ComplexMatrixGroup::_encodeW() const
+{
+    ComplexMatrixGroup res(n_, p_);
+    encodeW(res.data_.data(), data_.data(), n_, p_);
     return res;
 }
 ComplexMatrixGroup ComplexMatrixGroup::decode() const
