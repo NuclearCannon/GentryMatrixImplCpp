@@ -73,6 +73,7 @@ private:
 
 public:
     static Ciphertext encrypt(const Plaintext& pt, const SecretKey& sk, const GentryPolyCtx& ctx);
+    static Ciphertext zeros(int n, int p, std::vector<uint64_t> mods);
     Plaintext decrypt(const SecretKey& sk, const GentryPolyCtx& ctx);
 
     static void test_ct_encrypt_and_decrypt();
@@ -82,6 +83,7 @@ public:
 
     Ciphertext add_pt(const Plaintext& pt, const GentryPolyCtx& ctx) const;
     Ciphertext add(const Ciphertext& other, const GentryPolyCtx& ctx) const;
+    void add_(const Ciphertext& other, const GentryPolyCtx& ctx);
     Ciphertext mul_pt(const Plaintext& pt, const GentryPolyCtx& ctx) const;
 
     static void test_ct_add_pt();

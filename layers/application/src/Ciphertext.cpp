@@ -21,6 +21,13 @@ Ciphertext Ciphertext::encrypt(const Plaintext& pt, const SecretKey& sk, const G
     );
 }
 
+Ciphertext Ciphertext::zeros(int n, int p, std::vector<uint64_t> mods)
+{
+    return Ciphertext(
+        std::make_unique<GentryPoly>(GentryPoly::zeros(n, p, mods)),
+        std::make_unique<GentryPoly>(GentryPoly::zeros(n, p, mods))
+    );
+}
 
 Plaintext Ciphertext::decrypt(const SecretKey& sk, const GentryPolyCtx& ctx)
 {
@@ -99,6 +106,11 @@ Ciphertext Ciphertext::add(const Ciphertext& other, const GentryPolyCtx& ctx) co
     );
 }
 
+void Ciphertext::add_(const Ciphertext& other, const GentryPolyCtx& ctx)
+{
+    GentryPoly::add(*a_, *a_, *other.a_);
+    GentryPoly::add(*b_, *b_, *other.b_);
+}
 Ciphertext Ciphertext::mul_pt(const Plaintext& pt, const GentryPolyCtx& ctx) const
 {
     GentryPoly a = *a_;
