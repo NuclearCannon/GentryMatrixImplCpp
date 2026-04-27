@@ -89,6 +89,9 @@ public:
     // 自举的步骤之一：简单模数提升
     Ciphertext naive_moduli_extend(uint64_t new_mod) const;
 
+    // 模数约简，用于控制噪声
+    Ciphertext moduli_reduce(uint64_t mod) const;
+
     static void test_ct_add_pt();
     static void test_ct_add();
     static void test_ct_mul_pt();
