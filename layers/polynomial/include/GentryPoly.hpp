@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <variant>
 #include <memory>
+#include "flints.hpp"
 
 enum class GPDevice {
     CPU, CUDA
@@ -401,8 +402,13 @@ public:
     // 
     int64_t abs() const;
 
+    fmpz_vector to_fmpz_vector() const;
+    static GentryPoly from_fmpz(size_t n, size_t p, const std::vector<uint64_t>& moduli, const fmpz_vector& data);
+
     void moduli_extend_mult(uint64_t mod);
     void moduli_extend_unsafe(uint64_t mod);
+    GentryPoly moduli_extend_fmpz(uint64_t mod) const;
+    GentryPoly moduli_extend_garner(uint64_t mod) const;
 
     // 这会将自己按照KS的要求切分为多个分量
     // 运行结束后，自己的取值会被摧毁

@@ -22,3 +22,17 @@ void GentryPoly::moduli_extend_unsafe(uint64_t mod)
         GPComponent::from_signed_data(n(), p(), mod, data)
     );
 }
+
+GentryPoly GentryPoly::moduli_extend_fmpz(uint64_t mod) const
+{
+    assert(is_cpu());
+    auto new_moduli = moduli_;
+    new_moduli.push_back(mod);
+    auto vec = to_fmpz_vector();
+    return GentryPoly::from_fmpz(n(), p(), new_moduli, vec);
+}
+
+GentryPoly GentryPoly::moduli_extend_garner(uint64_t mod) const
+{
+    throw std::runtime_error("moduli_extend_garner 未被实现，请使用 moduli_extend_fmpz 替代\n");
+}
