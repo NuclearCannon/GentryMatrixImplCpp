@@ -12,7 +12,7 @@ Ciphertext Ciphertext::encrypt(const Plaintext& pt, const SecretKey& sk, const G
 {
     auto [a, b] = encrypt_gp(
         *(pt.data_),
-        *(sk.data_),
+        sk.as_poly(pt.data_->moduli()),
         ctx
     );
     return Ciphertext(
@@ -33,11 +33,11 @@ Plaintext Ciphertext::decrypt(const SecretKey& sk, const GentryPolyCtx& ctx)
 {
     if(a_->is_cuda())
     {
-        return Plaintext(std::make_unique<GentryPoly>(decrypt_gp(a_->to_cpu(), b_->to_cpu(), *(sk.data_), ctx)));
+        return Plaintext(std::make_unique<GentryPoly>(decrypt_gp(a_->to_cpu(), b_->to_cpu(), sk.as_poly(a_->moduli()), ctx)));
     }
     else
     {
-        return Plaintext(std::make_unique<GentryPoly>(decrypt_gp(*a_, *b_, *(sk.data_), ctx)));
+        return Plaintext(std::make_unique<GentryPoly>(decrypt_gp(*a_, *b_, sk.as_poly(a_->moduli()), ctx)));
     }
     
 
@@ -68,7 +68,7 @@ void Ciphertext::test_ct_encrypt_and_decrypt()
 
     ComplexMatrixGroup mat = ComplexMatrixGroup::random(5, n, p);
     Plaintext pt = Plaintext::from_cmat(mat, mods, delta);
-    SecretKey sk(n, p, mods);
+    SecretKey sk(n, p);
     Ciphertext ct = Ciphertext::encrypt(pt, sk, ctx);
     Plaintext pt2 = ct.decrypt(sk, ctx);
     ComplexMatrixGroup mat2 = pt2.to_cmat(delta);
@@ -149,7 +149,7 @@ void Ciphertext::test_ct_add_pt()
     ComplexMatrixGroup mat2 = ComplexMatrixGroup::random(3, n, p);
     Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
     Plaintext pt2 = Plaintext::from_cmat(mat2, mods, delta);
-    SecretKey sk(n, p, mods);
+    SecretKey sk(n, p);
     Ciphertext ct = Ciphertext::encrypt(pt1, sk, ctx);
     Ciphertext ct_result = ct.add_pt(pt2, ctx);
     Plaintext pt_result = ct_result.decrypt(sk, ctx);
@@ -189,7 +189,7 @@ void Ciphertext::test_ct_add()
     ComplexMatrixGroup mat2 = ComplexMatrixGroup::random(3, n, p);
     Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
     Plaintext pt2 = Plaintext::from_cmat(mat2, mods, delta);
-    SecretKey sk(n, p, mods);
+    SecretKey sk(n, p);
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     Ciphertext ct2 = Ciphertext::encrypt(pt2, sk, ctx);
     Ciphertext ct_result = ct1.add(ct2, ctx);
@@ -228,7 +228,7 @@ void Ciphertext::test_ct_mul_pt()
 
     ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(3, n, p);
     Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
-    SecretKey sk(n, p, mods);
+    SecretKey sk(n, p);
     Ciphertext ct = Ciphertext::encrypt(pt1, sk, ctx);
     Ciphertext ct_result = ct.mul_pt(pt1, ctx);
     Plaintext pt_result = ct_result.decrypt(sk, ctx);

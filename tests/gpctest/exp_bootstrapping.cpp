@@ -26,9 +26,9 @@ void exp_bootstrapping()
     ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(100, n, p);
     Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
     // 准备一个私钥
-    SecretKey sk(n, p, mods);
-    CircledastKey mmkey = CircledastKey::gen(sk, qo, ctx);
-    ConjTransposeKey ctkey = ConjTransposeKey::gen(sk, qo, ctx);
+    SecretKey sk(n, p);
+    CircledastKey mmkey = CircledastKey::gen(sk, qo, ctx, mods);
+    ConjTransposeKey ctkey = ConjTransposeKey::gen(sk, qo, ctx, mods);
     // 加密成密文
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
 
@@ -71,7 +71,7 @@ void exp_bootstrapping()
             for(int l=0, gamma=1; l<p-1; l++, gamma=gamma*3%p)
             {
                 // 构造Rotate l的ksk
-                RotateKey rkey = RotateKey::gen(sk, qo, ctx, 0,0,l);
+                RotateKey rkey = RotateKey::gen(sk, qo, ctx, mods, 0,0,l);
                 Ciphertext rotated = rkey.run(m02, ctx);
                 // 构造临时明文
                 ComplexMatrixGroup tmp(n, p);
@@ -143,7 +143,7 @@ void exp_bootstrapping()
             for(int l=0, gamma=1; l<p-1; l++, gamma=gamma*3%p)
             {
                 // 构造Rotate l的ksk
-                RotateKey rkey = RotateKey::gen(sk, qo, ctx, 0,0,(p-1-l)%(p-1));
+                RotateKey rkey = RotateKey::gen(sk, qo, ctx, mods, 0,0,(p-1-l)%(p-1));
                 Ciphertext rotated = rkey.run(m02, ctx);
                 // 构造临时明文
                 ComplexMatrixGroup tmp(n, p);

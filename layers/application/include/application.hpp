@@ -50,11 +50,15 @@ class SecretKey
     friend class MultKey;
     friend class RotateKey;
 private:
-    std::unique_ptr<GentryPoly> data_;
+    int n_, p_;
+    std::vector<int> sk_data_;
 public:
-    SecretKey(size_t n, size_t p, const std::vector<uint64_t>& mods);
+    SecretKey(size_t n, size_t p);
 
     ~SecretKey() = default;
+
+    GentryPoly as_poly(const std::vector<uint64_t>& mods) const;
+
     
 };
 
@@ -103,7 +107,7 @@ private:
     std::unique_ptr<KeySwitchKeyGP> ksk1_, ksk2_;
     CircledastKey(std::unique_ptr<KeySwitchKeyGP> ksk1, std::unique_ptr<KeySwitchKeyGP> ksk2);
 public:
-    static CircledastKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx);
+    static CircledastKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods);
     Ciphertext run(const Ciphertext& u, const Ciphertext& v, const GentryPolyCtx& ctx) const;
     Ciphertext run_cp(const Ciphertext& u, const Plaintext& v, const GentryPolyCtx& ctx) const;
     Ciphertext run_pc(const Plaintext& u, const Ciphertext& v, const GentryPolyCtx& ctx) const;
@@ -120,7 +124,7 @@ private:
 
 
 public:
-    static ConjTransposeKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx);
+    static ConjTransposeKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods);
     Ciphertext run(const Ciphertext& src, const GentryPolyCtx& ctx) const;
     static void test_pt_transpose();
     static void test_ct_transpose();
@@ -136,7 +140,7 @@ private:
 
 
 public:
-    static MultKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx);
+    static MultKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods);
     Ciphertext run(const Ciphertext& src1, const Ciphertext& src2, const GentryPolyCtx& ctx) const;
     // static void test_pt_transpose(); // TODO: 如果有需要再做
     static void test_ct_mult();
@@ -151,7 +155,7 @@ private:
     RotateKey(std::unique_ptr<KeySwitchKeyGP> ksk, int x_bias, int y_bias, int w_bias);
 
 public:
-    static RotateKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, int x_bias, int y_bias, int w_bias);
+    static RotateKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods, int x_bias, int y_bias, int w_bias);
     Ciphertext run(const Ciphertext& src, const GentryPolyCtx& ctx) const;
     static void test_pt_rotate();
     static void test_ct_rotate();

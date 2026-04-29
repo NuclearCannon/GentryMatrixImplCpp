@@ -17,16 +17,17 @@ MultKey::MultKey(std::unique_ptr<KeySwitchKeyGP> ksk):
     
 }
 
-MultKey MultKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx)
+MultKey MultKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods)
 {
-    GentryPoly sk_ntt = *sk.data_;
+    GentryPoly sk_to = sk.as_poly(mods);
+    GentryPoly sk_ntt = sk_to;
     sk_ntt.ntt(ctx);
     GentryPoly sk2 = GentryPoly::zeros_like(sk_ntt);
     GentryPoly::mul(sk2, sk_ntt, sk_ntt);
     sk2.intt(ctx);
     // 注意，sk在用于生成KSK前需要扩展模数
     sk2.moduli_extend_mult(qo);
-    GentryPoly sk_to = (*sk.data_);
+    
     sk_to.moduli_extend_unsafe(qo);
     return MultKey(
         std::make_unique<KeySwitchKeyGP>(
@@ -108,10 +109,10 @@ void MultKey::test_ct_mult()
     ComplexMatrixGroup mat2 = ComplexMatrixGroup::random(5, n, p);
     Plaintext pt2 = Plaintext::from_cmat(mat2, mods, delta);
     // 准备一个私钥
-    SecretKey sk(n, p, mods);
+    SecretKey sk(n, p);
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     Ciphertext ct2 = Ciphertext::encrypt(pt2, sk, ctx);
-    MultKey key = MultKey::gen(sk, qo, ctx);
+    MultKey key = MultKey::gen(sk, qo, ctx, mods);
     Ciphertext ct3 = key.run(ct1, ct2, ctx);
     Plaintext pt3 = ct3.decrypt(sk, ctx);
     // 恢复成矩阵

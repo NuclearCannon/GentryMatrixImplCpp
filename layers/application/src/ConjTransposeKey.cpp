@@ -7,12 +7,13 @@ ConjTransposeKey::ConjTransposeKey(std::unique_ptr<KeySwitchKeyGP> ksk):
     
 }
 
-ConjTransposeKey ConjTransposeKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx)
+ConjTransposeKey ConjTransposeKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods)
 {
     // 注意，sk在用于生成KSK前需要扩展模数
-    GentryPoly sk_from = (*sk.data_).w_inv().transpose().conj();
+
+    GentryPoly sk_to = sk.as_poly(mods);
+    GentryPoly sk_from = sk_to.w_inv().transpose().conj();
     sk_from.moduli_extend_mult(qo);
-    GentryPoly sk_to = (*sk.data_);
     sk_to.moduli_extend_unsafe(qo);
 
     return ConjTransposeKey(
@@ -105,9 +106,9 @@ void ConjTransposeKey::test_ct_transpose()
     ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(5, n, p);
     Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
     // 准备一个私钥
-    SecretKey sk(n, p, mods);
+    SecretKey sk(n, p);
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
-    ConjTransposeKey key = ConjTransposeKey::gen(sk, qo, ctx);
+    ConjTransposeKey key = ConjTransposeKey::gen(sk, qo, ctx, mods);
     Ciphertext ct2 = key.run(ct1, ctx);
     Plaintext pt2 = ct2.decrypt(sk, ctx);
     // 恢复成矩阵

@@ -9,9 +9,9 @@ CircledastKey::CircledastKey(std::unique_ptr<KeySwitchKeyGP> ksk1, std::unique_p
 
 }
 
-CircledastKey CircledastKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx)
+CircledastKey CircledastKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods)
 {
-    auto [k1, k2] = create_ksks_for_circledast_ct(*sk.data_, qo, ctx);
+    auto [k1, k2] = create_ksks_for_circledast_ct(sk.as_poly(mods), qo, ctx);
     std::unique_ptr<KeySwitchKeyGP> k1p = std::make_unique<KeySwitchKeyGP>(std::move(k1));
     std::unique_ptr<KeySwitchKeyGP> k2p = std::make_unique<KeySwitchKeyGP>(std::move(k2));
     return CircledastKey(std::move(k1p), std::move(k2p));
@@ -129,12 +129,12 @@ void CircledastKey::test_ct_circledast_end2end(bool cuda)
     ComplexMatrixGroup mat2 = ComplexMatrixGroup::random(5, n, p);
     Plaintext pt2 = Plaintext::from_cmat(mat2, mods, delta);
     // 准备一个私钥
-    SecretKey sk(n, p, mods);
+    SecretKey sk(n, p);
     // 分别加密成密文
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     Ciphertext ct2 = Ciphertext::encrypt(pt2, sk, ctx);
     // 生成circledast ksk
-    CircledastKey key = CircledastKey::gen(sk, qo, ctx);
+    CircledastKey key = CircledastKey::gen(sk, qo, ctx, mods);
     Ciphertext ct3 = (cuda) ? key.run(ct1.to_cuda(), ct2.to_cuda(), ctx) : key.run(ct1, ct2, ctx);
     Plaintext pt3 = ct3.decrypt(sk, ctx);
     // 恢复成矩阵

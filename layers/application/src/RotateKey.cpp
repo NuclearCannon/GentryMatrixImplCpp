@@ -7,12 +7,12 @@ RotateKey::RotateKey(std::unique_ptr<KeySwitchKeyGP> ksk, int x_bias, int y_bias
 
 }
 
-RotateKey RotateKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, int x_bias, int y_bias, int w_bias)
+RotateKey RotateKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods, int x_bias, int y_bias, int w_bias)
 {
     // 注意，sk在用于生成KSK前需要扩展模数
-    GentryPoly sk_from = (*sk.data_).rotate(x_bias, y_bias, w_bias);
+    GentryPoly sk_to = sk.as_poly(mods);
+    GentryPoly sk_from = sk_to.rotate(x_bias, y_bias, w_bias);
     sk_from.moduli_extend_mult(qo);
-    GentryPoly sk_to = (*sk.data_);
     sk_to.moduli_extend_unsafe(qo);
 
     return RotateKey(
@@ -116,8 +116,8 @@ void RotateKey::test_ct_rotate()
     ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(5, n, p);
     // for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++) mat1.at(w, x, y) = w*x;
     Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
-    SecretKey sk(n, p, mods);
-    RotateKey key = RotateKey::gen(sk, qo, ctx, x_bias, y_bias, w_bias);
+    SecretKey sk(n, p);
+    RotateKey key = RotateKey::gen(sk, qo, ctx, mods, x_bias, y_bias, w_bias);
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     Ciphertext ct2 = key.run(ct1, ctx);
     Plaintext pt2 = ct2.decrypt(sk, ctx);
