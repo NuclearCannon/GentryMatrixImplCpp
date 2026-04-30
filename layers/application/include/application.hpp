@@ -7,6 +7,7 @@
 class Ciphertext;
 class CircledastKey;
 class ConjTransposeKey;
+class ConjKey;
 class MultKey;
 class RotateKey;
 
@@ -48,11 +49,11 @@ public:
 
 class SecretKey
 {
-    friend class Ciphertext;
-    friend class CircledastKey;
-    friend class ConjTransposeKey;
-    friend class MultKey;
-    friend class RotateKey;
+    // friend class Ciphertext;
+    // friend class CircledastKey;
+    // friend class ConjTransposeKey;
+    // friend class MultKey;
+    // friend class RotateKey;
 private:
     int n_, p_;
     std::vector<int> sk_data_;
@@ -73,6 +74,7 @@ class Ciphertext
 {
     friend class CircledastKey;
     friend class ConjTransposeKey;
+    friend class ConjKey;
     friend class MultKey;
     friend class RotateKey;
 private:
@@ -146,7 +148,7 @@ public:
     static ConjKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods);
     Ciphertext run(const Ciphertext& src, const GentryPolyCtx& ctx) const;
     static void test_pt_conj();
-    // static void test_ct_transpose();
+    static void test_ct_conj();
 
 };
 

@@ -13,13 +13,33 @@ ConjKey::ConjKey(std::unique_ptr<KeySwitchKeyGP> ksk):
 ConjKey ConjKey::gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods)
 {
     GentryPoly sk_to = sk.as_poly(mods);
-    throw std::runtime_error("未实现");
+    GentryPoly sk_from = sk_to.conj().w_inv().xy_inv();
+    sk_from.moduli_extend_mult(qo);
+    sk_to.moduli_extend_unsafe(qo);
+
+    return ConjKey(
+        std::make_unique<KeySwitchKeyGP>(
+            KeySwitchKeyGP::ksk_gen(
+                sk_from,
+                sk_to,
+                qo, ctx
+            )
+        )
+    );
 }
 
 
 Ciphertext ConjKey::run(const Ciphertext& src, const GentryPolyCtx& ctx) const
 {
-    throw std::runtime_error("未实现");
+    GentryPoly a = (*src.a_).conj().w_inv().xy_inv();
+    GentryPoly b = (*src.b_).conj().w_inv().xy_inv();
+    // ks
+    auto [a2, b2] = ksk_->key_switch_big_2(a, b, ctx);
+
+    return Ciphertext(
+        std::make_unique<GentryPoly>(std::move(a2)), 
+        std::make_unique<GentryPoly>(std::move(b2))
+    );
 }
 
 
@@ -63,4 +83,48 @@ void ConjKey::test_pt_conj()
     // mat1.print("mat1");
     // mat2.print("mat2");
     std::cout << "test_pt_conj: max_diff="<<max_diff<<std::endl;
+}
+
+void ConjKey::test_ct_conj()
+{
+    // 准备各个参数
+    int n = 8;
+    int p = 17;
+    // 质数链
+    vec64 mods = {70368747120641, 70368747294721, 70368748426241};
+    // 原根链
+    vec64 roots = {6, 11, 6};
+    uint64_t qo = 576460752303421441;
+    uint64_t qor = 19;
+    std::vector<std::pair<uint64_t, uint64_t>> qrp = {
+        {70368747120641, 6},
+        {70368747294721, 11},
+        {70368748426241, 6},
+        {qo, qor}
+    };
+    double delta = 10000;
+
+    GentryPolyCtx ctx(n, p, qrp);
+
+
+    // 准备明文
+    ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(5, n, p);
+    Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
+    // 准备一个私钥
+    SecretKey sk(n, p);
+    Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
+    ConjKey key = ConjKey::gen(sk, qo, ctx, mods);
+    Ciphertext ct2 = key.run(ct1, ctx);
+    Plaintext pt2 = ct2.decrypt(sk, ctx);
+    // 恢复成矩阵
+    ComplexMatrixGroup mat2 = pt2.to_cmat(delta);
+
+    double max_diff = 0;
+    for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+    {
+        complex diff = mat2.at(w,x,y) - std::conj(mat1.at(w,x,y)); // 在这里进行编码前层面上的转置操作
+        double diff_abs = std::abs(diff);
+        if(diff_abs>max_diff)max_diff = diff_abs;
+    }
+    std::cout << "test_ct_conj: max_diff="<<max_diff<<std::endl;
 }
