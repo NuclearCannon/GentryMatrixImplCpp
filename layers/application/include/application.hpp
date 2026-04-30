@@ -92,7 +92,10 @@ public:
     Ciphertext to_cuda() const;
 
     Ciphertext add_pt(const Plaintext& pt, const GentryPolyCtx& ctx) const;
-    Ciphertext add(const Ciphertext& other, const GentryPolyCtx& ctx) const;
+    Ciphertext add(const Ciphertext& other) const;
+    Ciphertext neg() const;
+    Ciphertext sub(const Ciphertext& other) const;
+    Ciphertext mul_int(int other) const;
     void add_(const Ciphertext& other, const GentryPolyCtx& ctx);
     Ciphertext mul_pt(const Plaintext& pt, const GentryPolyCtx& ctx) const;
 

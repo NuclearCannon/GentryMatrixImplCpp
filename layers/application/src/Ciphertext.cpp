@@ -94,12 +94,50 @@ Ciphertext Ciphertext::add_pt(const Plaintext& pt, const GentryPolyCtx& ctx) con
     );
 }
 
-Ciphertext Ciphertext::add(const Ciphertext& other, const GentryPolyCtx& ctx) const
+Ciphertext Ciphertext::add(const Ciphertext& other) const
 {
     GentryPoly a = GentryPoly::zeros_like(*a_);
     GentryPoly b = GentryPoly::zeros_like(*b_);
     GentryPoly::add(a, *a_, *other.a_);
     GentryPoly::add(b, *b_, *other.b_);
+    return Ciphertext(
+        std::make_unique<GentryPoly>(std::move(a)),
+        std::make_unique<GentryPoly>(std::move(b))
+    );
+}
+
+Ciphertext Ciphertext::neg() const
+{
+    GentryPoly a = GentryPoly::zeros_like(*a_);
+    GentryPoly b = GentryPoly::zeros_like(*b_);
+    GentryPoly::neg(a, *a_);
+    GentryPoly::neg(b, *b_);
+    return Ciphertext(
+        std::make_unique<GentryPoly>(std::move(a)),
+        std::make_unique<GentryPoly>(std::move(b))
+    );
+}
+Ciphertext Ciphertext::sub(const Ciphertext& other) const
+{
+    GentryPoly a = GentryPoly::zeros_like(*a_);
+    GentryPoly b = GentryPoly::zeros_like(*b_);
+    GentryPoly::sub(a, *a_, *other.a_);
+    GentryPoly::sub(b, *b_, *other.b_);
+    return Ciphertext(
+        std::make_unique<GentryPoly>(std::move(a)),
+        std::make_unique<GentryPoly>(std::move(b))
+    );
+}
+Ciphertext Ciphertext::mul_int(int other) const
+{
+    if(other<0)
+    {
+        return mul_int(-other).neg();
+    }
+    GentryPoly a = GentryPoly::zeros_like(*a_);
+    GentryPoly b = GentryPoly::zeros_like(*b_);
+    GentryPoly::mul_scalar(a, *a_, other);
+    GentryPoly::mul_scalar(b, *b_, other);
     return Ciphertext(
         std::make_unique<GentryPoly>(std::move(a)),
         std::make_unique<GentryPoly>(std::move(b))
@@ -192,7 +230,7 @@ void Ciphertext::test_ct_add()
     SecretKey sk(n, p);
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     Ciphertext ct2 = Ciphertext::encrypt(pt2, sk, ctx);
-    Ciphertext ct_result = ct1.add(ct2, ctx);
+    Ciphertext ct_result = ct1.add(ct2);
     Plaintext pt_result = ct_result.decrypt(sk, ctx);
     ComplexMatrixGroup mat_result = pt_result.to_cmat(delta);
 
