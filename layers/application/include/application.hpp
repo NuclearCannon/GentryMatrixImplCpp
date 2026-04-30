@@ -97,10 +97,10 @@ public:
     Ciphertext mul_pt(const Plaintext& pt, const GentryPolyCtx& ctx) const;
 
     // 自举的步骤之一：简单模数提升
-    Ciphertext naive_moduli_extend(uint64_t new_mod) const;
+    Ciphertext naive_moduli_extend(const std::vector<uint64_t>& extra_moduli) const;
 
     // 模数约简，用于控制噪声
-    Ciphertext moduli_reduce(uint64_t mod) const;
+    Ciphertext moduli_reduce(const std::vector<uint64_t>& moduli) const;
 
     static void test_ct_add_pt();
     static void test_ct_add();

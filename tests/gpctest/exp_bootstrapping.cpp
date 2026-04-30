@@ -187,7 +187,7 @@ void exp_bootstrapping()
         ComplexMatrixGroup cmg_coeffs = ComplexMatrixGroup::random(100, n, p);
         Plaintext pt = Plaintext::_from_cmat_without_encoding(cmg_coeffs, mods, delta);
         Ciphertext ct = Ciphertext::encrypt(pt, sk, ctx);
-        Ciphertext ct2 = ct.naive_moduli_extend(qo);
+        Ciphertext ct2 = ct.naive_moduli_extend({qo});
         Plaintext pt2 = ct2.decrypt(sk, ctx);
         ComplexMatrixGroup cmg_coeffs_2 = pt2._to_cmat_without_decoding(delta);
         // 检查差异

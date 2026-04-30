@@ -407,7 +407,7 @@ public:
 
     void moduli_extend_mult(uint64_t mod);
     void moduli_extend_unsafe(uint64_t mod);
-    GentryPoly moduli_extend_fmpz(uint64_t mod) const;
+    GentryPoly moduli_extend_fmpz(const std::vector<uint64_t>& extra_moduli) const;
     GentryPoly moduli_extend_garner(uint64_t mod) const;
 
     // 这会将自己按照KS的要求切分为多个分量

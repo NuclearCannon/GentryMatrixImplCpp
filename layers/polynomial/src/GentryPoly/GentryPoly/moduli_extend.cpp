@@ -23,11 +23,11 @@ void GentryPoly::moduli_extend_unsafe(uint64_t mod)
     );
 }
 
-GentryPoly GentryPoly::moduli_extend_fmpz(uint64_t mod) const
+GentryPoly GentryPoly::moduli_extend_fmpz(const std::vector<uint64_t>& extra_moduli) const
 {
     assert(is_cpu());
     auto new_moduli = moduli_;
-    new_moduli.push_back(mod);
+    for(auto mod: extra_moduli)new_moduli.push_back(mod);
     auto vec = to_fmpz_vector();
     return GentryPoly::from_fmpz(n(), p(), new_moduli, vec);
 }
