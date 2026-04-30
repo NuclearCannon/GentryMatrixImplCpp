@@ -32,7 +32,12 @@ void exp_bootstrapping()
     // 加密成密文
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
 
+    bool test_c2s = false;
+    bool test_s2c = false;
+    bool test_naive_extend = true;
+    // bool 
     // C2S测试
+    if (test_c2s)
     {
         // 构造XY-DFT辅助矩阵C
         ComplexMatrixGroup C = ComplexMatrixGroup(n, p);    // zero
@@ -105,6 +110,7 @@ void exp_bootstrapping()
 
 
     // S2C测试
+    if (test_s2c)
     {
         // 构造XY-DFT辅助矩阵C2=C*
         ComplexMatrixGroup C2 = ComplexMatrixGroup(n, p);    // zero
@@ -175,6 +181,33 @@ void exp_bootstrapping()
     }
     
 
-
+    if (test_naive_extend)
+    {
+        // 构造一个明文
+        ComplexMatrixGroup cmg_coeffs = ComplexMatrixGroup::random(100, n, p);
+        Plaintext pt = Plaintext::_from_cmat_without_encoding(cmg_coeffs, mods, delta);
+        Ciphertext ct = Ciphertext::encrypt(pt, sk, ctx);
+        Ciphertext ct2 = ct.naive_moduli_extend(qo);
+        Plaintext pt2 = ct2.decrypt(sk, ctx);
+        ComplexMatrixGroup cmg_coeffs_2 = pt2._to_cmat_without_decoding(delta);
+        // 检查差异
+        printf("test_naive_extend diffs\n");
+        double q0 = mods[0], q1 = mods[1], q2=mods[2];
+        double qprod = q0*q1*q2; 
+        for(int w=0; w<p-1; w++)
+        {
+            for(int x=0; x<n; x++)
+            {
+                for(int y=0; y<n; y++)
+                {
+                    complex diff = cmg_coeffs_2.at(w, x, y) -  cmg_coeffs.at(w, x, y);
+                    // diff /= qprod;
+                    diff = diff * delta / qprod;
+                    printf("[%d %d %d] %.3lf %.3lf\n", w, x, y, diff.real(), diff.imag());
+                    printf("[%d %d %d] %.3lf %.3lf\n", w, x, y, diff.real(), diff.imag());
+                }
+            }
+        }
+    }
     
 }

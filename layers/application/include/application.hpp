@@ -29,8 +29,11 @@ public:
     // n, p直接从复矩阵组中读取，模数链则需要外界传递进来
     static Plaintext from_cmat(const ComplexMatrixGroup&, const std::vector<uint64_t>& mods, double delta);
 
+    static Plaintext _from_cmat_without_encoding(const ComplexMatrixGroup&, const std::vector<uint64_t>& mods, double delta);
+
     // 从明文对象中恢复出复矩阵
     ComplexMatrixGroup to_cmat(double delta) const;
+    ComplexMatrixGroup _to_cmat_without_decoding(double delta) const;
 
     Plaintext circledast(const Plaintext& other, const GentryPolyCtx& ctx) const;
     Plaintext conj_transpose(const GentryPolyCtx& ctx) const;
