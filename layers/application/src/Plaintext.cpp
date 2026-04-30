@@ -80,6 +80,11 @@ Plaintext Plaintext::conj_transpose(const GentryPolyCtx& ctx) const
 {
     return Plaintext(std::make_unique<GentryPoly>(data_->w_inv().transpose().conj()));
 }
+Plaintext Plaintext::conj(const GentryPolyCtx& ctx) const
+{
+    return Plaintext(std::make_unique<GentryPoly>(data_->conj().w_inv().xy_inv()));
+    // return Plaintext(std::make_unique<GentryPoly>(data_->w_inv().conj()));
+}
 
 Plaintext Plaintext::rotate(int x_bias, int y_bias, int w_bias) const
 {

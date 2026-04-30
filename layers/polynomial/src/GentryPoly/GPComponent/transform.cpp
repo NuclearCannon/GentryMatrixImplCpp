@@ -87,8 +87,8 @@ void GPComponent::w_inv(GPComponent& dst_) const
 
 void GPComponent::automorphism_XY(GPComponent& dst_, int x, int y) const
 {
-    assert(x > 0);
-    assert(y > 0);
+    if(x<0)x=4*n_+x;
+    if(y<0)y=4*n_+y;
     assert(x % 2 == 1);
     assert(y % 2 == 1);
     const vec64& src = this->data_;

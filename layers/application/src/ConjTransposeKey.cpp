@@ -64,7 +64,7 @@ void ConjTransposeKey::test_pt_transpose()
 
     // 准备明文
     ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(5, n, p);
-    for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++) mat1.at(w, x, y) = w*x;
+    for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++) mat1.at(w, x, y) = complex(w*x, w*y);
     Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
     Plaintext pt2 = pt1.conj_transpose(ctx);
     // 恢复成矩阵

@@ -36,3 +36,16 @@ GentryPoly GentryPoly::w_inv() const
     }
     return res;
 }
+
+GentryPoly GentryPoly::xy_inv() const
+{
+    assert(is_cpu());
+    GentryPoly res = zeros_like(*this, GPDevice::CPU);
+    auto& src = this->cpu_components();
+    auto& dst = res.cpu_components();
+    for(int i=0; i<src.size(); i++)
+    {
+        src[i].automorphism_XY(dst[i], -1, -1);
+    }
+    return res;
+}

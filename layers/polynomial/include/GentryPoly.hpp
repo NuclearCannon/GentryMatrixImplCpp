@@ -434,6 +434,7 @@ public:
     GentryPoly transpose() const;
     GentryPoly conj() const;
     GentryPoly w_inv() const;
+    GentryPoly xy_inv() const;
 
     // return self(X^x, Y^y, W^{3^w})
     GentryPoly automorphism(int x, int y, int w) const;

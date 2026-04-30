@@ -37,6 +37,7 @@ public:
 
     Plaintext circledast(const Plaintext& other, const GentryPolyCtx& ctx) const;
     Plaintext conj_transpose(const GentryPolyCtx& ctx) const;
+    Plaintext conj(const GentryPolyCtx& ctx) const;
     Plaintext rotate(int x_bias, int y_bias, int w_bias) const;
 
 // ===========================以下是单元测试==========================
@@ -131,6 +132,21 @@ public:
     Ciphertext run(const Ciphertext& src, const GentryPolyCtx& ctx) const;
     static void test_pt_transpose();
     static void test_ct_transpose();
+
+};
+
+class ConjKey
+{
+private:
+    std::unique_ptr<KeySwitchKeyGP> ksk_;
+    ConjKey(std::unique_ptr<KeySwitchKeyGP> ksk);
+
+
+public:
+    static ConjKey gen(const SecretKey& sk, uint64_t qo, const GentryPolyCtx& ctx, const std::vector<uint64_t>& mods);
+    Ciphertext run(const Ciphertext& src, const GentryPolyCtx& ctx) const;
+    static void test_pt_conj();
+    // static void test_ct_transpose();
 
 };
 

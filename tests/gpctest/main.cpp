@@ -25,14 +25,15 @@ int main()
     // CircledastKey::test_pt_circledast_end2end();
     // CircledastKey::test_ct_circledast_end2end();
     // CircledastKey::test_ct_circledast_end2end(true);
-    // ConjTransposeKey::test_pt_transpose();
-    // ConjTransposeKey::test_ct_transpose();
+    ConjTransposeKey::test_pt_transpose();
+    ConjTransposeKey::test_ct_transpose();
     // MultKey::test_ct_mult();
     // RotateKey::test_pt_rotate();
     // RotateKey::test_ct_rotate();
     // Ciphertext::test_ct_add_pt();
     // Ciphertext::test_ct_add();
     // Ciphertext::test_ct_mul_pt();
-    exp_bootstrapping();
+    ConjKey::test_pt_conj();
+    // exp_bootstrapping();
     return 0;
 }
