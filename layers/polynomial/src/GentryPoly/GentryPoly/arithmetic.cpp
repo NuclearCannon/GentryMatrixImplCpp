@@ -85,6 +85,21 @@ void GentryPoly::mul_scalar(GentryPoly& dst, const GentryPoly& src1, uint64_t sr
     }
 }
 
+void GentryPoly::mul_i(GentryPoly& dst, const GentryPoly& src) {
+    if (!dst.like(src)) {
+        throw std::invalid_argument("GentryPoly: dst not like src");
+    }
+    if (src.is_cuda()) {
+        throw std::runtime_error("mul_i不支持cuda");
+    } else {
+        auto& d = dst.cpu_components();
+        const auto& x = src.cpu_components();
+        for (size_t i = 0; i < d.size(); ++i) {
+            GPComponent::mul_i(d[i], x[i]);
+        }
+    }
+}
+
 bool GentryPoly::eq(const GentryPoly& other) const
 {
     if(other.is_cuda())return eq(other.to_cpu());

@@ -48,6 +48,19 @@ void GPComponent::mul_scalar(GPComponent& dst, const GPComponent& src1, uint64_t
     uint64_t encoded = dst.mm_.encode(src_scalar);
     for(size_t i=0; i<size; i++)dst.data_[i] = dst.mm_.mul(src1.data_[i], encoded);
 }
+void GPComponent::mul_i(GPComponent& dst, const GPComponent& src)
+{
+    assert(dst.like(src));
+    size_t size = dst.get_size();
+    size_t half = size/2;
+    uint64_t q = src.get_q();
+    for(int j=0; j<half; j++)
+    {
+        uint64_t r = src.data_[j], i = src.data_[half+j];
+        dst.data_[half+j] = r;
+        dst.data_[j]      = mod_sub(0, i, q);
+    }
+}
 void GPComponent::mont_encode(GPComponent& dst, const GPComponent& src)
 {
     assert(dst.like(src));

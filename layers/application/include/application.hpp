@@ -96,6 +96,7 @@ public:
     Ciphertext neg() const;
     Ciphertext sub(const Ciphertext& other) const;
     Ciphertext mul_int(int other) const;
+    Ciphertext mul_i() const;
     void add_(const Ciphertext& other, const GentryPolyCtx& ctx);
     Ciphertext mul_pt(const Plaintext& pt, const GentryPolyCtx& ctx) const;
 
@@ -108,6 +109,7 @@ public:
     static void test_ct_add_pt();
     static void test_ct_add();
     static void test_ct_mul_pt();
+    static void test_ct_mul_i();
 };
 
 class CircledastKey

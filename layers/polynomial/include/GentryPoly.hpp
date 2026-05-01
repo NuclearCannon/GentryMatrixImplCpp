@@ -96,6 +96,7 @@ public:
     static void sub(GPComponent& dst, const GPComponent& src1, const GPComponent& src2);
     static void mul(GPComponent& dst, const GPComponent& src1, const GPComponent& src2);
     static void mul_scalar(GPComponent& dst, const GPComponent& src1, uint64_t src_scalar);
+    static void mul_i(GPComponent& dst, const GPComponent& src);
     static void mont_encode(GPComponent& dst, const GPComponent& src);
     static void mont_decode(GPComponent& dst, const GPComponent& src);
     static void mul_mont(GPComponent& dst, const GPComponent& src1, const GPComponent& src2);
@@ -322,6 +323,10 @@ public:
     static void sub(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);
     static void mul(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);
     static void mul_scalar(GentryPoly& dst, const GentryPoly& src1, uint64_t src_scalar);
+
+    // let dst = src * i
+    // 在系数状态下进行
+    static void mul_i(GentryPoly& dst, const GentryPoly& src);
     static void mont_encode(GentryPoly& dst, const GentryPoly& src);
     static void mont_decode(GentryPoly& dst, const GentryPoly& src);
     static void mul_mont(GentryPoly& dst, const GentryPoly& src1, const GentryPoly& src2);

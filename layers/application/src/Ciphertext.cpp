@@ -144,6 +144,18 @@ Ciphertext Ciphertext::mul_int(int other) const
     );
 }
 
+Ciphertext Ciphertext::mul_i() const
+{
+    GentryPoly a = GentryPoly::zeros_like(*a_);
+    GentryPoly b = GentryPoly::zeros_like(*b_);
+    GentryPoly::mul_i(a, *a_);
+    GentryPoly::mul_i(b, *b_);
+    return Ciphertext(
+        std::make_unique<GentryPoly>(std::move(a)),
+        std::make_unique<GentryPoly>(std::move(b))
+    );
+}
+
 void Ciphertext::add_(const Ciphertext& other, const GentryPolyCtx& ctx)
 {
     GentryPoly::add(*a_, *a_, *other.a_);
@@ -276,6 +288,44 @@ void Ciphertext::test_ct_mul_pt()
     for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
     {
         expected.at(w,x,y) = mat1.at(w,x,y) * mat1.at(w,x,y);
+    }
+
+    double max_diff = 0;
+    for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+    {
+        complex diff = mat_result.at(w,x,y) - expected.at(w,x,y);
+        double diff_abs = std::abs(diff);
+        if(diff_abs>max_diff)max_diff = diff_abs;
+    }
+    std::cout << "test_ct_mul_pt: max_diff="<<max_diff<<std::endl;
+}
+
+void Ciphertext::test_ct_mul_i()
+{
+    int n = 8, p = 5;
+    vec64 mods = {70368747120641, 70368747294721, 70368748426241};
+    vec64 roots = {6, 11, 6};
+    std::vector<std::pair<uint64_t, uint64_t>> qrp = {
+        {70368747120641, 6},
+        {70368747294721, 11},
+        {70368748426241, 6},
+    };
+    GentryPolyCtx ctx(n, p, qrp);
+
+    double delta = 10000;
+
+    ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(3, n, p);
+    Plaintext pt1 = Plaintext::from_cmat(mat1, mods, delta);
+    SecretKey sk(n, p);
+    Ciphertext ct = Ciphertext::encrypt(pt1, sk, ctx);
+    Ciphertext ct_result = ct.mul_i();
+    Plaintext pt_result = ct_result.decrypt(sk, ctx);
+    ComplexMatrixGroup mat_result = pt_result.to_cmat(delta);
+
+    ComplexMatrixGroup expected(n, p);
+    for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+    {
+        expected.at(w,x,y) = mat1.at(w,x,y) * complex(0, 1);
     }
 
     double max_diff = 0;
