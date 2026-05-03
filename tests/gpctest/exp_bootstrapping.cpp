@@ -429,7 +429,7 @@ private:
     static constexpr int low_ = 3;   // 我们假设输入密文的模数就是mods_all_[:low_] 实际上，low必须等于3
     static constexpr int top_ = 30;   // 我们假设最大密文的模数就是mods_all_[:top_]
     static constexpr int hig_ = 10;   // 我们假设输出密文的模数就是mods_all_[:hig_]
-
+    static constexpr double DELTA = double(1ULL<<40);
     // C2S
     CircledastKey mmkey_top_;
     ConjTransposeKey ctkey_top_;
@@ -533,7 +533,7 @@ public:
             Ciphertext multed = rotated.mul_pt(tmppt, *ctx_);
             m03.add_(multed, *ctx_);
         }
-        return m03;
+        return m03.moduli_reduce(slice(mods_all_, top_-3, top_));
     }
 
     Ciphertext _s2c(const Ciphertext& input, double delta)
@@ -654,8 +654,12 @@ public:
     Ciphertext main(const Ciphertext& input)
     {
         // 简单模数提高
-        Ciphertext t1 = input.naive_moduli_extend(slice(mods_all_, low_+1, top_));
-        return t1;
+        assert(veccmp(input.get_moduli(), slice(mods_all_, 0, low_)));
+        Ciphertext t1 = input.naive_moduli_extend(slice(mods_all_, low_, top_));
+        assert(veccmp(t1.get_moduli(), slice(mods_all_, 0, top_)));
+        // C2S
+        Ciphertext t2 = this->_c2s(t1, DELTA);
+        return t2;
     }
 
     
@@ -747,7 +751,7 @@ void test_bsk()
     printf("自举结束，检查取值\n");
 
     Plaintext decrypted = ct2.decrypt(sk, ctx);
-    ComplexMatrixGroup mat2 = decrypted._to_cmat_without_decoding(delta);
+    ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
     // 比较结果
     for(int w=0; w<p-1; w++)
     {
