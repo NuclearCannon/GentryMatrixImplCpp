@@ -51,6 +51,7 @@ public:
     ComplexMatrixGroup matmul_ABT(const ComplexMatrixGroup& other) const;
 
     static ComplexMatrixGroup random(double abs_max, size_t n, size_t p);
+    static ComplexMatrixGroup random_imag(double abs_max, size_t n, size_t p);
 
     // 单位矩阵（调试用）
     static ComplexMatrixGroup eye(size_t n, size_t p);

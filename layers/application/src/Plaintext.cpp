@@ -16,6 +16,22 @@ Plaintext Plaintext::from_cmat(const ComplexMatrixGroup& cmg, const std::vector<
     return Plaintext(std::move(data));
 }
 
+Plaintext Plaintext::from_scalar(int n, int p, complex scalar, const std::vector<uint64_t>& mods, double delta)
+{
+    ComplexMatrixGroup t(n, p);
+    for(int w=0;w<p-1;w++)
+    {
+        for(int x=0; x<n; x++)
+        {
+            for(int y=0; y<n; y++)
+            {
+                t.at(w, x, y) = scalar;
+            }
+        }
+    }
+    return Plaintext::from_cmat(t, mods, delta);
+}
+
 Plaintext Plaintext::_from_cmat_without_encoding(const ComplexMatrixGroup& cmg, const std::vector<uint64_t>& mods, double delta)
 {
     fmpz_vector vec = cmg.to_fmpz_vector(delta);

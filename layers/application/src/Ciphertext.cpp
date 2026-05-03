@@ -43,6 +43,26 @@ Plaintext Ciphertext::decrypt(const SecretKey& sk, const GentryPolyCtx& ctx)
 
 }
 
+double Ciphertext::check_abs(const SecretKey& sk, const GentryPolyCtx& ctx, double delta)
+{
+    auto mat = decrypt(sk, ctx).to_cmat(delta);
+    int n = mat.get_n(), p=mat.get_p();
+    double r = 0;
+    for(int w=0; w<p-1; w++)
+    {
+        for(int x=0; x<n; x++)
+        {
+            for(int y=0; y<n; y++)
+            {
+                double a = std::abs(mat.at(w, x, y));
+                if(a>r)r=a;
+            }
+        }
+    }
+    return r;
+
+}
+
 Ciphertext Ciphertext::to_cuda() const
 {
     return Ciphertext(

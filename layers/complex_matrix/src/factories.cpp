@@ -16,6 +16,17 @@ ComplexMatrixGroup ComplexMatrixGroup::random(double abs_max, size_t n, size_t p
 
 }
 
+ComplexMatrixGroup ComplexMatrixGroup::random_imag(double abs_max, size_t n, size_t p)
+{
+    size_t len = (p-1)*n*n;
+    std::vector<complex> result(len);
+    for(size_t i=0; i<len; i++)
+    {
+        double x = (2*random_generators::random_real()-1) * abs_max;
+        result[i] = complex(0, x);
+    }
+    return ComplexMatrixGroup(n, p, result);
+}
 
 ComplexMatrixGroup ComplexMatrixGroup::eye(size_t n, size_t p)
 {

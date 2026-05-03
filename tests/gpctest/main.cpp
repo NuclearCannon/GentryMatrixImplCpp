@@ -10,6 +10,8 @@ void test_ks_cuda();
 void test_circledast();
 void test_circledast_cuda();
 void exp_bootstrapping();
+void exp_sin();
+
 int main()
 {
     // test_ntt();
@@ -21,7 +23,7 @@ int main()
     // test_circledast();
     // test_circledast_cuda();
     // Plaintext::test_pt_encode_and_decode();
-    Ciphertext::test_ct_encrypt_and_decrypt();
+    // Ciphertext::test_ct_encrypt_and_decrypt();
     // CircledastKey::test_pt_circledast_end2end();
     // CircledastKey::test_ct_circledast_end2end();
     // CircledastKey::test_ct_circledast_end2end(true);
@@ -33,9 +35,10 @@ int main()
     // Ciphertext::test_ct_add_pt();
     // Ciphertext::test_ct_add();
     // Ciphertext::test_ct_mul_pt();
-    Ciphertext::test_ct_mul_i();
+    // Ciphertext::test_ct_mul_i();
     // ConjKey::test_pt_conj();
     // ConjKey::test_ct_conj();
     // exp_bootstrapping();
+    exp_sin();
     return 0;
 }

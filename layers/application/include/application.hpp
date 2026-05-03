@@ -29,6 +29,7 @@ public:
     // 从复矩阵组中编码一个明文出来
     // n, p直接从复矩阵组中读取，模数链则需要外界传递进来
     static Plaintext from_cmat(const ComplexMatrixGroup&, const std::vector<uint64_t>& mods, double delta);
+    static Plaintext from_scalar(int n, int p, complex scalar, const std::vector<uint64_t>& mods, double delta);
 
     static Plaintext _from_cmat_without_encoding(const ComplexMatrixGroup&, const std::vector<uint64_t>& mods, double delta);
 
@@ -85,7 +86,7 @@ public:
     static Ciphertext encrypt(const Plaintext& pt, const SecretKey& sk, const GentryPolyCtx& ctx);
     static Ciphertext zeros(int n, int p, std::vector<uint64_t> mods);
     Plaintext decrypt(const SecretKey& sk, const GentryPolyCtx& ctx);
-
+    double check_abs(const SecretKey& sk, const GentryPolyCtx& ctx, double delta = 1);
     static void test_ct_encrypt_and_decrypt();
 
     // 这将会创建一个新的密文对象，它的数据都放在cuda上
