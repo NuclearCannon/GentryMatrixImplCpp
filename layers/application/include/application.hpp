@@ -111,6 +111,11 @@ public:
     static void test_ct_add();
     static void test_ct_mul_pt();
     static void test_ct_mul_i();
+
+    std::vector<uint64_t> get_moduli() const
+    {
+        return a_->moduli();
+    }
 };
 
 class CircledastKey
