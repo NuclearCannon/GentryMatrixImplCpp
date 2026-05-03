@@ -38,7 +38,7 @@ int main()
     // Ciphertext::test_ct_mul_i();
     // ConjKey::test_pt_conj();
     // ConjKey::test_ct_conj();
-    // exp_bootstrapping();
-    exp_sin();
+    exp_bootstrapping();
+    // exp_sin();
     return 0;
 }

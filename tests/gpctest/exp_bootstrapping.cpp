@@ -32,9 +32,9 @@ void exp_bootstrapping()
     // 加密成密文
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
 
-    bool test_c2s = false;
-    bool test_s2c = false;
-    bool test_naive_extend = true;
+    bool test_c2s = true;
+    bool test_s2c = true;
+    bool test_naive_extend = false;
     // bool 
     // C2S测试
     if (test_c2s)
@@ -79,11 +79,10 @@ void exp_bootstrapping()
                 RotateKey rkey = RotateKey::gen(sk, qo, ctx, mods, 0,0,l);
                 Ciphertext rotated = rkey.run(m02, ctx);
                 // 构造临时明文
-                ComplexMatrixGroup tmp(n, p);
                 complex x = std::polar<double>(1, - (2 * M_PI / ((double)p)) * (double)gamma);
                 x = (x-1.0)/((double)p);
-                for(int k=0;k<p-1;k++)for(int i=0;i<n;i++)for(int j=0;j<n;j++)tmp.at(k,i,j)=x;
-                Plaintext tmppt = Plaintext::from_cmat(tmp, mods, delta);
+                Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, delta);
+                
                 Ciphertext multed = rotated.mul_pt(tmppt, ctx);
                 m03.add_(multed, ctx);
             }
@@ -152,11 +151,8 @@ void exp_bootstrapping()
                 RotateKey rkey = RotateKey::gen(sk, qo, ctx, mods, 0,0,(p-1-l)%(p-1));
                 Ciphertext rotated = rkey.run(m02, ctx);
                 // 构造临时明文
-                ComplexMatrixGroup tmp(n, p);
                 complex x = std::polar<double>(1, (2 * M_PI / ((double)p)) * (double)gamma);
-                // x = (x-1.0)/((double)p);
-                for(int k=0;k<p-1;k++)for(int i=0;i<n;i++)for(int j=0;j<n;j++)tmp.at(k,i,j)=x;
-                Plaintext tmppt = Plaintext::from_cmat(tmp, mods, delta);
+                Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, delta);
                 Ciphertext multed = rotated.mul_pt(tmppt, ctx);
                 m03.add_(multed, ctx);
             }
