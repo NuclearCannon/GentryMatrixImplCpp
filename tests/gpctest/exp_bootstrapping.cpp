@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include <chrono>
+#include "modops.hpp"
 
 static std::vector<uint64_t> get_mods_from_qrp(const std::vector<std::pair<uint64_t, uint64_t>>& src, int l, int r)
 {
@@ -113,10 +114,10 @@ public:
         ctx_ = &ctx;
         mods_all_ = mods;
         // 生成C2S的一系列RotateKey
-        for(int l=0; l<p-1; l++)
+        for(int l=1; l<p-1; l*=2)
         {
             rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_), 0,0,l));
-            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_-18), 0,0,(p-1-l)%(p-1)));
+            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_-18), 0,0,l));
         }
         // 生成bs所需的一系列mtkey。共计10个，第一个的模数链长度是
         for(int i=0; i<10; i++)
@@ -166,22 +167,26 @@ public:
             ), *ctx_
         );// m02的缩放因子是delta^3
         // 执行W-DFT
-        Ciphertext m03 = Ciphertext::zeros(n, p, mods); // m03的缩放因子是delta^4
+        // Ciphertext m03 = Ciphertext::zeros(n, p, mods); // m03的缩放因子是delta^4
         
-        for(int l=0, gamma=1; l<p-1; l++, gamma=gamma*3%p)
+        std::vector<Ciphertext> multed_vec;
+        for(int l=0; l<p-1; l++)
         {
-            // 构造Rotate l的ksk
-            const RotateKey& rkey = rtkeys_top_[l];
-            Ciphertext rotated = rkey.run(m02, *ctx_);
-            // 构造临时明文
+            int gamma = mod_pow(3, l, p);
             complex x = std::polar<long double>(1, - (2 * M_PI / ((long double)p)) * (long double)gamma);
             x = (x-1.0L)/((long double)p);
             Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, mods[modslen-3]);
-            
-            Ciphertext multed = rotated.mul_pt(tmppt, *ctx_);
-            m03.add_(multed, *ctx_);
+            multed_vec.push_back(m02.mul_pt(tmppt, *ctx_));
         }
-        return m03.moduli_reduce(slice(mods, modslen-3, modslen));
+        // 其中multed_vec[l]需要被rtkeys_tops_[l]移动一下
+        for(int step=1, logstep=0; step<p-1; step*=2, logstep++)
+        {
+            for(int i=0; i<p-1; i+=step*2)
+            {
+                multed_vec[i].add_(rtkeys_top_[logstep].run(multed_vec[i+step], *ctx_), *ctx_);
+            }
+        }
+        return multed_vec[0].moduli_reduce(slice(mods, modslen-3, modslen));
     }
 
     Ciphertext _s2c(const Ciphertext& input, long double delta, long double factor)
@@ -218,19 +223,23 @@ public:
             ), ctx
         );// m02的缩放因子是delta^3
         // 执行W-DFT
-        Ciphertext m03 = Ciphertext::zeros(n, p, mods); // m03的缩放因子是delta^4
-        for(int l=0, gamma=1; l<p-1; l++, gamma=gamma*3%p)
+        std::vector<Ciphertext> multed_vec;
+        for(int l=0; l<p-1; l++)
         {
-            // 构造Rotate l的ksk
-            const RotateKey& rkey = rtkeys_s2c_[l];
-            Ciphertext rotated = rkey.run(m02, ctx);
-            // 构造临时明文
+            int gamma = mod_inv(mod_pow(3, l, p), p);
             complex x = std::polar<long double>(factor, (2 * M_PI / ((long double)p)) * (long double)gamma);
             Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, delta);
-            Ciphertext multed = rotated.mul_pt(tmppt, ctx);
-            m03.add_(multed, ctx);
+            multed_vec.push_back(m02.mul_pt(tmppt, *ctx_));
         }
-        return m03.moduli_reduce(slice(mods_all_, top_-21, top_-18));
+        // 其中multed_vec[l]需要被rtkeys_tops_[l]移动一下
+        for(int step=1, logstep=0; step<p-1; step*=2, logstep++)
+        {
+            for(int i=0; i<p-1; i+=step*2)
+            {
+                multed_vec[i].add_(rtkeys_s2c_[logstep].run(multed_vec[i+step], *ctx_), *ctx_);
+            }
+        }
+        return multed_vec[0].moduli_reduce(slice(mods_all_, top_-21, top_-18));
 
     }
 
