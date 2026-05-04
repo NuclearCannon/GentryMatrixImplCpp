@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include "modops.hpp"
+#include "math_utils.hpp"
 
 static std::vector<uint64_t> get_mods_from_qrp(const std::vector<std::pair<uint64_t, uint64_t>>& src, int l, int r)
 {
@@ -113,18 +114,25 @@ public:
         p_ = p;
         ctx_ = &ctx;
         mods_all_ = mods;
+        printf("[LOG]基础KSK已经生成，开始生成RotateKey\n");
         // 生成C2S的一系列RotateKey
-        for(int l=1; l<p-1; l*=2)
+        
+        int logp = Log2(p-1);
+        for(int l=0; l<logp; l++)
         {
-            rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_), 0,0,l));
-            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_-18), 0,0,l));
+            printf("[LOG]生成第%d个(共%d个)\n", l+1, logp);
+            rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_), 0,0,1<<l));
+            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_-18), 0,0,1<<l));
         }
         // 生成bs所需的一系列mtkey。共计10个，第一个的模数链长度是
+        printf("[LOG]RotateKey已经生成，开始生成MultKey for sin\n");
         for(int i=0; i<10; i++)
         {
+            printf("[LOG]生成第%d个(共10个)\n", i+1);
             int j = top_-8-i;
             mtkeys_bs_.push_back(MultKey::gen(sk, qo, ctx, slice(mods, 0, j)));
         }
+        printf("[LOG]BootstrapKey已经完全生成\n");
     }
 
     /// _c2s的输入密文的模数链是top, 缩放因子是delta
@@ -136,7 +144,7 @@ public:
         int modslen = mods.size();
         assert(modslen == top_);
 
-        
+        printf("[LOG]C2S构造矩阵\n");
         // 构造XY-DFT辅助矩阵C
         ComplexMatrixGroup C = ComplexMatrixGroup(n, p);    // zero
         {
@@ -155,10 +163,12 @@ public:
                 }
             }
         }
+        printf("[LOG]C2S构造明文对象\n");
         // 将C化为明文
         Plaintext ptC1 = Plaintext::from_cmat(C, mods, mods[modslen-1]);
         Plaintext ptC2 = Plaintext::from_cmat(C, mods, mods[modslen-2]);
         // 执行XY-DFT
+        printf("[LOG]C2S矩阵乘\n");
         Ciphertext m02 = mmkey_top_.run_pc(
             ptC1, ctkey_top_.run(
                 mmkey_top_.run_cp(
@@ -168,7 +178,7 @@ public:
         );// m02的缩放因子是delta^3
         // 执行W-DFT
         // Ciphertext m03 = Ciphertext::zeros(n, p, mods); // m03的缩放因子是delta^4
-        
+        printf("[LOG]C2S 处理W轴 明密乘法\n");
         std::vector<Ciphertext> multed_vec;
         for(int l=0; l<p-1; l++)
         {
@@ -179,10 +189,13 @@ public:
             multed_vec.push_back(m02.mul_pt(tmppt, *ctx_));
         }
         // 其中multed_vec[l]需要被rtkeys_tops_[l]移动一下
+        int cnt = 1;
         for(int step=1, logstep=0; step<p-1; step*=2, logstep++)
         {
             for(int i=0; i<p-1; i+=step*2)
             {
+                printf("[LOG]C2S 处理W轴 第%d次Rotate(共%d次)\n", cnt, p-2);
+                cnt++;
                 multed_vec[i].add_(rtkeys_top_[logstep].run(multed_vec[i+step], *ctx_), *ctx_);
             }
         }
@@ -196,6 +209,7 @@ public:
         assert(veccmp(mods, slice(mods_all_, 0, top_-18)));
         const GentryPolyCtx& ctx = *ctx_;
         // 构造XY-DFT辅助矩阵C2=C*
+        printf("[LOG]S2C构造矩阵\n");
         ComplexMatrixGroup C2 = ComplexMatrixGroup(n, p);    // zero
             
         for(int i=0, i5=1; i<n; i++, i5=i5*5%(4*n))
@@ -213,8 +227,10 @@ public:
         }
         
         // 将C化为明文
+        printf("[LOG]S2C构造明文对象\n");
         Plaintext ptC = Plaintext::from_cmat(C2, mods, delta);
         // 执行XY-DFT
+         printf("[LOG]S2C矩阵乘\n");
         Ciphertext m02 = mmkey_s2c_.run_pc(
             ptC, ctkey_s2c_.run(
                 mmkey_s2c_.run_cp(
@@ -223,6 +239,7 @@ public:
             ), ctx
         );// m02的缩放因子是delta^3
         // 执行W-DFT
+        printf("[LOG]S2C 处理W轴 明密乘法\n");
         std::vector<Ciphertext> multed_vec;
         for(int l=0; l<p-1; l++)
         {
@@ -232,10 +249,13 @@ public:
             multed_vec.push_back(m02.mul_pt(tmppt, *ctx_));
         }
         // 其中multed_vec[l]需要被rtkeys_tops_[l]移动一下
+        int cnt = 1;
         for(int step=1, logstep=0; step<p-1; step*=2, logstep++)
         {
             for(int i=0; i<p-1; i+=step*2)
             {
+                printf("[LOG]S2C 处理W轴 第%d次Rotate(共%d次)\n", cnt, p-2);
+                cnt++;
                 multed_vec[i].add_(rtkeys_s2c_[logstep].run(multed_vec[i+step], *ctx_), *ctx_);
             }
         }
@@ -253,7 +273,7 @@ public:
         int p = p_;
         const GentryPolyCtx& ctx = *ctx_;
         
-
+        
         // 准备一个明文
         std::vector<std::vector<uint64_t>> chains;
         // chains[i]是去掉倒数的i个元素后的模数链
@@ -266,9 +286,11 @@ public:
             to_remove.push_back(slice(mods_all_, i-1, i));
         
         // 除以2^r，消耗一层
+        printf("[LOG]SIN 除以2^r\n");
         constexpr int r = 10;
         constexpr long double exp2r = (long double)(1ULL<<r);
         constexpr long double exp2r_inv = 1.0/exp2r;
+        printf("[LOG]SIN 泰勒展开\n");
         Plaintext pt_2r_inv = Plaintext::from_scalar(n, p, exp2r_inv, chains[0], to_remove[0][0]);
         Ciphertext x_0 = input.mul_pt(pt_2r_inv, ctx).moduli_reduce(to_remove[0]);
         Plaintext one_0 = Plaintext::from_scalar(n, p, 1, chains[1], to_remove[1][0]);
@@ -291,7 +313,7 @@ public:
             .mul_pt(Plaintext::from_scalar(n, p, 1.0/24.0, chains[3], to_remove[3][0]), ctx)
             .moduli_reduce(to_remove[3]);
 
-
+        printf("[LOG]SIN 连续平方\n");
         // 对y0进行10次连续平方
         // y0对应的模数链是chains[4]，也即[0:19]
         Ciphertext y1 = mtkeys_bs_[0].run(y0, y0, ctx).moduli_reduce(to_remove[4]);
@@ -305,7 +327,7 @@ public:
         Ciphertext y9 = mtkeys_bs_[8].run(y8, y8, ctx).moduli_reduce(to_remove[12]);
         Ciphertext y10 =mtkeys_bs_[9].run(y9, y9, ctx).moduli_reduce(to_remove[13]);
 
-
+        printf("[LOG]SIN 完成\n");
         // 现在y10的虚部应该就是sin的取值了
         return y10;
     }
