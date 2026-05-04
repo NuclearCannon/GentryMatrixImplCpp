@@ -700,12 +700,18 @@ public:
         // C2S
         Ciphertext t2 = this->_c2s(t1, DELTA);  // 它的模数链为top-3=27级
         assert(veccmp(t2.get_moduli(), slice(mods_all_, 0, 27)));
-        return t2;
-        // 这里的t2的槽中元素是原来的系数除以Delta的结果……
-        // 乘以pi / q。不是2pi/q吗？其实是因为后面的虚实分离会有乘二的副作用，在这里修正它
-        // 具体来讲，通过“乘以Pi但是做4层mod reduce”实现
-        Plaintext pt_pi = Plaintext::from_scalar(n_, p_, M_PI, t2.get_moduli(), DELTA); // 嘿，或许可以省一层下来
-        Ciphertext t3 = t2.mul_pt(pt_pi, *ctx_).moduli_reduce(slice(mods_all_, 24, 27));
+        // return t2;
+        // t2的槽中元素（缩放后后）的周期是mods[0]/delta
+        // 我们希望它的周期是2pi，因此这里需要乘以pi
+        // 为什么是pi而不是2pi？因为后面的虚实分离有乘2的副作用
+        // 我们希望去除mods[0]，但是模约简却使用mods[26]，因此我们还需乘以mods[26]/mods[0]
+        long double scalar = M_PI;
+        scalar *= mods_all_[26];
+        scalar /= mods_all_[0];
+
+        Plaintext pt_pi = Plaintext::from_scalar(n_, p_, scalar, t2.get_moduli(), DELTA); // 嘿，或许可以省一层下来
+        Ciphertext t3 = t2.mul_pt(pt_pi, *ctx_).moduli_reduce(slice(mods_all_, 26, 27));
+
         return t3;
         // t3的实部虚部都是接近于pi的倍数，很好
         // 提取实部虚部
@@ -841,7 +847,7 @@ void test_bsk()
     
 
     // 比较结果
-    int checking = 2;
+    int checking = 3;
 
     if(checking == 1)
     {
@@ -875,6 +881,27 @@ void test_bsk()
             complex got = mat2.at(w, x, y);
             complex expected(mat1.at(w, x, y));
             long double rounder = q / delta;
+            complex round_got(findMinAbs(got.real(), rounder), findMinAbs(got.imag(), rounder));
+            complex diff1 = round_got / expected;
+            complex diff2 = expected / round_got;
+            printf("[t2 %d %d %d] got(%+.6Lf %+.6Lf), exp(%+.6Lf %+.6Lf) diff1(%+.6Lf %+.6Lf) diff2(%+.6Lf %+.6Lf)\n",
+                w, x, y, 
+                round_got.real(), round_got.imag(),
+                expected.real(), expected.imag(),
+                diff1.real(), diff1.imag(),
+                diff2.real(), diff2.imag()
+            );
+        }
+    }
+    if(checking == 3)
+    {
+        ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        long double q = mods[0];
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex got = mat2.at(w, x, y);
+            complex expected = mat1.at(w, x, y) * (long double)(M_PI);
+            long double rounder = M_PI;
             complex round_got(findMinAbs(got.real(), rounder), findMinAbs(got.imag(), rounder));
             complex diff1 = round_got / expected;
             complex diff2 = expected / round_got;
