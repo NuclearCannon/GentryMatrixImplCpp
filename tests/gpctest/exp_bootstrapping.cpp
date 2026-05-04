@@ -498,7 +498,7 @@ public:
         for(int l=0; l<p-1; l++)
         {
             rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 30), 0,0,l));
-            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 12), 0,0,l));
+            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 12), 0,0,(p-1-l)%(p-1)));
         }
         // 生成bs所需的一系列mtkey。共计10个，第一个的模数链长度是
         for(int i=0; i<10; i++)
@@ -733,12 +733,12 @@ public:
         // 合并
         printf("debug 4\n");
         Ciphertext res_of_sin = res_real.add(res_imag);
-        return res_of_sin;
+        // return res_of_sin;
         assert(veccmp(res_of_sin.get_moduli(), slice(mods_all_, 0, 12)));
         printf("debug 5\n");
         // 乘以q/4pi。不是说q/2pi吗？因为我们刚刚造成了副作用，现在要补偿回去。
         // 但是我们什么都不用做。q部分一开始就没乘上去，而剩下来的部分可以放到s2c中作为它的一部分。
-        Ciphertext res = this->_s2c(res_of_sin, DELTA, 1.0/(4 * M_PI));
+        Ciphertext res = this->_s2c(res_of_sin, DELTA, 1.0141/(4 * M_PI));
         printf("debug 6\n");
         
         return res;
@@ -841,7 +841,7 @@ void test_bsk()
     
 
     // 比较结果
-    int checking = 5;
+    int checking = 6;
 
     if(checking == 1)
     {
@@ -936,6 +936,26 @@ void test_bsk()
             complex diff1 = got / expected;
             complex diff2 = expected / got;
             printf("[res_of_sin %d %d %d] got(%+.6Lf,%+.6Lf), exp(%+.6Lf,%+.6Lf) diff1(%+.6Lf,%+.6Lf) diff2(%+.6Lf,%+.6Lf)\n",
+                w, x, y, 
+                got.real(), got.imag(), 
+                expected.real(),  expected.imag(), 
+                diff1.real(),  diff1.imag(), 
+                diff2.real(), diff2.imag()
+            );
+        }
+    }
+    if(checking == 6)
+    {
+        // 这里检查最终结果
+        ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        ComplexMatrixGroup mat0 = mat1.decode();
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex got = mat2.at(w, x, y);
+            complex expected = mat0.at(w, x, y);
+            complex diff1 = got / expected;
+            complex diff2 = expected / got;
+            printf("[final %d %d %d] got(%+.6Lf,%+.6Lf), exp(%+.6Lf,%+.6Lf) diff1(%+.6Lf,%+.6Lf) diff2(%+.6Lf,%+.6Lf)\n",
                 w, x, y, 
                 got.real(), got.imag(), 
                 expected.real(),  expected.imag(), 
