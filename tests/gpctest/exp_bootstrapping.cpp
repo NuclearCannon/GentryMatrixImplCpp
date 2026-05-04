@@ -458,7 +458,7 @@ private:
     std::vector<RotateKey> rtkeys_top_;
 
     // 分离虚实
-    ConjKey cjkey_;
+    ConjKey cjkey_t3_;
     ConjKey cjkey_9_;
 
     // S2C
@@ -483,12 +483,12 @@ public:
     ):
         mmkey_top_(   CircledastKey::gen(sk, qo, ctx, slice(mods, 0, 30))),
         ctkey_top_(ConjTransposeKey::gen(sk, qo, ctx, slice(mods, 0, 30))),
-        cjkey_(ConjKey::gen(sk, qo, ctx, slice(mods, 0, 23))),
+        cjkey_t3_(ConjKey::gen(sk, qo, ctx, slice(mods, 0, 26))),
         cjkey_9_(ConjKey::gen(sk, qo, ctx, slice(mods, 0, 9))),
         mmkey_s2c_(   CircledastKey::gen(sk, qo, ctx, slice(mods, 0, 13))),
         ctkey_s2c_(ConjTransposeKey::gen(sk, qo, ctx, slice(mods, 0, 13))),
-        mtkey_c1_ (MultKey::gen(sk, qo, ctx, slice(mods, 0, 22))),
-        mtkey_c2_ (MultKey::gen(sk, qo, ctx, slice(mods, 0, 21)))
+        mtkey_c1_ (MultKey::gen(sk, qo, ctx, slice(mods, 0, 25))),
+        mtkey_c2_ (MultKey::gen(sk, qo, ctx, slice(mods, 0, 24)))
     {
         n_ = n;
         p_ = p;
@@ -501,11 +501,11 @@ public:
             rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 13), 0,0,l));
         }
         // 生成bs所需的一系列mtkey。共计10个，第一个的模数链长度是
-        // for(int i=0; i<10; i++)
-        // {
-        //     int j = 19-i;
-        //     mtkeys_bs_.push_back(MultKey::gen(sk, qo, ctx, slice(mods, 0, j)));
-        // }
+        for(int i=0; i<10; i++)
+        {
+            int j = 22-i;
+            mtkeys_bs_.push_back(MultKey::gen(sk, qo, ctx, slice(mods, 0, j)));
+        }
     }
 
     /// _c2s的输入密文的模数链是top, 缩放因子是delta
@@ -621,8 +621,8 @@ public:
 
     Ciphertext _sin(const Ciphertext& input, long double delta)
     {
-        // 输入密文的模数链应该是30-3-4=23
-        assert(veccmp(slice(mods_all_, 0, 23), input.get_moduli()));
+        const int input_layer = 26;
+        assert(veccmp(slice(mods_all_, 0, input_layer), input.get_moduli()));
         // 准备各个参数
         int n = n_;
         int p = p_;
@@ -632,31 +632,30 @@ public:
         // 准备一个明文
         std::vector<std::vector<uint64_t>> chains;
         // chains[i]是去掉倒数的i个元素后的模数链
-        for(int i=23; i>0; i--)
+        for(int i=input_layer; i>0; i--)
             chains.push_back(slice(mods_all_, 0, i));
 
         std::vector<std::vector<uint64_t>> to_remove;
         // to_remove[i]只包括倒数第i个模数
-        for(int i=23; i>0; i--)
+        for(int i=input_layer; i>0; i--)
             to_remove.push_back(slice(mods_all_, i-1, i));
         
         // 除以2^r，消耗一层
-        int r = 10;
-        long double exp2r = (long double)(1ULL<<r);
-        long double exp2r_inv = 1/exp2r;
-        std::cout << "exp2r_inv=" << exp2r_inv << std::endl;
-        Plaintext pt_2r_inv = Plaintext::from_scalar(n, p, exp2r_inv, chains[0], delta);
+        constexpr int r = 10;
+        constexpr long double exp2r = (long double)(1ULL<<r);
+        constexpr long double exp2r_inv = 1.0/exp2r;
+        Plaintext pt_2r_inv = Plaintext::from_scalar(n, p, exp2r_inv, chains[0], to_remove[0][0]);
         Ciphertext x_0 = input.mul_pt(pt_2r_inv, ctx).moduli_reduce(to_remove[0]);
-        Plaintext one_0 = Plaintext::from_scalar(n, p, 1, chains[1], delta);
-        Plaintext one_1 = Plaintext::from_scalar(n, p, 1, chains[2], delta);
+        Plaintext one_0 = Plaintext::from_scalar(n, p, 1, chains[1], to_remove[1][0]);
+        Plaintext one_1 = Plaintext::from_scalar(n, p, 1, chains[2], to_remove[2][0]);
         Ciphertext x2_1 = mtkey_c1_.run(x_0,  x_0,  ctx).moduli_reduce(to_remove[1]);
         
-        // return;
         Ciphertext x_1 = x_0.mul_pt(one_0, ctx).moduli_reduce(to_remove[1]);
         Ciphertext x4_2 = mtkey_c2_.run(x2_1, x2_1, ctx).moduli_reduce(to_remove[2]);
         Ciphertext x3_2 = mtkey_c2_.run(x2_1, x_1, ctx).moduli_reduce(to_remove[2]).mul_int(4);
         Ciphertext x2_2 = x2_1.mul_pt(one_1, ctx).moduli_reduce(to_remove[2]).mul_int(12);
         Ciphertext x1_2 = x_1.mul_pt(one_1, ctx).moduli_reduce(to_remove[2]).mul_int(24);
+        
         x4_2.add_(x3_2, ctx);
         x4_2.add_(x2_2, ctx);
         x4_2.add_(x1_2, ctx);
@@ -665,7 +664,7 @@ public:
         
         Ciphertext y0 = x4_2
             .add_pt(Plaintext::from_scalar(n, p, 24.0, chains[3], delta), ctx)
-            .mul_pt(Plaintext::from_scalar(n, p, 1.0/24.0, chains[3], delta), ctx)
+            .mul_pt(Plaintext::from_scalar(n, p, 1.0/24.0, chains[3], to_remove[3][0]), ctx)
             .moduli_reduce(to_remove[3]);
 
 
@@ -711,41 +710,27 @@ public:
 
         Plaintext pt_pi = Plaintext::from_scalar(n_, p_, scalar, t2.get_moduli(), DELTA); // 嘿，或许可以省一层下来
         Ciphertext t3 = t2.mul_pt(pt_pi, *ctx_).moduli_reduce(slice(mods_all_, 26, 27));
-
-        return t3;
-        // t3的实部虚部都是接近于pi的倍数，很好
+        assert(veccmp(t3.get_moduli(), slice(mods_all_, 0, 26)));
+        // return t3;
         // 提取实部虚部
-        printf("debug 1\n");
-        Ciphertext t3_conj = cjkey_.run(t3, *ctx_);
-        printf("debug 2\n");
+        Ciphertext t3_conj = cjkey_t3_.run(t3, *ctx_);
         Ciphertext real = t3.add(t3_conj).mul_i();
-        printf("debug 3\n");
         Ciphertext imag = t3.sub(t3_conj);
-        printf("debug 4\n");
-        assert(veccmp(real.get_moduli(), slice(mods_all_, 0, 23)));
-        assert(veccmp(imag.get_moduli(), slice(mods_all_, 0, 23)));
-        // return real;
-        // real和imag都是2pi的倍数，很好
-        // 计算正弦
+        assert(veccmp(real.get_moduli(), slice(mods_all_, 0, 26)));
+        assert(veccmp(imag.get_moduli(), slice(mods_all_, 0, 26)));
+
         Ciphertext sin_real = this->_sin(real, DELTA);
         Ciphertext sin_imag = this->_sin(imag, DELTA);
-        assert(veccmp(sin_real.get_moduli(), slice(mods_all_, 0, 9)));
-        assert(veccmp(sin_imag.get_moduli(), slice(mods_all_, 0, 9)));
+        assert(veccmp(sin_real.get_moduli(), slice(mods_all_, 0, 12)));
+        assert(veccmp(sin_imag.get_moduli(), slice(mods_all_, 0, 12)));
+        return sin_real;
         // 提取他们的虚部，这会造成绝对值乘2的副作用
         Ciphertext res_real = sin_real.sub(cjkey_9_.run(sin_real, *ctx_)).mul_i().neg();
         Ciphertext res_imag = sin_imag.sub(cjkey_9_.run(sin_imag, *ctx_));
         // 合并
         Ciphertext res_of_sin = res_real.add(res_imag);
         // 乘以q/4pi。不是说q/2pi吗？因为我们刚刚造成了副作用，现在要补偿回去。
-        // 具体来讲，呃，其实我们什么都不用做，已经在sin内部做了
-        // Ciphertext res = res_of_sin.mul_pt(
-        //     Plaintext::from_scalar(
-        //         n_, p_, 
-        //         ((long double)(mods_all_[0]))*((long double)(mods_all_[1]))*((long double)(mods_all_[2]))/(4*M_PI),
-        //         res_of_sin.
-
-        //     )
-        // )
+        
         
         return res_of_sin;
     }
@@ -827,7 +812,7 @@ void test_bsk()
     // 准备一个明文
     printf("准备一个明文\n");
 
-    ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(0.001, n, p);
+    ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(0.01, n, p);
     // Plaintext pt1 = Plaintext::from_cmat(mat1, slice(mods, 0, 3), delta);
     Plaintext pt1 = Plaintext::_from_cmat_without_encoding(mat1, slice(mods, 0, 1), delta);
     // 准备一个私钥
@@ -847,7 +832,7 @@ void test_bsk()
     
 
     // 比较结果
-    int checking = 3;
+    int checking = 4;
 
     if(checking == 1)
     {
@@ -905,12 +890,30 @@ void test_bsk()
             complex round_got(findMinAbs(got.real(), rounder), findMinAbs(got.imag(), rounder));
             complex diff1 = round_got / expected;
             complex diff2 = expected / round_got;
-            printf("[t2 %d %d %d] got(%+.6Lf %+.6Lf), exp(%+.6Lf %+.6Lf) diff1(%+.6Lf %+.6Lf) diff2(%+.6Lf %+.6Lf)\n",
+            printf("[t3 %d %d %d] got(%+.6Lf %+.6Lf), exp(%+.6Lf %+.6Lf) diff1(%+.6Lf %+.6Lf) diff2(%+.6Lf %+.6Lf)\n",
                 w, x, y, 
                 round_got.real(), round_got.imag(),
                 expected.real(), expected.imag(),
                 diff1.real(), diff1.imag(),
                 diff2.real(), diff2.imag()
+            );
+        }
+    }
+    if(checking == 4)
+    {
+        // 这里处理sin_real
+        ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        long double q = mods[0];
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            long double got = mat2.at(w, x, y).imag();
+            long double expected = std::sin(mat1.at(w, x, y).real() * 2 * M_PI * 0.98635);  // 0.98635，一个修正误差的因子
+            
+            long double  diff1 = got / expected;
+            long double  diff2 = expected / got;
+            printf("[sin %d %d %d] got(%+.6Lf), exp(%+.6Lf) diff1(%+.6Lf) diff2(%+.6Lf)\n",
+                w, x, y, 
+                got, expected, diff1, diff2
             );
         }
     }
