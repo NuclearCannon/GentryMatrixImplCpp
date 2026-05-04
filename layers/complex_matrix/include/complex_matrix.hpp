@@ -5,7 +5,7 @@
 #include "flints.hpp"
 
 
-using complex = std::complex<double>;
+using complex = std::complex<long double>;
 
 // 一个(p-1, n, n)数组
 // 在朴素形式下，其[w, x, y]位置是第w个矩阵的[x,y]位置
@@ -44,14 +44,14 @@ public:
     ComplexMatrixGroup _encodeW() const;
     ComplexMatrixGroup decode() const;
 
-    fmpz_vector to_fmpz_vector(double delta) const;
+    fmpz_vector to_fmpz_vector(long double delta) const;
 
-    static ComplexMatrixGroup from_fmpz_vector(const fmpz_vector& src, double delta, size_t n, size_t p);
+    static ComplexMatrixGroup from_fmpz_vector(const fmpz_vector& src, long double delta, size_t n, size_t p);
 
     ComplexMatrixGroup matmul_ABT(const ComplexMatrixGroup& other) const;
 
-    static ComplexMatrixGroup random(double abs_max, size_t n, size_t p);
-    static ComplexMatrixGroup random_imag(double abs_max, size_t n, size_t p);
+    static ComplexMatrixGroup random(long double abs_max, size_t n, size_t p);
+    static ComplexMatrixGroup random_imag(long double abs_max, size_t n, size_t p);
 
     // 单位矩阵（调试用）
     static ComplexMatrixGroup eye(size_t n, size_t p);

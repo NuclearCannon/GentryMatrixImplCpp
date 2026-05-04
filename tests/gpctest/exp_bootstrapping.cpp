@@ -18,7 +18,7 @@ void exp_bootstrapping()
         {70368748426241, 6},
         {qo, qor}
     };
-    double delta = 100000;
+    long double delta = 100000;
 
     GentryPolyCtx ctx(n, p, qrp);
 
@@ -50,7 +50,7 @@ void exp_bootstrapping()
                 for(int j=0; j<n; j++)
                 {
                     // 计算zeta^{-5^i * j}
-                    complex x = std::polar<double>(1, - M_PI_2 / n * (i5 * j % (4*n)));
+                    complex x = std::polar<long double>(1, - M_PI_2 / n * (i5 * j % (4*n)));
                     for(int k=0; k<p-1; k++)
                     {
                         C.at(k, j, i) = x;
@@ -79,8 +79,8 @@ void exp_bootstrapping()
                 RotateKey rkey = RotateKey::gen(sk, qo, ctx, mods, 0,0,l);
                 Ciphertext rotated = rkey.run(m02, ctx);
                 // 构造临时明文
-                complex x = std::polar<double>(1, - (2 * M_PI / ((double)p)) * (double)gamma);
-                x = (x-1.0)/((double)p);
+                complex x = std::polar<long double>(1, - (2 * M_PI / ((long double)p)) * (long double)gamma);
+                x = (x-(1.0L))/((long double)p);
                 Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, delta);
                 
                 Ciphertext multed = rotated.mul_pt(tmppt, ctx);
@@ -91,14 +91,14 @@ void exp_bootstrapping()
         ComplexMatrixGroup result = final_pt.to_cmat(delta*delta*delta*delta);
         ComplexMatrixGroup encoded = mat1.encode();
         
-        double max_diff = 0;
+        long double max_diff = 0;
         for(int w=0;w<p-1;w++)
         {
             for(int x=0; x<n; x++)
             {
                 for(int y=0; y<n; y++)
                 {
-                    double new_diff = std::abs(result.at(w, x, y)-encoded.at(w, x, y));
+                    long double new_diff = std::abs(result.at(w, x, y)-encoded.at(w, x, y));
                     if(new_diff>max_diff)max_diff=new_diff;
 
                 }
@@ -122,7 +122,7 @@ void exp_bootstrapping()
                 for(int j=0; j<n; j++)
                 {
                     // 注意在这里存在一个n倍关系
-                    complex x = std::polar<double>(n, M_PI_2 / n * (i5 * j % (4*n)));
+                    complex x = std::polar<long double>(n, M_PI_2 / n * (i5 * j % (4*n)));
                     for(int k=0; k<p-1; k++)
                     {
                         C2.at(k, i, j) = x;
@@ -151,7 +151,7 @@ void exp_bootstrapping()
                 RotateKey rkey = RotateKey::gen(sk, qo, ctx, mods, 0,0,(p-1-l)%(p-1));
                 Ciphertext rotated = rkey.run(m02, ctx);
                 // 构造临时明文
-                complex x = std::polar<double>(1, (2 * M_PI / ((double)p)) * (double)gamma);
+                complex x = std::polar<long double>(1, (2 * M_PI / ((long double)p)) * (long double)gamma);
                 Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, delta);
                 Ciphertext multed = rotated.mul_pt(tmppt, ctx);
                 m03.add_(multed, ctx);
@@ -161,14 +161,14 @@ void exp_bootstrapping()
         ComplexMatrixGroup result = final_pt.to_cmat(delta*delta*delta*delta);
         ComplexMatrixGroup decoded = mat1.decode();
         
-        double max_diff = 0;
+        long double max_diff = 0;
         for(int w=0;w<p-1;w++)
         {
             for(int x=0; x<n; x++)
             {
                 for(int y=0; y<n; y++)
                 {
-                    double new_diff = std::abs(result.at(w, x, y)-decoded.at(w, x, y));
+                    long double new_diff = std::abs(result.at(w, x, y)-decoded.at(w, x, y));
                     if(new_diff>max_diff)max_diff=new_diff;
                 }
             }
@@ -188,8 +188,8 @@ void exp_bootstrapping()
         ComplexMatrixGroup cmg_coeffs_2 = pt2._to_cmat_without_decoding(delta);
         // 检查差异
         printf("test_naive_extend diffs\n");
-        double q0 = mods[0], q1 = mods[1], q2=mods[2];
-        double qprod = q0*q1*q2; 
+        long double q0 = mods[0], q1 = mods[1], q2=mods[2];
+        long double qprod = q0*q1*q2; 
         for(int w=0; w<p-1; w++)
         {
             for(int x=0; x<n; x++)
@@ -199,8 +199,8 @@ void exp_bootstrapping()
                     complex diff = cmg_coeffs_2.at(w, x, y) -  cmg_coeffs.at(w, x, y);
                     // diff /= qprod;
                     diff = diff * delta / qprod;
-                    printf("[%d %d %d] %.3lf %.3lf\n", w, x, y, diff.real(), diff.imag());
-                    printf("[%d %d %d] %.3lf %.3lf\n", w, x, y, diff.real(), diff.imag());
+                    printf("[%d %d %d] %.6Lf %.6Lf\n", w, x, y, diff.real(), diff.imag());
+                    printf("[%d %d %d] %.6Lf %.6Lf\n", w, x, y, diff.real(), diff.imag());
                 }
             }
         }
@@ -236,9 +236,9 @@ bool veccmp(const std::vector<uint64_t>& a, const std::vector<uint64_t>& b)
 static void check(Ciphertext& ct, const SecretKey& sk, const GentryPolyCtx& ctx, const char* name = nullptr)
 {
     if(name==nullptr)name="NoName";
-    double r = ct.check_abs(sk, ctx, 1.0);
+    long double r = ct.check_abs(sk, ctx, 1.0);
     r = std::log2(r);
-    printf("%s log(abs)=%.2lf\n",name, r);
+    printf("%s log(abs)=%.6Lf\n",name, r);
 }
 
 void exp_sin()
@@ -302,7 +302,7 @@ void exp_sin()
         {1099559695361, 3},
         {qo, qor}
     };
-    double delta = double(1ULL<<40);    // 缩放因子和每一级模数都是2^40级
+    long double delta = (long double)(1ULL<<40);    // 缩放因子和每一级模数都是2^40级
 
     GentryPolyCtx ctx(n, p, qrp);
 
@@ -333,8 +333,8 @@ void exp_sin()
     // 现在ct1是待sin密文，缩放因子为delta
     // 除以2^r
     int r = 10;
-    double exp2r = double(1ULL<<r);
-    double exp2r_inv = 1/exp2r;
+    long double exp2r = (long double)(1ULL<<r);
+    long double exp2r_inv = 1/exp2r;
     std::cout << "exp2r_inv=" << exp2r_inv << std::endl;
     Plaintext pt_2r_inv = Plaintext::from_scalar(n, p, exp2r_inv, mods20, delta);
     Ciphertext x_0_0 = ct1.mul_pt(pt_2r_inv, ctx);
@@ -393,10 +393,10 @@ void exp_sin()
         {
             for(int y=0; y<n; y++)
             {
-                double got = mat2.at(w, x, y).imag();
-                double expected = std::sin(mat1.at(w, x, y).imag());
-                double diff = got - expected;
-                printf("%d %d %d %.6lf %.6lf %.6lf\n", w, x, y, got, expected, diff);
+                long double got = mat2.at(w, x, y).imag();
+                long double expected = std::sin(mat1.at(w, x, y).imag());
+                long double diff = got - expected;
+                printf("%d %d %d %.6Lf %.6Lf %.6Lf\n", w, x, y, got, expected, diff);
 
             }
         }
@@ -405,6 +405,28 @@ void exp_sin()
     
 }
 
+
+#include <cmath>
+#include <algorithm>
+
+#include <cmath>
+
+long double findMinAbs(long double a, long double b) {
+    long double bestValue = a + (-10) * b;  // 初始值设为 k = -10
+    long double bestAbs = std::abs(bestValue);
+    
+    for (int k = -9; k <= 10; ++k) {
+        long double current = a + k * b;
+        long double currentAbs = std::abs(current);
+        
+        if (currentAbs < bestAbs) {
+            bestAbs = currentAbs;
+            bestValue = current;
+        }
+    }
+    
+    return bestValue;
+}
 
 /*
 
@@ -426,14 +448,18 @@ private:
     int n_, p_;
     const GentryPolyCtx* ctx_;
     std::vector<uint64_t> mods_all_;
-    static constexpr int low_ = 3;   // 我们假设输入密文的模数就是mods_all_[:low_] 实际上，low必须等于3
+    static constexpr int low_ = 2;   // 我们假设输入密文的模数就是mods_all_[:low_] 实际上，low必须等于2
     static constexpr int top_ = 30;   // 我们假设最大密文的模数就是mods_all_[:top_]
     static constexpr int hig_ = 10;   // 我们假设输出密文的模数就是mods_all_[:hig_]
-    static constexpr double DELTA = double(1ULL<<40);
+    static constexpr long double DELTA = (long double)(1ULL<<40);
     // C2S
     CircledastKey mmkey_top_;
     ConjTransposeKey ctkey_top_;
     std::vector<RotateKey> rtkeys_top_;
+
+    // 分离虚实
+    ConjKey cjkey_;
+    ConjKey cjkey_9_;
 
     // S2C
     CircledastKey mmkey_s2c_;
@@ -457,6 +483,8 @@ public:
     ):
         mmkey_top_(   CircledastKey::gen(sk, qo, ctx, slice(mods, 0, 30))),
         ctkey_top_(ConjTransposeKey::gen(sk, qo, ctx, slice(mods, 0, 30))),
+        cjkey_(ConjKey::gen(sk, qo, ctx, slice(mods, 0, 23))),
+        cjkey_9_(ConjKey::gen(sk, qo, ctx, slice(mods, 0, 9))),
         mmkey_s2c_(   CircledastKey::gen(sk, qo, ctx, slice(mods, 0, 13))),
         ctkey_s2c_(ConjTransposeKey::gen(sk, qo, ctx, slice(mods, 0, 13))),
         mtkey_c1_ (MultKey::gen(sk, qo, ctx, slice(mods, 0, 22))),
@@ -467,26 +495,27 @@ public:
         ctx_ = &ctx;
         mods_all_ = mods;
         // 生成C2S的一系列RotateKey
-        for(int l=0; l<p-1; l++)
-        {
-            rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 30), 0,0,l));
-            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 13), 0,0,l));
-        }
+        // for(int l=0; l<p-1; l++)
+        // {
+        //     rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 30), 0,0,l));
+        //     rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 13), 0,0,l));
+        // }
         // 生成bs所需的一系列mtkey。共计10个，第一个的模数链长度是
-        for(int i=0; i<10; i++)
-        {
-            int j = 19-i;
-            mtkeys_bs_.push_back(MultKey::gen(sk, qo, ctx, slice(mods, 0, j)));
-        }
+        // for(int i=0; i<10; i++)
+        // {
+        //     int j = 19-i;
+        //     mtkeys_bs_.push_back(MultKey::gen(sk, qo, ctx, slice(mods, 0, j)));
+        // }
     }
 
     /// _c2s的输入密文的模数链是top, 缩放因子是delta
     // 输出密文的模数链仍然是top，缩放因子是delta^4
-    Ciphertext _c2s(const Ciphertext& input, double delta)
+    Ciphertext _c2s(const Ciphertext& input, long double delta)
     {
         int n=n_, p=p_;
         std::vector<uint64_t> mods = input.get_moduli();
-        assert(veccmp(mods, slice(mods_all_, 0, top_)));
+        int modslen = mods.size();
+        // assert(veccmp(mods, slice(mods_all_, 0, top_)));
 
         
         // 构造XY-DFT辅助矩阵C
@@ -499,7 +528,7 @@ public:
                 for(int j=0; j<n; j++)
                 {
                     // 计算zeta^{-5^i * j}
-                    complex x = std::polar<double>(1, - M_PI_2 / n * (i5 * j % (4*n)));
+                    complex x = std::polar<long double>(1, - M_PI_2 / n * (i5 * j % (4*n)));
                     for(int k=0; k<p-1; k++)
                     {
                         C.at(k, j, i) = x;
@@ -508,12 +537,13 @@ public:
             }
         }
         // 将C化为明文
-        Plaintext ptC = Plaintext::from_cmat(C, mods, delta);
+        Plaintext ptC1 = Plaintext::from_cmat(C, mods, mods[modslen-1]);
+        Plaintext ptC2 = Plaintext::from_cmat(C, mods, mods[modslen-2]);
         // 执行XY-DFT
         Ciphertext m02 = mmkey_top_.run_pc(
-            ptC, ctkey_top_.run(
+            ptC1, ctkey_top_.run(
                 mmkey_top_.run_cp(
-                    input, ptC, *ctx_
+                    input, ptC2, *ctx_
                 ), *ctx_
             ), *ctx_
         );// m02的缩放因子是delta^3
@@ -526,17 +556,17 @@ public:
             const RotateKey& rkey = rtkeys_top_[l];
             Ciphertext rotated = rkey.run(m02, *ctx_);
             // 构造临时明文
-            complex x = std::polar<double>(1, - (2 * M_PI / ((double)p)) * (double)gamma);
-            x = (x-1.0)/((double)p);
-            Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, delta);
+            complex x = std::polar<long double>(1, - (2 * M_PI / ((long double)p)) * (long double)gamma);
+            x = (x-1.0L)/((long double)p);
+            Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, DELTA);
             
             Ciphertext multed = rotated.mul_pt(tmppt, *ctx_);
             m03.add_(multed, *ctx_);
         }
-        return m03.moduli_reduce(slice(mods_all_, top_-3, top_));
+        return m03.moduli_reduce(slice(mods, modslen-2, modslen));   // [(28),29,30]
     }
 
-    Ciphertext _s2c(const Ciphertext& input, double delta)
+    Ciphertext _s2c(const Ciphertext& input, long double delta)
     {
         int n=n_, p=p_;
         std::vector<uint64_t> mods = input.get_moduli();
@@ -553,7 +583,7 @@ public:
                 for(int j=0; j<n; j++)
                 {
                     // 注意在这里存在一个n倍关系
-                    complex x = std::polar<double>(n, M_PI_2 / n * (i5 * j % (4*n)));
+                    complex x = std::polar<long double>(n, M_PI_2 / n * (i5 * j % (4*n)));
                     for(int k=0; k<p-1; k++)
                     {
                         C2.at(k, i, j) = x;
@@ -579,7 +609,7 @@ public:
             const RotateKey& rkey = rtkeys_s2c_[l];
             Ciphertext rotated = rkey.run(m02, ctx);
             // 构造临时明文
-            complex x = std::polar<double>(1, (2 * M_PI / ((double)p)) * (double)gamma);
+            complex x = std::polar<long double>(1, (2 * M_PI / ((long double)p)) * (long double)gamma);
             Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, delta);
             Ciphertext multed = rotated.mul_pt(tmppt, ctx);
             m03.add_(multed, ctx);
@@ -589,7 +619,7 @@ public:
     }
 
 
-    Ciphertext _sin(const Ciphertext& input, double delta)
+    Ciphertext _sin(const Ciphertext& input, long double delta)
     {
         // 输入密文的模数链应该是30-3-4=23
         assert(veccmp(slice(mods_all_, 0, 23), input.get_moduli()));
@@ -612,8 +642,8 @@ public:
         
         // 除以2^r，消耗一层
         int r = 10;
-        double exp2r = double(1ULL<<r);
-        double exp2r_inv = 1/exp2r;
+        long double exp2r = (long double)(1ULL<<r);
+        long double exp2r_inv = 1/exp2r;
         std::cout << "exp2r_inv=" << exp2r_inv << std::endl;
         Plaintext pt_2r_inv = Plaintext::from_scalar(n, p, exp2r_inv, chains[0], delta);
         Ciphertext x_0 = input.mul_pt(pt_2r_inv, ctx).moduli_reduce(to_remove[0]);
@@ -630,9 +660,15 @@ public:
         x4_2.add_(x3_2, ctx);
         x4_2.add_(x2_2, ctx);
         x4_2.add_(x1_2, ctx);
-        Plaintext one_div_24 = Plaintext::from_scalar(n, p, 1.0/24.0, chains[3], delta);
-        Plaintext one_16 = Plaintext::from_scalar(n, p, 1.0, chains[4], delta);
-        Ciphertext y0 = x4_2.mul_pt(one_div_24, ctx).moduli_reduce(to_remove[3]).add_pt(one_16, ctx);
+        // Plaintext one_div_24 = Plaintext::from_scalar(n, p, 1.0/24.0, chains[3], delta);
+        
+        
+        Ciphertext y0 = x4_2
+            .add_pt(Plaintext::from_scalar(n, p, 24.0, chains[3], delta), ctx)
+            .mul_pt(Plaintext::from_scalar(n, p, 1.0/24.0, chains[3], delta), ctx)
+            .moduli_reduce(to_remove[3]);
+
+
         // 对y0进行10次连续平方
         // y0对应的模数链是chains[4]，也即[0:19]
         Ciphertext y1 = mtkeys_bs_[0].run(y0, y0, ctx).moduli_reduce(to_remove[4]);
@@ -657,13 +693,59 @@ public:
         assert(veccmp(input.get_moduli(), slice(mods_all_, 0, low_)));
         Ciphertext t1 = input.naive_moduli_extend(slice(mods_all_, low_, top_));
         assert(veccmp(t1.get_moduli(), slice(mods_all_, 0, top_)));
+        return t1;
         // C2S
-        Ciphertext t2 = this->_c2s(t1, DELTA);
+        Ciphertext t2 = this->_c2s(t1, DELTA);  // 它的模数链为top-3=27级
+        assert(veccmp(t2.get_moduli(), slice(mods_all_, 0, 28)));
         return t2;
+        // 这里的t2的槽中元素是原来的系数除以Delta的结果……
+        // 乘以pi / q。不是2pi/q吗？其实是因为后面的虚实分离会有乘二的副作用，在这里修正它
+        // 具体来讲，通过“乘以Pi但是做4层mod reduce”实现
+        Plaintext pt_pi = Plaintext::from_scalar(n_, p_, M_PI, t2.get_moduli(), DELTA); // 嘿，或许可以省一层下来
+        Ciphertext t3 = t2.mul_pt(pt_pi, *ctx_).moduli_reduce(slice(mods_all_, 24, 27));
+        return t3;
+        // t3的实部虚部都是接近于pi的倍数，很好
+        // 提取实部虚部
+        printf("debug 1\n");
+        Ciphertext t3_conj = cjkey_.run(t3, *ctx_);
+        printf("debug 2\n");
+        Ciphertext real = t3.add(t3_conj).mul_i();
+        printf("debug 3\n");
+        Ciphertext imag = t3.sub(t3_conj);
+        printf("debug 4\n");
+        assert(veccmp(real.get_moduli(), slice(mods_all_, 0, 23)));
+        assert(veccmp(imag.get_moduli(), slice(mods_all_, 0, 23)));
+        // return real;
+        // real和imag都是2pi的倍数，很好
+        // 计算正弦
+        Ciphertext sin_real = this->_sin(real, DELTA);
+        Ciphertext sin_imag = this->_sin(imag, DELTA);
+        assert(veccmp(sin_real.get_moduli(), slice(mods_all_, 0, 9)));
+        assert(veccmp(sin_imag.get_moduli(), slice(mods_all_, 0, 9)));
+        // 提取他们的虚部，这会造成绝对值乘2的副作用
+        Ciphertext res_real = sin_real.sub(cjkey_9_.run(sin_real, *ctx_)).mul_i().neg();
+        Ciphertext res_imag = sin_imag.sub(cjkey_9_.run(sin_imag, *ctx_));
+        // 合并
+        Ciphertext res_of_sin = res_real.add(res_imag);
+        // 乘以q/4pi。不是说q/2pi吗？因为我们刚刚造成了副作用，现在要补偿回去。
+        // 具体来讲，呃，其实我们什么都不用做，已经在sin内部做了
+        // Ciphertext res = res_of_sin.mul_pt(
+        //     Plaintext::from_scalar(
+        //         n_, p_, 
+        //         ((long double)(mods_all_[0]))*((long double)(mods_all_[1]))*((long double)(mods_all_[2]))/(4*M_PI),
+        //         res_of_sin.
+
+        //     )
+        // )
+        
+        return res_of_sin;
     }
 
     
 };
+
+constexpr int size_of_w = sizeof(double);
+constexpr int size_of_lw = sizeof(long double);
 
 void test_bsk()
 {
@@ -675,10 +757,11 @@ void test_bsk()
     uint64_t qo = 576460752303421441;
     uint64_t qor = 19;
     std::vector<std::pair<uint64_t, uint64_t>> qrp = {
+        //268435456
         {1099512345601, 7},
         {1099512693761, 3},
-        {1099513216001, 3},
-        {1099513999361, 6},
+        {1099513216001, 3}, // 1329232072329048371585914525299471361
+        {1099513999361, 6}, // -6044647636049595256012800
         {1099514434561, 31},
         {1099514782721, 3},
         {1099515566081, 6},
@@ -727,7 +810,7 @@ void test_bsk()
         {1099559695361, 3},
         {qo, qor}
     };
-    double delta = double(1ULL<<40);    // 缩放因子和每一级模数都是2^40级
+    long double delta = (long double)(1ULL<<40);    // 缩放因子和每一级模数都是2^40级
 
     GentryPolyCtx ctx(n, p, qrp);
     std::vector<uint64_t> mods = get_mods_from_qrp(qrp, 0, 50);
@@ -735,9 +818,9 @@ void test_bsk()
     // 准备一个明文
     printf("准备一个明文\n");
 
-    ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(100, n, p);
+    ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(0.001, n, p);
     // Plaintext pt1 = Plaintext::from_cmat(mat1, slice(mods, 0, 3), delta);
-    Plaintext pt1 = Plaintext::_from_cmat_without_encoding(mat1, slice(mods, 0, 3), delta);
+    Plaintext pt1 = Plaintext::_from_cmat_without_encoding(mat1, slice(mods, 0, 2), delta);
     // 准备一个私钥
     printf("准备一个私钥\n");
     SecretKey sk(n, p);
@@ -747,29 +830,40 @@ void test_bsk()
     printf("加密成密文\n");
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     printf("开始自举\n");
-    Ciphertext ct2 = bsk.main(ct1);
+    Ciphertext ct2 = 
+        bsk.main(ct1);
+        // ct1.naive_moduli_extend(slice(mods, 2, 30));
     printf("自举结束，检查取值\n");
 
     Plaintext decrypted = ct2.decrypt(sk, ctx);
-    ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
-    // 比较结果
-    for(int w=0; w<p-1; w++)
-    {
-        for(int x=0; x<n; x++)
-        {
-            for(int y=0; y<n; y++)
-            {
-                complex got = mat2.at(w, x, y);
-                complex expected = mat1.at(w, x, y);
-                complex diff = got - expected;
-                // printf("%d %d %d %.6lf %.6lf %.6lf\n", w, x, y, got, expected, diff);
-                diff *= delta;
-                diff /= mods[0];
-                diff /= mods[1];
-                diff /= mods[2];
-                printf("%d %d %d %.6lf %.6lf\n", w, x, y, diff.real(), diff.imag());
+    
 
-            }
+    // 比较结果
+    int checking = 1;
+
+    if(checking == 1)
+    {
+        ComplexMatrixGroup mat2 = decrypted._to_cmat_without_decoding(1);
+        // ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        long double q = 1;
+        q *= mods[0];
+        q *= mods[1];
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex got = mat2.at(w, x, y);
+            complex expected(mat1.at(w, x, y));
+            expected *= delta;
+            complex round_got(findMinAbs(got.real(), q), findMinAbs(got.imag(), q));
+            complex diff1 = round_got / expected;
+            complex diff2 = expected / round_got;
+            printf("[t1 %d %d %d] got(%+.6Lf %+.6Lf), exp(%+.6Lf %+.6Lf) diff1(%+.6Lf %+.6Lf) diff2(%+.6Lf %+.6Lf)\n",
+                w, x, y, 
+                got.real(), got.imag(),
+                expected.real(), expected.imag(),
+                diff1.real(), diff1.imag(),
+                diff2.real(), diff2.imag()
+            );
         }
     }
+    
 }

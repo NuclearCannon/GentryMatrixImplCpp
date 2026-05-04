@@ -14,8 +14,8 @@ const std::vector<complex>& get_roots(size_t logn, bool conj)
     if(pos.get())return *pos;
     size_t n = 1<<logn;
     std::vector<complex> roots(logn);
-    if (conj) for(int i=0; i<logn; i++)roots[i] = std::polar<double>(1, - 2 * M_PI / double(n>>i));
-    else      for(int i=0; i<logn; i++)roots[i] = std::polar<double>(1, + 2 * M_PI / double(n>>i));
+    if (conj) for(int i=0; i<logn; i++)roots[i] = std::polar<long double>(1, - 2 * M_PI / (long double)(n>>i));
+    else      for(int i=0; i<logn; i++)roots[i] = std::polar<long double>(1, + 2 * M_PI / (long double)(n>>i));
     pos = std::make_unique<std::vector<complex>>(std::move(roots));
     return *pos;
 }
@@ -65,7 +65,7 @@ void dft_XY_complex(
     // let temp = src * zeta_pos_pows
 
     
-    complex zeta = std::polar<double>(1, M_PI_2 * (using_conj_zetas?-1:1) / n);
+    complex zeta = std::polar<long double>(1, M_PI_2 * (using_conj_zetas?-1:1) / n);
     complex zetai = 1;
     for(size_t i=0; i<n; i++)
     {
@@ -98,8 +98,8 @@ void idft_XY_complex(
     }
     // iNTT
     dft_standard(temp.data(), temp2.data(), n, !using_conj_zetas);
-    complex izeta = std::polar<double>(1, M_PI_2 * (using_conj_zetas?1:-1) / n);
-    complex izetai = 1/((double)n); // 在这除n
+    complex izeta = std::polar<long double>(1, M_PI_2 * (using_conj_zetas?1:-1) / n);
+    complex izetai = 1/((long double)n); // 在这除n
     for(size_t i=0; i<n; i++)
     {
         dst[i] = temp[i] * izetai;
@@ -114,7 +114,7 @@ std::vector<complex> get_eta_powers(ssize_t p)
     int gi = 1;
     for(int i=0; i<p-1; i++, gi=(gi*3)%p)
     {
-        result[i] = std::polar<double>(1, M_PI * 2 * gi / p);
+        result[i] = std::polar<long double>(1, M_PI * 2 * gi / p);
     }
     assert(gi==1);
     return result;
@@ -126,7 +126,7 @@ std::vector<complex> get_ieta_powers(ssize_t p)
     int gi = 1;
     for(int i=0; i<p-1; i++, gi=(gi*3)%p)
     {
-        result[i] = std::polar<double>(1, - M_PI * 2 * gi / p);
+        result[i] = std::polar<long double>(1, - M_PI * 2 * gi / p);
     }
     assert(gi==1);
     return result;
