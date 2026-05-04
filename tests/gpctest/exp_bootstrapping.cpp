@@ -67,8 +67,8 @@ private:
     const GentryPolyCtx* ctx_;
     std::vector<uint64_t> mods_all_;
     static constexpr int low_ = 1;   // 我们假设输入密文的模数就是mods_all_[:low_] 实际上，low必须等于2
-    static constexpr int top_ = 30;   // 我们假设最大密文的模数就是mods_all_[:top_]
-    static constexpr int hig_ = 9;   // 我们假设输出密文的模数就是mods_all_[:hig_]
+    static constexpr int top_ = 24;   // 我们假设最大密文的模数就是mods_all_[:top_]
+    static constexpr int r_ = 10;
     static constexpr long double DELTA = (long double)(1ULL<<40);
     // C2S
     CircledastKey mmkey_top_;
@@ -99,14 +99,14 @@ public:
         const std::vector<uint64_t>& mods
         
     ):
-        mmkey_top_(   CircledastKey::gen(sk, qo, ctx, slice(mods, 0, 30))),
-        ctkey_top_(ConjTransposeKey::gen(sk, qo, ctx, slice(mods, 0, 30))),
-        cjkey_t3_(ConjKey::gen(sk, qo, ctx, slice(mods, 0, 26))),
-        cjkey_sin_(ConjKey::gen(sk, qo, ctx, slice(mods, 0, 12))),
-        mmkey_s2c_(   CircledastKey::gen(sk, qo, ctx, slice(mods, 0, 12))),
-        ctkey_s2c_(ConjTransposeKey::gen(sk, qo, ctx, slice(mods, 0, 12))),
-        mtkey_c1_ (MultKey::gen(sk, qo, ctx, slice(mods, 0, 25))),
-        mtkey_c2_ (MultKey::gen(sk, qo, ctx, slice(mods, 0, 24)))
+        mmkey_top_(   CircledastKey::gen(sk, qo, ctx, slice(mods, 0, top_))),
+        ctkey_top_(ConjTransposeKey::gen(sk, qo, ctx, slice(mods, 0, top_))),
+        cjkey_t3_(ConjKey::gen(sk, qo, ctx, slice(mods, 0, top_-4))),
+        cjkey_sin_(ConjKey::gen(sk, qo, ctx, slice(mods, 0, top_-18))),
+        mmkey_s2c_(   CircledastKey::gen(sk, qo, ctx, slice(mods, 0, top_-18))),
+        ctkey_s2c_(ConjTransposeKey::gen(sk, qo, ctx, slice(mods, 0, top_-18))),
+        mtkey_c1_ (MultKey::gen(sk, qo, ctx, slice(mods, 0, top_-5))),
+        mtkey_c2_ (MultKey::gen(sk, qo, ctx, slice(mods, 0, top_-6)))
     {
         n_ = n;
         p_ = p;
@@ -115,24 +115,25 @@ public:
         // 生成C2S的一系列RotateKey
         for(int l=0; l<p-1; l++)
         {
-            rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 30), 0,0,l));
-            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 12), 0,0,(p-1-l)%(p-1)));
+            rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_), 0,0,l));
+            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_-18), 0,0,(p-1-l)%(p-1)));
         }
         // 生成bs所需的一系列mtkey。共计10个，第一个的模数链长度是
         for(int i=0; i<10; i++)
         {
-            int j = 22-i;
+            int j = top_-8-i;
             mtkeys_bs_.push_back(MultKey::gen(sk, qo, ctx, slice(mods, 0, j)));
         }
     }
 
     /// _c2s的输入密文的模数链是top, 缩放因子是delta
-    // 输出密文的模数链仍然是top，缩放因子是delta^4
+    // 模数链长度：top->top-3
     Ciphertext _c2s(const Ciphertext& input, long double delta)
     {
         int n=n_, p=p_;
         std::vector<uint64_t> mods = input.get_moduli();
         int modslen = mods.size();
+        assert(modslen == top_);
 
         
         // 构造XY-DFT辅助矩阵C
@@ -180,14 +181,14 @@ public:
             Ciphertext multed = rotated.mul_pt(tmppt, *ctx_);
             m03.add_(multed, *ctx_);
         }
-        return m03.moduli_reduce(slice(mods, modslen-3, modslen));   // [(28),29,30]
+        return m03.moduli_reduce(slice(mods, modslen-3, modslen));
     }
 
     Ciphertext _s2c(const Ciphertext& input, long double delta, long double factor)
     {
         int n=n_, p=p_;
         std::vector<uint64_t> mods = input.get_moduli();
-        assert(veccmp(mods, slice(mods_all_, 0, hig_+3)));
+        assert(veccmp(mods, slice(mods_all_, 0, top_-18)));
         const GentryPolyCtx& ctx = *ctx_;
         // 构造XY-DFT辅助矩阵C2=C*
         ComplexMatrixGroup C2 = ComplexMatrixGroup(n, p);    // zero
@@ -229,14 +230,14 @@ public:
             Ciphertext multed = rotated.mul_pt(tmppt, ctx);
             m03.add_(multed, ctx);
         }
-        return m03.moduli_reduce(slice(mods_all_, hig_, hig_+3));
+        return m03.moduli_reduce(slice(mods_all_, top_-21, top_-18));
 
     }
 
 
     Ciphertext _sin(const Ciphertext& input, long double delta)
     {
-        const int input_layer = 26;
+        const int input_layer = top_-4;
         assert(veccmp(slice(mods_all_, 0, input_layer), input.get_moduli()));
         // 准备各个参数
         int n = n_;
@@ -306,52 +307,41 @@ public:
         assert(veccmp(input.get_moduli(), slice(mods_all_, 0, low_)));
         Ciphertext t1 = input.naive_moduli_extend(slice(mods_all_, low_, top_));
         assert(veccmp(t1.get_moduli(), slice(mods_all_, 0, top_)));
-        // Plaintext pt1 = t1.decrypt(sk, *ctx_);
-        // pt1._round(low_);
-        // Ciphertext t1_ = Ciphertext::encrypt(pt1, sk, *ctx_);
-        // return t1;
         // C2S
         Ciphertext t2 = this->_c2s(t1, DELTA);  // 它的模数链为top-3=27级
-        assert(veccmp(t2.get_moduli(), slice(mods_all_, 0, 27)));
-        // return t2;
+        assert(veccmp(t2.get_moduli(), slice(mods_all_, 0, top_-3)));
         // t2的槽中元素（缩放后后）的周期是mods[0]/delta
         // 我们希望它的周期是2pi，因此这里需要乘以pi
         // 为什么是pi而不是2pi？因为后面的虚实分离有乘2的副作用
         // 我们希望去除mods[0]，但是模约简却使用mods[26]，因此我们还需乘以mods[26]/mods[0]
         long double scalar = M_PI;
-        scalar *= mods_all_[26];
+        scalar *= mods_all_[top_-4];
         scalar /= mods_all_[0];
 
         Plaintext pt_pi = Plaintext::from_scalar(n_, p_, scalar, t2.get_moduli(), DELTA); // 嘿，或许可以省一层下来
-        Ciphertext t3 = t2.mul_pt(pt_pi, *ctx_).moduli_reduce(slice(mods_all_, 26, 27));
-        assert(veccmp(t3.get_moduli(), slice(mods_all_, 0, 26)));
-        // return t3;
+        Ciphertext t3 = t2.mul_pt(pt_pi, *ctx_).moduli_reduce(slice(mods_all_, top_-4, top_-3));
+        assert(veccmp(t3.get_moduli(), slice(mods_all_, 0, top_-4)));
         // 提取实部虚部
         Ciphertext t3_conj = cjkey_t3_.run(t3, *ctx_);
         Ciphertext real = t3.add(t3_conj).mul_i();
         Ciphertext imag = t3.sub(t3_conj);
-        assert(veccmp(real.get_moduli(), slice(mods_all_, 0, 26)));
-        assert(veccmp(imag.get_moduli(), slice(mods_all_, 0, 26)));
-        printf("debug 1\n");
+        assert(veccmp(real.get_moduli(), slice(mods_all_, 0, top_-4)));
+        assert(veccmp(imag.get_moduli(), slice(mods_all_, 0, top_-4)));
         Ciphertext sin_real = this->_sin(real, DELTA);
         Ciphertext sin_imag = this->_sin(imag, DELTA);
-        assert(veccmp(sin_real.get_moduli(), slice(mods_all_, 0, 12)));
-        assert(veccmp(sin_imag.get_moduli(), slice(mods_all_, 0, 12)));
-        printf("debug 2\n");
+        assert(veccmp(sin_real.get_moduli(), slice(mods_all_, 0, top_-18)));
+        assert(veccmp(sin_imag.get_moduli(), slice(mods_all_, 0, top_-18)));
         // 提取他们的虚部，这会造成绝对值乘2的副作用
-        printf("debug 3\n");
         Ciphertext res_real = sin_real.sub(cjkey_sin_.run(sin_real, *ctx_)).mul_i().neg();
         Ciphertext res_imag = sin_imag.sub(cjkey_sin_.run(sin_imag, *ctx_));
         // 合并
-        printf("debug 4\n");
         Ciphertext res_of_sin = res_real.add(res_imag);
-        // return res_of_sin;
-        assert(veccmp(res_of_sin.get_moduli(), slice(mods_all_, 0, 12)));
-        printf("debug 5\n");
+        assert(veccmp(res_of_sin.get_moduli(), slice(mods_all_, 0, top_-18)));
+        
         // 乘以q/4pi。不是说q/2pi吗？因为我们刚刚造成了副作用，现在要补偿回去。
         // 但是我们什么都不用做。q部分一开始就没乘上去，而剩下来的部分可以放到s2c中作为它的一部分。
-        Ciphertext res = this->_s2c(res_of_sin, DELTA, 1.0141/(4 * M_PI));
-        printf("debug 6\n");
+        Ciphertext res = this->_s2c(res_of_sin, DELTA, 1.0091/(4 * M_PI));
+        assert(veccmp(res.get_moduli(), slice(mods_all_, 0, top_-21)));
         
         return res;
     }
