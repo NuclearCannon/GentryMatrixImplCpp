@@ -448,7 +448,7 @@ private:
     int n_, p_;
     const GentryPolyCtx* ctx_;
     std::vector<uint64_t> mods_all_;
-    static constexpr int low_ = 2;   // 我们假设输入密文的模数就是mods_all_[:low_] 实际上，low必须等于2
+    static constexpr int low_ = 1;   // 我们假设输入密文的模数就是mods_all_[:low_] 实际上，low必须等于2
     static constexpr int top_ = 30;   // 我们假设最大密文的模数就是mods_all_[:top_]
     static constexpr int hig_ = 10;   // 我们假设输出密文的模数就是mods_all_[:hig_]
     static constexpr long double DELTA = (long double)(1ULL<<40);
@@ -495,11 +495,11 @@ public:
         ctx_ = &ctx;
         mods_all_ = mods;
         // 生成C2S的一系列RotateKey
-        // for(int l=0; l<p-1; l++)
-        // {
-        //     rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 30), 0,0,l));
-        //     rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 13), 0,0,l));
-        // }
+        for(int l=0; l<p-1; l++)
+        {
+            rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 30), 0,0,l));
+            rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, 13), 0,0,l));
+        }
         // 生成bs所需的一系列mtkey。共计10个，第一个的模数链长度是
         // for(int i=0; i<10; i++)
         // {
@@ -558,12 +558,12 @@ public:
             // 构造临时明文
             complex x = std::polar<long double>(1, - (2 * M_PI / ((long double)p)) * (long double)gamma);
             x = (x-1.0L)/((long double)p);
-            Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, DELTA);
+            Plaintext tmppt = Plaintext::from_scalar(n, p, x, mods, mods[modslen-3]);
             
             Ciphertext multed = rotated.mul_pt(tmppt, *ctx_);
             m03.add_(multed, *ctx_);
         }
-        return m03.moduli_reduce(slice(mods, modslen-2, modslen));   // [(28),29,30]
+        return m03.moduli_reduce(slice(mods, modslen-3, modslen));   // [(28),29,30]
     }
 
     Ciphertext _s2c(const Ciphertext& input, long double delta)
@@ -687,16 +687,19 @@ public:
         return y10;
     }
 
-    Ciphertext main(const Ciphertext& input)
+    Ciphertext main(const Ciphertext& input, const SecretKey& sk)
     {
         // 简单模数提高
         assert(veccmp(input.get_moduli(), slice(mods_all_, 0, low_)));
         Ciphertext t1 = input.naive_moduli_extend(slice(mods_all_, low_, top_));
         assert(veccmp(t1.get_moduli(), slice(mods_all_, 0, top_)));
-        return t1;
+        // Plaintext pt1 = t1.decrypt(sk, *ctx_);
+        // pt1._round(low_);
+        // Ciphertext t1_ = Ciphertext::encrypt(pt1, sk, *ctx_);
+        // return t1;
         // C2S
         Ciphertext t2 = this->_c2s(t1, DELTA);  // 它的模数链为top-3=27级
-        assert(veccmp(t2.get_moduli(), slice(mods_all_, 0, 28)));
+        assert(veccmp(t2.get_moduli(), slice(mods_all_, 0, 27)));
         return t2;
         // 这里的t2的槽中元素是原来的系数除以Delta的结果……
         // 乘以pi / q。不是2pi/q吗？其实是因为后面的虚实分离会有乘二的副作用，在这里修正它
@@ -820,7 +823,7 @@ void test_bsk()
 
     ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(0.001, n, p);
     // Plaintext pt1 = Plaintext::from_cmat(mat1, slice(mods, 0, 3), delta);
-    Plaintext pt1 = Plaintext::_from_cmat_without_encoding(mat1, slice(mods, 0, 2), delta);
+    Plaintext pt1 = Plaintext::_from_cmat_without_encoding(mat1, slice(mods, 0, 1), delta);
     // 准备一个私钥
     printf("准备一个私钥\n");
     SecretKey sk(n, p);
@@ -831,15 +834,14 @@ void test_bsk()
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     printf("开始自举\n");
     Ciphertext ct2 = 
-        bsk.main(ct1);
-        // ct1.naive_moduli_extend(slice(mods, 2, 30));
+        bsk.main(ct1, sk);
     printf("自举结束，检查取值\n");
 
     Plaintext decrypted = ct2.decrypt(sk, ctx);
     
 
     // 比较结果
-    int checking = 1;
+    int checking = 2;
 
     if(checking == 1)
     {
@@ -847,7 +849,6 @@ void test_bsk()
         // ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
         long double q = 1;
         q *= mods[0];
-        q *= mods[1];
         for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
         {
             complex got = mat2.at(w, x, y);
@@ -859,6 +860,27 @@ void test_bsk()
             printf("[t1 %d %d %d] got(%+.6Lf %+.6Lf), exp(%+.6Lf %+.6Lf) diff1(%+.6Lf %+.6Lf) diff2(%+.6Lf %+.6Lf)\n",
                 w, x, y, 
                 got.real(), got.imag(),
+                expected.real(), expected.imag(),
+                diff1.real(), diff1.imag(),
+                diff2.real(), diff2.imag()
+            );
+        }
+    }
+    if(checking == 2)
+    {
+        ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        long double q = mods[0];
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex got = mat2.at(w, x, y);
+            complex expected(mat1.at(w, x, y));
+            long double rounder = q / delta;
+            complex round_got(findMinAbs(got.real(), rounder), findMinAbs(got.imag(), rounder));
+            complex diff1 = round_got / expected;
+            complex diff2 = expected / round_got;
+            printf("[t2 %d %d %d] got(%+.6Lf %+.6Lf), exp(%+.6Lf %+.6Lf) diff1(%+.6Lf %+.6Lf) diff2(%+.6Lf %+.6Lf)\n",
+                w, x, y, 
+                round_got.real(), round_got.imag(),
                 expected.real(), expected.imag(),
                 diff1.real(), diff1.imag(),
                 diff2.real(), diff2.imag()
