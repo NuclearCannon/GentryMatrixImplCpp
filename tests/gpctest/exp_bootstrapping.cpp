@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
-#include <cmath>
+#include <chrono>
 
 static std::vector<uint64_t> get_mods_from_qrp(const std::vector<std::pair<uint64_t, uint64_t>>& src, int l, int r)
 {
@@ -301,7 +301,7 @@ public:
         return y10;
     }
 
-    Ciphertext main(const Ciphertext& input, const SecretKey& sk)
+    Ciphertext main(const Ciphertext& input)
     {
         // 简单模数提高
         assert(veccmp(input.get_moduli(), slice(mods_all_, 0, low_)));
@@ -429,13 +429,20 @@ void test_bsk()
     printf("准备一个私钥\n");
     SecretKey sk(n, p);
     printf("准备自举所需的公钥\n");
+    auto t_bsk_start = std::chrono::steady_clock::now();
     BootstrapKey bsk(n, p, sk, qo, ctx, mods);
+    auto t_bsk_end = std::chrono::steady_clock::now();
+    double bsk_construct_time = std::chrono::duration<double>(t_bsk_end - t_bsk_start).count();
+    printf("bsk构造耗时: %.6f 秒\n", bsk_construct_time);
     // 加密成密文
     printf("加密成密文\n");
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
     printf("开始自举\n");
-    Ciphertext ct2 = 
-        bsk.main(ct1, sk);
+    auto t_main_start = std::chrono::steady_clock::now();
+    Ciphertext ct2 = bsk.main(ct1);
+    auto t_main_end = std::chrono::steady_clock::now();
+    double bsk_main_time = std::chrono::duration<double>(t_main_end - t_main_start).count();
+    printf("bsk.main耗时: %.6f 秒\n", bsk_main_time);
     printf("自举结束，检查取值\n");
 
     Plaintext decrypted = ct2.decrypt(sk, ctx);
@@ -443,19 +450,27 @@ void test_bsk()
     // 这里检查最终结果
     ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
     ComplexMatrixGroup mat0 = mat1.decode();
+    long double max_diff = 0;
+    long double sum_rate = 0;
     for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
     {
         complex got = mat2.at(w, x, y);
         complex expected = mat1.at(w, x, y);
-        complex diff1 = got / expected;
-        complex diff2 = expected / got;
-        printf("[final %d %d %d] got(%+.6Lf,%+.6Lf), exp(%+.6Lf,%+.6Lf) diff1(%+.6Lf,%+.6Lf) diff2(%+.6Lf,%+.6Lf)\n",
-            w, x, y, 
-            got.real(), got.imag(), 
-            expected.real(),  expected.imag(), 
-            diff1.real(),  diff1.imag(), 
-            diff2.real(), diff2.imag()
-        );
+        // complex diff1 = got / expected;
+        // printf("[final %d %d %d] got(%+.6Lf,%+.6Lf), exp(%+.6Lf,%+.6Lf) diff1(%+.6Lf,%+.6Lf) diff2(%+.6Lf,%+.6Lf)\n",
+        //     w, x, y, 
+        //     got.real(), got.imag(), 
+        //     expected.real(),  expected.imag(), 
+        //     diff1.real(),  diff1.imag(), 
+        //     diff2.real(), diff2.imag()
+        // );
+        long double diff_abs = std::abs(got - expected);
+        long double rate = std::abs(got / expected);
+        if(diff_abs > max_diff)max_diff = diff_abs;
+        sum_rate += rate;
     }
+    sum_rate /= n*n*(p-1);
+    std::cout << "最大绝对差" << max_diff << std::endl;
+    std::cout << "平均绝对值比" << sum_rate << std::endl;
     
 }
