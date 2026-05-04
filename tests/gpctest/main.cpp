@@ -9,8 +9,6 @@ void test_ks();
 void test_ks_cuda();
 void test_circledast();
 void test_circledast_cuda();
-void exp_bootstrapping();
-void exp_sin();
 void test_bsk();
 
 int main()
@@ -39,8 +37,6 @@ int main()
     // Ciphertext::test_ct_mul_i();
     // ConjKey::test_pt_conj();
     // ConjKey::test_ct_conj();
-    // exp_bootstrapping();
-    // exp_sin();
     test_bsk();
     return 0;
 }
