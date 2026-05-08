@@ -5,6 +5,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_STANDARD 17)
 
+# === 编译优化：启用一切有利于提速的选项 ===
+string(APPEND CMAKE_CXX_FLAGS " -O3 -march=native -mtune=native -funroll-loops -pipe")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O3")
+
+include(CheckIPOSupported)
+check_ipo_supported(RESULT lto_supported)
+if(lto_supported)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+endif()
+
 find_library(FLINT_LIB flint REQUIRED)
 find_library(GMP_LIB gmp REQUIRED)
 
