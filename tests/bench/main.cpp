@@ -8,6 +8,7 @@ void bench_ntt_cuda();
 void bench_circledast();
 void bench_circledast_cuda();
 void bench_matmul_cuda();
+void bench_for_paper();
 
 int main(int argc, char *argv[])
 {
