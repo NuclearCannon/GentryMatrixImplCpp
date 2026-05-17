@@ -10,6 +10,7 @@ void test_ks_cuda();
 void test_circledast();
 void test_circledast_cuda();
 void test_bsk();
+void zzq();
 
 int main()
 {
@@ -37,6 +38,6 @@ int main()
     // Ciphertext::test_ct_mul_i();
     // ConjKey::test_pt_conj();
     // ConjKey::test_ct_conj();
-    test_bsk();
+    zzq();
     return 0;
 }

@@ -48,6 +48,30 @@ long double findMinAbs(long double a, long double b) {
     return bestValue;
 }
 
+
+
+long double compare(std::vector<complex>& Std, std::vector<complex>& Got)
+{
+    complex s = 0, t = 0;
+    for(auto i: Std) s+= i;
+    for(auto i: Got) t+= i;
+
+    long double signal=0, noise=0;
+    for(int i=0; i<Std.size(); i++)
+    {
+        complex standard = Std.at(i)/s;
+        complex got = Got.at(i)/t;
+        complex error =  got - standard;
+        signal += std::abs(standard * standard);
+        noise += std::abs(error * error);
+    }
+    long double snr = signal / noise;
+    long snr_db = 10 * std::log10(snr);
+    long double enob = (snr_db - 1.76) / 6.02;
+    return enob;
+
+}
+
 /*
 
 模数链分配：
@@ -62,6 +86,9 @@ S2C: 3层
 共计20层
 
 */
+
+int checking = 0;
+
 class BootstrapKey
 {
 private:
@@ -114,25 +141,25 @@ public:
         p_ = p;
         ctx_ = &ctx;
         mods_all_ = mods;
-        printf("[LOG]基础KSK已经生成，开始生成RotateKey\n");
+        // printf("[LOG]基础KSK已经生成，开始生成RotateKey\n");
         // 生成C2S的一系列RotateKey
         
         int logp = Log2(p-1);
         for(int l=0; l<logp; l++)
         {
-            printf("[LOG]生成第%d个(共%d个)\n", l+1, logp);
+            // printf("[LOG]生成第%d个(共%d个)\n", l+1, logp);
             rtkeys_top_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_), 0,0,1<<l));
             rtkeys_s2c_.push_back(RotateKey::gen(sk, qo, ctx, slice(mods, 0, top_-18), 0,0,1<<l));
         }
         // 生成bs所需的一系列mtkey。共计10个，第一个的模数链长度是
-        printf("[LOG]RotateKey已经生成，开始生成MultKey for sin\n");
+        // printf("[LOG]RotateKey已经生成，开始生成MultKey for sin\n");
         for(int i=0; i<10; i++)
         {
-            printf("[LOG]生成第%d个(共10个)\n", i+1);
+            // printf("[LOG]生成第%d个(共10个)\n", i+1);
             int j = top_-8-i;
             mtkeys_bs_.push_back(MultKey::gen(sk, qo, ctx, slice(mods, 0, j)));
         }
-        printf("[LOG]BootstrapKey已经完全生成\n");
+        // printf("[LOG]BootstrapKey已经完全生成\n");
     }
 
     /// _c2s的输入密文的模数链是top, 缩放因子是delta
@@ -144,7 +171,7 @@ public:
         int modslen = mods.size();
         assert(modslen == top_);
 
-        printf("[LOG]C2S构造矩阵\n");
+        // printf("[LOG]C2S构造矩阵\n");
         // 构造XY-DFT辅助矩阵C
         ComplexMatrixGroup C = ComplexMatrixGroup(n, p);    // zero
         {
@@ -163,12 +190,12 @@ public:
                 }
             }
         }
-        printf("[LOG]C2S构造明文对象\n");
+        // printf("[LOG]C2S构造明文对象\n");
         // 将C化为明文
         Plaintext ptC1 = Plaintext::from_cmat(C, mods, mods[modslen-1]);
         Plaintext ptC2 = Plaintext::from_cmat(C, mods, mods[modslen-2]);
         // 执行XY-DFT
-        printf("[LOG]C2S矩阵乘\n");
+        // printf("[LOG]C2S矩阵乘\n");
         Ciphertext m02 = mmkey_top_.run_pc(
             ptC1, ctkey_top_.run(
                 mmkey_top_.run_cp(
@@ -178,7 +205,7 @@ public:
         );// m02的缩放因子是delta^3
         // 执行W-DFT
         // Ciphertext m03 = Ciphertext::zeros(n, p, mods); // m03的缩放因子是delta^4
-        printf("[LOG]C2S 处理W轴 明密乘法\n");
+        // printf("[LOG]C2S 处理W轴 明密乘法\n");
         std::vector<Ciphertext> multed_vec;
         for(int l=0; l<p-1; l++)
         {
@@ -194,7 +221,7 @@ public:
         {
             for(int i=0; i<p-1; i+=step*2)
             {
-                printf("[LOG]C2S 处理W轴 第%d次Rotate(共%d次)\n", cnt, p-2);
+                // printf("[LOG]C2S 处理W轴 第%d次Rotate(共%d次)\n", cnt, p-2);
                 cnt++;
                 multed_vec[i].add_(rtkeys_top_[logstep].run(multed_vec[i+step], *ctx_), *ctx_);
             }
@@ -209,7 +236,7 @@ public:
         assert(veccmp(mods, slice(mods_all_, 0, top_-18)));
         const GentryPolyCtx& ctx = *ctx_;
         // 构造XY-DFT辅助矩阵C2=C*
-        printf("[LOG]S2C构造矩阵\n");
+        // printf("[LOG]S2C构造矩阵\n");
         ComplexMatrixGroup C2 = ComplexMatrixGroup(n, p);    // zero
             
         for(int i=0, i5=1; i<n; i++, i5=i5*5%(4*n))
@@ -227,10 +254,10 @@ public:
         }
         
         // 将C化为明文
-        printf("[LOG]S2C构造明文对象\n");
+        // printf("[LOG]S2C构造明文对象\n");
         Plaintext ptC = Plaintext::from_cmat(C2, mods, delta);
         // 执行XY-DFT
-         printf("[LOG]S2C矩阵乘\n");
+        //  printf("[LOG]S2C矩阵乘\n");
         Ciphertext m02 = mmkey_s2c_.run_pc(
             ptC, ctkey_s2c_.run(
                 mmkey_s2c_.run_cp(
@@ -239,7 +266,7 @@ public:
             ), ctx
         );// m02的缩放因子是delta^3
         // 执行W-DFT
-        printf("[LOG]S2C 处理W轴 明密乘法\n");
+        // printf("[LOG]S2C 处理W轴 明密乘法\n");
         std::vector<Ciphertext> multed_vec;
         for(int l=0; l<p-1; l++)
         {
@@ -254,7 +281,7 @@ public:
         {
             for(int i=0; i<p-1; i+=step*2)
             {
-                printf("[LOG]S2C 处理W轴 第%d次Rotate(共%d次)\n", cnt, p-2);
+                // printf("[LOG]S2C 处理W轴 第%d次Rotate(共%d次)\n", cnt, p-2);
                 cnt++;
                 multed_vec[i].add_(rtkeys_s2c_[logstep].run(multed_vec[i+step], *ctx_), *ctx_);
             }
@@ -286,11 +313,11 @@ public:
             to_remove.push_back(slice(mods_all_, i-1, i));
         
         // 除以2^r，消耗一层
-        printf("[LOG]SIN 除以2^r\n");
+        // printf("[LOG]SIN 除以2^r\n");
         constexpr int r = 10;
         constexpr long double exp2r = (long double)(1ULL<<r);
         constexpr long double exp2r_inv = 1.0/exp2r;
-        printf("[LOG]SIN 泰勒展开\n");
+        // printf("[LOG]SIN 泰勒展开\n");
         Plaintext pt_2r_inv = Plaintext::from_scalar(n, p, exp2r_inv, chains[0], to_remove[0][0]);
         Ciphertext x_0 = input.mul_pt(pt_2r_inv, ctx).moduli_reduce(to_remove[0]);
         Plaintext one_0 = Plaintext::from_scalar(n, p, 1, chains[1], to_remove[1][0]);
@@ -313,7 +340,7 @@ public:
             .mul_pt(Plaintext::from_scalar(n, p, 1.0/24.0, chains[3], to_remove[3][0]), ctx)
             .moduli_reduce(to_remove[3]);
 
-        printf("[LOG]SIN 连续平方\n");
+        // printf("[LOG]SIN 连续平方\n");
         // 对y0进行10次连续平方
         // y0对应的模数链是chains[4]，也即[0:19]
         Ciphertext y1 = mtkeys_bs_[0].run(y0, y0, ctx).moduli_reduce(to_remove[4]);
@@ -327,7 +354,7 @@ public:
         Ciphertext y9 = mtkeys_bs_[8].run(y8, y8, ctx).moduli_reduce(to_remove[12]);
         Ciphertext y10 =mtkeys_bs_[9].run(y9, y9, ctx).moduli_reduce(to_remove[13]);
 
-        printf("[LOG]SIN 完成\n");
+        // printf("[LOG]SIN 完成\n");
         // 现在y10的虚部应该就是sin的取值了
         return y10;
     }
@@ -338,9 +365,11 @@ public:
         assert(veccmp(input.get_moduli(), slice(mods_all_, 0, low_)));
         Ciphertext t1 = input.naive_moduli_extend(slice(mods_all_, low_, top_));
         assert(veccmp(t1.get_moduli(), slice(mods_all_, 0, top_)));
+        if(checking == 0 || checking==1)return t1;
         // C2S
         Ciphertext t2 = this->_c2s(t1, DELTA);  // 它的模数链为top-3=27级
         assert(veccmp(t2.get_moduli(), slice(mods_all_, 0, top_-3)));
+        if(checking==2)return t2;
         // t2的槽中元素（缩放后后）的周期是mods[0]/delta
         // 我们希望它的周期是2pi，因此这里需要乘以pi
         // 为什么是pi而不是2pi？因为后面的虚实分离有乘2的副作用
@@ -352,6 +381,7 @@ public:
         Plaintext pt_pi = Plaintext::from_scalar(n_, p_, scalar, t2.get_moduli(), DELTA); // 嘿，或许可以省一层下来
         Ciphertext t3 = t2.mul_pt(pt_pi, *ctx_).moduli_reduce(slice(mods_all_, top_-4, top_-3));
         assert(veccmp(t3.get_moduli(), slice(mods_all_, 0, top_-4)));
+        if(checking==3)return t3;
         // 提取实部虚部
         Ciphertext t3_conj = cjkey_t3_.run(t3, *ctx_);
         Ciphertext real = t3.add(t3_conj).mul_i();
@@ -359,6 +389,7 @@ public:
         assert(veccmp(real.get_moduli(), slice(mods_all_, 0, top_-4)));
         assert(veccmp(imag.get_moduli(), slice(mods_all_, 0, top_-4)));
         Ciphertext sin_real = this->_sin(real, DELTA);
+        if(checking==4)return sin_real;
         Ciphertext sin_imag = this->_sin(imag, DELTA);
         assert(veccmp(sin_real.get_moduli(), slice(mods_all_, 0, top_-18)));
         assert(veccmp(sin_imag.get_moduli(), slice(mods_all_, 0, top_-18)));
@@ -368,6 +399,7 @@ public:
         // 合并
         Ciphertext res_of_sin = res_real.add(res_imag);
         assert(veccmp(res_of_sin.get_moduli(), slice(mods_all_, 0, top_-18)));
+        if(checking==5)return res_of_sin;
         
         // 乘以q/4pi。不是说q/2pi吗？因为我们刚刚造成了副作用，现在要补偿回去。
         // 但是我们什么都不用做。q部分一开始就没乘上去，而剩下来的部分可以放到s2c中作为它的一部分。
@@ -484,7 +516,7 @@ struct Params param_257 = {
 
 void test_bsk()
 {
-    printf("进入test_bsk\n");
+    // printf("进入test_bsk\n");
     // 准备各个参数
     const Params& param = param_8_5;
     int n = param.n;
@@ -499,57 +531,195 @@ void test_bsk()
     std::vector<uint64_t> mods = get_mods_from_qrp(qrp, 0, 50);
 
     // 准备一个明文
-    printf("准备一个明文\n");
+    // printf("准备一个明文\n");
 
     ComplexMatrixGroup mat1 = ComplexMatrixGroup::random(0.01, n, p);
-    // Plaintext pt1 = Plaintext::from_cmat(mat1, slice(mods, 0, 3), delta);
-    Plaintext pt1 = Plaintext::from_cmat(mat1, slice(mods, 0, 1), delta);
+    Plaintext pt1 = 
+        (checking==0 || checking==6)?
+        Plaintext::from_cmat(mat1, slice(mods, 0, 1), delta):
+        Plaintext::_from_cmat_without_encoding(mat1, slice(mods, 0, 1), delta)
+    ;
     // 准备一个私钥
-    printf("准备一个私钥\n");
+    // printf("准备一个私钥\n");
     SecretKey sk(n, p);
-    printf("准备自举所需的公钥\n");
+    // printf("准备自举所需的公钥\n");
     auto t_bsk_start = std::chrono::steady_clock::now();
     BootstrapKey bsk(n, p, sk, qo, ctx, mods);
     auto t_bsk_end = std::chrono::steady_clock::now();
     double bsk_construct_time = std::chrono::duration<double>(t_bsk_end - t_bsk_start).count();
-    printf("bsk构造耗时: %.6f 秒\n", bsk_construct_time);
+    // printf("bsk构造耗时: %.6f 秒\n", bsk_construct_time);
     // 加密成密文
-    printf("加密成密文\n");
+    // printf("加密成密文\n");
     Ciphertext ct1 = Ciphertext::encrypt(pt1, sk, ctx);
-    printf("开始自举\n");
+    // printf("开始自举\n");
     auto t_main_start = std::chrono::steady_clock::now();
     Ciphertext ct2 = bsk.main(ct1);
     auto t_main_end = std::chrono::steady_clock::now();
     double bsk_main_time = std::chrono::duration<double>(t_main_end - t_main_start).count();
     printf("bsk.main耗时: %.6f 秒\n", bsk_main_time);
-    printf("自举结束，检查取值\n");
+    // printf("自举结束，检查取值\n");
 
     Plaintext decrypted = ct2.decrypt(sk, ctx);
     
-    // 这里检查最终结果
-    ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
-    ComplexMatrixGroup mat0 = mat1.decode();
-    long double max_diff = 0;
-    long double sum_rate = 0;
-    for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
-    {
-        complex got = mat2.at(w, x, y);
-        complex expected = mat1.at(w, x, y);
-        // complex diff1 = got / expected;
-        // printf("[final %d %d %d] got(%+.6Lf,%+.6Lf), exp(%+.6Lf,%+.6Lf) diff1(%+.6Lf,%+.6Lf) diff2(%+.6Lf,%+.6Lf)\n",
-        //     w, x, y, 
-        //     got.real(), got.imag(), 
-        //     expected.real(),  expected.imag(), 
-        //     diff1.real(),  diff1.imag(), 
-        //     diff2.real(), diff2.imag()
-        // );
-        long double diff_abs = std::abs(got - expected);
-        long double rate = std::abs(got / expected);
-        if(diff_abs > max_diff)max_diff = diff_abs;
-        sum_rate += rate;
-    }
-    sum_rate /= n*n*(p-1);
-    std::cout << "最大绝对差" << max_diff << std::endl;
-    std::cout << "平均绝对值比" << sum_rate << std::endl;
+    // 比较结果
     
+    std::vector<complex> Std, Got;
+
+    if(checking == 0)
+    {
+        ComplexMatrixGroup mat2 = ct1.decrypt(sk, ctx).to_cmat(delta);
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            Std.push_back(mat1.at(w, x, y));
+            Got.push_back(mat2.at(w, x, y));
+        }
+
+    }
+    if(checking == 1)
+    {
+        ComplexMatrixGroup mat2 = decrypted._to_cmat_without_decoding(delta);
+        // ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        long double q = 1;
+        q *= mods[0];
+        q /= delta;
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex got = mat2.at(w, x, y);
+            complex round_got(findMinAbs(got.real(), q), findMinAbs(got.imag(), q));
+            Std.push_back(mat1.at(w, x, y));
+            Got.push_back(round_got);
+        }
+    }
+    if(checking == 2)
+    {
+        ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        long double q = mods[0];
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex got = mat2.at(w, x, y);
+            complex expected(mat1.at(w, x, y));
+            long double rounder = q / delta;
+            complex round_got(findMinAbs(got.real(), rounder), findMinAbs(got.imag(), rounder));
+            Std.push_back(expected);
+            Got.push_back(round_got);
+            // complex diff1 = round_got / expected;
+            // complex diff2 = expected / round_got;
+            // printf("[t2 %d %d %d] got(%+.6Lf %+.6Lf), exp(%+.6Lf %+.6Lf) diff1(%+.6Lf %+.6Lf) diff2(%+.6Lf %+.6Lf)\n",
+            //     w, x, y, 
+            //     round_got.real(), round_got.imag(),
+            //     expected.real(), expected.imag(),
+            //     diff1.real(), diff1.imag(),
+            //     diff2.real(), diff2.imag()
+            // );
+        }
+    }
+    if(checking == 3)
+    {
+        ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        long double q = mods[0];
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex got = mat2.at(w, x, y);
+            complex expected = mat1.at(w, x, y) * (long double)(M_PI);
+            long double rounder = M_PI;
+            complex round_got(findMinAbs(got.real(), rounder), findMinAbs(got.imag(), rounder));
+            Std.push_back(expected);
+            Got.push_back(round_got);
+            // complex diff1 = round_got / expected;
+            // complex diff2 = expected / round_got;
+            // printf("[t3 %d %d %d] got(%+.6Lf %+.6Lf), exp(%+.6Lf %+.6Lf) diff1(%+.6Lf %+.6Lf) diff2(%+.6Lf %+.6Lf)\n",
+            //     w, x, y, 
+            //     round_got.real(), round_got.imag(),
+            //     expected.real(), expected.imag(),
+            //     diff1.real(), diff1.imag(),
+            //     diff2.real(), diff2.imag()
+            // );
+        }
+    }
+    if(checking == 4)
+    {
+        // 这里处理sin_real
+        ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            long double got = mat2.at(w, x, y).imag();
+            long double expected = std::sin(mat1.at(w, x, y).real() * 2 * M_PI );
+            Std.push_back(expected);
+            Got.push_back(got);
+            // long double  diff1 = got / expected;
+            // long double  diff2 = expected / got;
+            // printf("[sin %d %d %d] got(%+.6Lf), exp(%+.6Lf) diff1(%+.6Lf) diff2(%+.6Lf)\n",
+            //     w, x, y, 
+            //     got, expected, diff1, diff2
+            // );
+        }
+    }
+    if(checking == 5)
+    {
+        // 这里检查res_of_sin
+        ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex got = mat2.at(w, x, y);
+            complex expected = mat1.at(w, x, y);
+            Std.push_back(expected);
+            Got.push_back(got);
+
+            // complex diff1 = got / expected;
+            // complex diff2 = expected / got;
+            // printf("[res_of_sin %d %d %d] got(%+.6Lf,%+.6Lf), exp(%+.6Lf,%+.6Lf) diff1(%+.6Lf,%+.6Lf) diff2(%+.6Lf,%+.6Lf)\n",
+            //     w, x, y, 
+            //     got.real(), got.imag(), 
+            //     expected.real(),  expected.imag(), 
+            //     diff1.real(),  diff1.imag(), 
+            //     diff2.real(), diff2.imag()
+            // );
+        }
+    }
+    if(checking == 6)
+    {
+        // 这里检查最终结果
+        ComplexMatrixGroup mat2 = decrypted.to_cmat(delta);
+        long double max_diff = 0;
+        long double sum_rate = 0;
+        for(int w=0; w<p-1; w++)for(int x=0; x<n; x++)for(int y=0; y<n; y++)
+        {
+            complex got = mat2.at(w, x, y);
+            complex expected = mat1.at(w, x, y);
+            Std.push_back(expected);
+            Got.push_back(got);
+
+            long double diff_abs = std::abs(got - expected);
+            long double rate = std::abs(got / expected);
+            if(diff_abs > max_diff)max_diff = diff_abs;
+            sum_rate += rate;
+        }
+        sum_rate /= n*n*(p-1);
+        std::cout << "最大绝对差" << max_diff << std::endl;
+        std::cout << "平均绝对值比" << sum_rate << std::endl;
+    }
+
+    std::cout << "checking " << checking << std::endl;
+    std::cout << "bits " << compare(Std, Got) << std::endl;
+    
+    
+}
+
+/*
+结果记录：
+checking 1
+bits 30.2724
+
+*/
+
+void zzq()
+{
+    std::vector<int> tests = {
+        6
+    };
+    for(int i : tests)
+    {
+        checking = i;
+        test_bsk();
+    }
 }
